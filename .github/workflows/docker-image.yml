@@ -39,5 +39,5 @@ jobs:
           context: platform/wab
           push: true
           tags: docker.io/${{ env.DOCKER_USERNAME }}/${{ env.DOCKER_REPO_NAME }}:${{ env.IMAGE_TAG }}
-#          cache-from: type=gha
-#          cache-to: type=gha,mode=max
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
