@@ -30,6 +30,9 @@ COPY --chown=normaluser .tmp/plasmic-deployed.json /home/normaluser/src/wab/clie
 # Run make, but touch src/wab/client/plasmic-deployed.json so it
 # doesn't get made (see above)
 RUN mkdir -p src/wab/gen/
+RUN [ -f src/wab/client/plasmic-deployed.json ]
+RUN touch src/wab/client/plasmic-deployed.json
+
 
 RUN make
 
