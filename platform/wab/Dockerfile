@@ -29,11 +29,7 @@ COPY --chown=normaluser .tmp/plasmic-deployed.json /home/normaluser/src/wab/clie
 
 # Run make, but touch src/wab/client/plasmic-deployed.json so it
 # doesn't get made (see above)
-RUN mkdir -p src/wab/gen/
-RUN touch src/wab/client/plasmic-deployed.json
-
-
-RUN make
+RUN mkdir -p src/wab/gen/ && touch src/wab/client/plasmic-deployed.json && make
 
 RUN rm -rf ./node_modules
 RUN yarn install --production --frozen-lockfile && yarn cache clean
@@ -58,4 +54,4 @@ EXPOSE 3004
 WORKDIR /home/normaluser/plasmic
 
 # Run the main server by default
-CMD ["yarn", "prod-backend"]
+CMD ["yarn", "backend"]
