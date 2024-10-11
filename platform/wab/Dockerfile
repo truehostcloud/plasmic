@@ -42,12 +42,12 @@ COPY --chown=normaluser tools/docker-dev/secrets.json /home/normaluser/.plasmic/
 RUN chmod 600 ~/.plasmic/secrets.json
 
 # loader-bundle-env is expected to be a peer folder to wab, so we copy it there
-COPY --chown=normaluser .tmp/loader-bundle-env /home/normaluser/loader-bundle-env
+COPY --chown=normaluser ../loader-bundle-env /home/normaluser/loader-bundle-env
 WORKDIR /home/normaluser/loader-bundle-env
 RUN yarn install && yarn cache clean
 
 # loader-html-hydrate is expected to be a peer folder to wab, so we copy it there
-COPY --chown=normaluser .tmp/loader-html-hydrate /home/normaluser/loader-html-hydrate
+COPY --chown=normaluser ../loader-html-hydrate /home/normaluser/loader-html-hydrate
 WORKDIR /home/normaluser/loader-html-hydrate
 RUN yarn install && yarn build && yarn cache clean
 
