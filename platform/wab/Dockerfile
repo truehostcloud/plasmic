@@ -21,7 +21,7 @@ RUN yarn install --frozen-lockfile && yarn cypress cache clear
 
 COPY --chown=normaluser . .
 
-RUN yarn build
+RUN git init && yarn build
 
 # We copy plasmic-deployed.json, which has been stuffed into .tmp,
 # to its rightful place. We do this because we don't want `make` to
