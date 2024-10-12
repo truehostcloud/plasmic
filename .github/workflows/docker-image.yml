@@ -19,11 +19,16 @@ jobs:
       cancel-in-progress: true
 
     steps:
+      - name: Obtain Latest Git ONLY within container for checkout
+        run: |
+          apt-get update
+          apt-get install -y git
+
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          fetch-tags: true
+
+      - name: Get tags
+        run: git fetch --tags origin
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
