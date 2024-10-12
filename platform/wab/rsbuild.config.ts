@@ -14,9 +14,9 @@ import MonacoWebpackPlugin from "monaco-editor-webpack-plugin";
 import { homepage } from "./package.json";
 import { StudioHtmlPlugin } from "./tools/studio-html-plugin";
 
-const commitHash =
-  process.env.COMMIT_HASH ??
-  execSync("git rev-parse HEAD").toString().slice(0, 6);
+const commitHash = (
+  process.env.COMMIT_HASH ?? execSync("git rev-parse HEAD").toString()
+).slice(0, 6);
 const buildEnv = process.env.NODE_ENV ?? "production";
 const isProd = buildEnv === "production";
 const port: number = process.env.PORT ? +process.env.PORT : 3003;
@@ -25,6 +25,7 @@ const backendPort: number = process.env.BACKEND_PORT
   : 3004;
 const publicUrl: string =
   process.env.PUBLIC_URL ?? (isProd ? homepage : `http://localhost:${port}`);
+const buildFolder = isProd ? "build" : "dev-build";
 
 console.log(`Starting rsbuild...
 - commitHash: ${commitHash}
@@ -202,7 +203,7 @@ export default defineConfig({
         new CopyRspackPlugin({
           patterns: [
             {
-              from: "dev-build/static/styles/",
+              from: `${buildFolder}/static/styles/`,
               to: `static/styles/[path][name].${commitHash}[ext]`,
             },
             {
