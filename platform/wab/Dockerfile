@@ -17,9 +17,11 @@ WORKDIR /home/normaluser/plasmic/
 # COPY --chown=normaluser pgpass /home/normaluser/.pgpass
 # RUN chmod 600 /home/normaluser/.pgpass
 
-RUN yarn install --frozen-lockfile && yarn cypress cache clear && yarn build
+RUN yarn install --frozen-lockfile && yarn cypress cache clear
 
 COPY --chown=normaluser . .
+
+RUN yarn build
 
 # We copy plasmic-deployed.json, which has been stuffed into .tmp,
 # to its rightful place. We do this because we don't want `make` to
