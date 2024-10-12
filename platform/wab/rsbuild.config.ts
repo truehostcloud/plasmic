@@ -25,7 +25,6 @@ const backendPort: number = process.env.BACKEND_PORT
   : 3004;
 const publicUrl: string =
   process.env.PUBLIC_URL ?? (isProd ? homepage : `http://localhost:${port}`);
-const buildFolder = isProd ? "build" : "dev-build";
 
 console.log(`Starting rsbuild...
 - commitHash: ${commitHash}
@@ -203,7 +202,7 @@ export default defineConfig({
         new CopyRspackPlugin({
           patterns: [
             {
-              from: `${buildFolder}/static/styles/`,
+              from: "dev-build/static/styles/",
               to: `static/styles/[path][name].${commitHash}[ext]`,
             },
             {
