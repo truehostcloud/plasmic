@@ -8,11 +8,15 @@ import {
   RspackPluginInstance,
 } from "@rspack/core";
 import { Source } from "@rspack/core/dist/Template";
+import { execSync } from "child_process";
 import HtmlWebpackPlugin from "html-webpack-plugin";
 import MonacoWebpackPlugin from "monaco-editor-webpack-plugin";
 import { homepage } from "./package.json";
 import { StudioHtmlPlugin } from "./tools/studio-html-plugin";
 
+const commitHash =
+  process.env.COMMIT_HASH ??
+  execSync("git rev-parse HEAD").toString().slice(0, 6);
 const buildEnv = process.env.NODE_ENV ?? "production";
 const isProd = buildEnv === "production";
 const port: number = process.env.PORT ? +process.env.PORT : 3003;
@@ -23,6 +27,7 @@ const publicUrl: string =
   process.env.PUBLIC_URL ?? (isProd ? homepage : `http://localhost:${port}`);
 
 console.log(`Starting rsbuild...
+- commitHash: ${commitHash}
 - buildEnv: ${buildEnv}
 - publicUrl: ${publicUrl}
 - port: ${port}

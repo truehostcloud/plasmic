@@ -21,6 +21,9 @@ RUN yarn install --frozen-lockfile && yarn cypress cache clear
 
 COPY --chown=normaluser . .
 
+ARG COMMIT_HASH
+ENV COMMIT_HASH=$COMMIT_HASH
+
 RUN yarn build
 
 # We copy plasmic-deployed.json, which has been stuffed into .tmp,

@@ -1,7 +1,7 @@
 !**/.gitkeep
 
 # Auto-generated
-#**/.git/
+**/.git/
 
 # wab/create-react-app:
 create-react-app/
@@ -13,7 +13,7 @@ create-react-app-new/
 static-*.tgz
 
 # Generated
-#.git/
+.git/
 src/wab/shared/copilot/internal/types-content.json
 src/wab/shared/copilot/internal/validators/gen/
 deps/chrome/
