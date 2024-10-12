@@ -17,7 +17,7 @@ WORKDIR /home/normaluser/plasmic/
 # COPY --chown=normaluser pgpass /home/normaluser/.pgpass
 # RUN chmod 600 /home/normaluser/.pgpass
 
-RUN yarn install --frozen-lockfile && yarn cypress cache clear
+RUN yarn install --frozen-lockfile && yarn cypress cache clear && yarn build
 
 COPY --chown=normaluser . .
 
