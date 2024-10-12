@@ -37,6 +37,9 @@ jobs:
       - name: Generate Image Tag
         run: echo "IMAGE_TAG=$(git rev-parse --short HEAD)-${{ github.ref_name }}" >> $GITHUB_ENV
 
+      - name: Get commit hash
+        run: echo "COMMIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+
       - name: Build and Push Docker image
         uses: docker/build-push-action@v6
         with:
@@ -46,5 +49,5 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
-            COMMIT_HASH=$(git rev-parse --short HEAD)
+            COMMIT_HASH=${{ env.COMMIT_HASH }}
 
