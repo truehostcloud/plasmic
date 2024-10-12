@@ -19,7 +19,7 @@ WORKDIR /home/normaluser/plasmic/
 
 RUN yarn install --frozen-lockfile && yarn cypress cache clear
 
-COPY .git .git
+COPY .git/ ./git/
 
 COPY --chown=normaluser . .
 
