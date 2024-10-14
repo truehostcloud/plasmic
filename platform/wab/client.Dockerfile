@@ -12,10 +12,10 @@ WORKDIR /home/normaluser/
 
 COPY --chown=normaluser . .
 
-RUN yarn setup
-
 ARG COMMIT_HASH
 ENV COMMIT_HASH=$COMMIT_HASH
+
+RUN yarn setup
 
 WORKDIR /home/normaluser/platform/plasmic/wab/
 
