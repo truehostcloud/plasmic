@@ -17,10 +17,10 @@ ENV COMMIT_HASH=$COMMIT_HASH
 
 RUN yarn setup
 
-#WORKDIR /home/normaluser/platform/plasmic/wab/
-#
-#RUN yarn build && ls -la /home/normaluser/plasmic/
-#
-#FROM nginx:1.26.2-alpine
-#
-#COPY --from=builder /home/normaluser/plasmic/dist /usr/share/nginx/html
+WORKDIR /home/normaluser/platform/plasmic/wab/
+
+RUN pwd && tree -L 2 ../ && yarn build && ls -la /home/normaluser/plasmic/
+
+FROM nginx:1.26.2-alpine
+
+COPY --from=builder /home/normaluser/plasmic/dist /usr/share/nginx/html
