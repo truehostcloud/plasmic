@@ -19,7 +19,7 @@ RUN yarn setup
 
 WORKDIR /home/normaluser/platform/plasmic/wab/
 
-RUN pwd && tree -L 2 ../ && yarn build && ls -la /home/normaluser/plasmic/
+RUN pwd && tree -L 2 && yarn build && tree -L 2
 
 FROM nginx:1.26.2-alpine
 
