@@ -15,7 +15,7 @@ COPY --chown=normaluser . .
 ARG COMMIT_HASH
 ENV COMMIT_HASH=$COMMIT_HASH
 
-RUN yarn setup
+RUN yarn setup && yarn setup:canvas-packages
 
 WORKDIR /home/normaluser/platform/wab/
 
