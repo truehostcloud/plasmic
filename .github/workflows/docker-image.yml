@@ -58,7 +58,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: platform
-          file: platform/client.Dockerfile
+          file: platform/wab/client.Dockerfile
           push: true
           tags: docker.io/${{ env.DOCKER_USERNAME }}/${{ env.CLIENT_DOCKER_REPO_NAME }}:${{ env.CLIENT_IMAGE_TAG }}
           cache-from: type=gha
