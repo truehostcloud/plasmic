@@ -23,4 +23,4 @@ RUN yarn build && tree -L 2
 
 FROM nginx:1.26.2-alpine
 
-COPY --from=builder /home/normaluser/plasmic/dist /usr/share/nginx/html
+COPY --from=builder /home/normaluser/platform/wab/build /usr/share/nginx/html
