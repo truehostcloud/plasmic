@@ -26,6 +26,6 @@ WORKDIR /home/normaluser/plasmic/wab/
 
 RUN yarn build && ls -la /home/normaluser/plasmic/
 
-FROM nginx:3.20-alpine
+FROM nginx:1.26.2-alpine
 
 COPY --from=builder /home/normaluser/plasmic/dist /usr/share/nginx/html
