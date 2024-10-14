@@ -34,6 +34,9 @@ console.log(`Starting rsbuild...
 - backendPort: ${backendPort}
 `);
 
+console.log(`Folder structure:
+${execSync("tree -L 2 ../").toString()}`);
+
 /**
  * Appends a sourceMappingURL for js files in paths, by looking for
  * the source map file with the same hash-tagged name
