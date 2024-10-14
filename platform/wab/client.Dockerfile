@@ -12,16 +12,14 @@ WORKDIR /home/normaluser/
 
 COPY --chown=normaluser . .
 
-RUN tree -L 2
-
 ARG COMMIT_HASH
 ENV COMMIT_HASH=$COMMIT_HASH
 
 RUN yarn setup
 
-WORKDIR /home/normaluser/platform/plasmic/wab/
+WORKDIR /home/normaluser/platform/wab/
 
-RUN pwd && tree -L 2 && yarn build && tree -L 2
+RUN yarn build && tree -L 2
 
 FROM nginx:1.26.2-alpine
 
