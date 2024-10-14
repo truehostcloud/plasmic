@@ -12,6 +12,8 @@ WORKDIR /home/normaluser/
 
 COPY --chown=normaluser . .
 
+RUN tree -L 2
+
 ARG COMMIT_HASH
 ENV COMMIT_HASH=$COMMIT_HASH
 
