@@ -25,6 +25,7 @@ const backendPort: number = process.env.BACKEND_PORT
   : 3004;
 const publicUrl: string =
   process.env.PUBLIC_URL ?? (isProd ? homepage : `http://localhost:${port}`);
+const buildFolder = isProd ? "build" : "dev-build";
 
 console.log(`Starting rsbuild...
 - commitHash: ${commitHash}
@@ -33,9 +34,6 @@ console.log(`Starting rsbuild...
 - port: ${port}
 - backendPort: ${backendPort}
 `);
-
-console.log(`Folder structure:
-${execSync("tree -L 2 ../").toString()}`);
 
 /**
  * Appends a sourceMappingURL for js files in paths, by looking for
@@ -204,10 +202,10 @@ export default defineConfig({
         // the files are cacheable until the next deployment.
         new CopyRspackPlugin({
           patterns: [
-            // {
-            //   from: "dev-build/static/styles/",
-            //   to: `static/styles/[path][name].${commitHash}[ext]`,
-            // },
+            {
+              from: `${buildFolder}/static/styles/`,
+              to: `static/styles/[path][name].${commitHash}[ext]`,
+            },
             {
               from: "../sub/public/static/",
               to: `static/[path][name].${commitHash}[ext]`,

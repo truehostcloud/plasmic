@@ -2,7 +2,7 @@
 FROM node:18.19-alpine3.18 AS builder
 
 # System setup
-RUN apk add --no-cache bash=5.2.15-r5 make=4.4.1-r1 bubblewrap=0.8.0-r1 tree==2.1.1-r0
+RUN apk add --no-cache bash=5.2.15-r5 make=4.4.1-r1 bubblewrap=0.8.0-r1
 SHELL ["/bin/bash","-o", "pipefail","-l","-c"]
 
 RUN echo | adduser normaluser --disabled-password
@@ -19,7 +19,7 @@ RUN yarn setup && yarn setup:canvas-packages
 
 WORKDIR /home/normaluser/platform/wab/
 
-RUN yarn build && tree -L 2
+RUN yarn build
 
 FROM nginx:1.26.2-alpine
 

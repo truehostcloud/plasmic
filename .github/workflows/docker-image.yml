@@ -16,6 +16,7 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 40
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
       cancel-in-progress: true
@@ -44,16 +45,6 @@ jobs:
       - name: Get commit hash
         run: echo "COMMIT_HASH=$(git rev-parse HEAD)" >> $GITHUB_ENV
 
-      - name: Build and Push Server Docker image
-        uses: docker/build-push-action@v6
-        if: false
-        with:
-          context: platform/wab
-          push: true
-          tags: docker.io/${{ env.DOCKER_USERNAME }}/${{ env.SERVER_DOCKER_REPO_NAME }}:${{ env.SERVER_IMAGE_TAG }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
       - name: Build and Push Client Docker image
         uses: docker/build-push-action@v6
         with:
@@ -65,4 +56,13 @@ jobs:
           cache-to: type=gha,mode=max
           build-args: |
             COMMIT_HASH=${{ env.COMMIT_HASH }}
+
+      - name: Build and Push Server Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: platform/wab
+          push: true
+          tags: docker.io/${{ env.DOCKER_USERNAME }}/${{ env.SERVER_DOCKER_REPO_NAME }}:${{ env.SERVER_IMAGE_TAG }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
