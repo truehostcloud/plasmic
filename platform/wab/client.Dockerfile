@@ -10,19 +10,14 @@ USER normaluser
 
 WORKDIR /home/normaluser/
 
-COPY --chown=normaluser wab/package.json wab/yarn.lock plasmic/wab/
-WORKDIR /home/normaluser/plasmic/wab/
-
-RUN yarn install --frozen-lockfile && yarn cypress cache clear
-
-WORKDIR /home/normaluser/plasmic/
-
 COPY --chown=normaluser . .
+
+RUN yarn setup
 
 ARG COMMIT_HASH
 ENV COMMIT_HASH=$COMMIT_HASH
 
-WORKDIR /home/normaluser/plasmic/wab/
+WORKDIR /home/normaluser/platform/plasmic/wab/
 
 RUN yarn build && ls -la /home/normaluser/plasmic/
 
