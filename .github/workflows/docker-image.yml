@@ -12,6 +12,7 @@ env:
   CLIENT_DOCKER_REPO_NAME: plasmic-client
   CLIENT_DOCKER_IMAGE_TAG: latest
   SERVER_IMAGE_TAG: latest
+  REACT_APP_DEFAULT_HOST_URL: ${{ secrets.REACT_APP_DEFAULT_HOST_URL }}
 
 jobs:
   build:
@@ -56,6 +57,7 @@ jobs:
           cache-to: type=gha,mode=max
           build-args: |
             COMMIT_HASH=${{ env.COMMIT_HASH }}
+            REACT_APP_DEFAULT_HOST_URL=${{ env.REACT_APP_DEFAULT_HOST_URL }}
 
       - name: Build and Push Server Docker image
         uses: docker/build-push-action@v6
