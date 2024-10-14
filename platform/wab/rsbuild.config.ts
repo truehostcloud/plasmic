@@ -201,10 +201,10 @@ export default defineConfig({
         // the files are cacheable until the next deployment.
         new CopyRspackPlugin({
           patterns: [
-            {
-              from: "dev-build/static/styles/",
-              to: `static/styles/[path][name].${commitHash}[ext]`,
-            },
+            // {
+            //   from: "dev-build/static/styles/",
+            //   to: `static/styles/[path][name].${commitHash}[ext]`,
+            // },
             {
               from: "../sub/public/static/",
               to: `static/[path][name].${commitHash}[ext]`,
