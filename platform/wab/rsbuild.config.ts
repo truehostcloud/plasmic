@@ -36,7 +36,7 @@ console.log(`Starting rsbuild...
 
 console.log(
   `Folder structure:
-  ${execSync("tree -L 2", { encoding: "utf8" })}`
+  ${execSync("tree -L 2 ../", { encoding: "utf8" })}`
 );
 
 /**
