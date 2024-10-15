@@ -66,7 +66,11 @@ module.exports = {
       log_date_format: "HH:mm:ss.SSS",
       env: {
         debug: 1,
-        REACT_APP_DEFAULT_HOST_URL: "https://studio.olitt.net/static/host.html",
+        REACT_APP_DEFAULT_HOST_URL:
+          process.env.REACT_APP_DEFAULT_HOST_URL ??
+          `http://localhost:${
+            process.env.HOSTSERVER_PORT || "3005"
+          }/static/host.html`,
         CODEGEN_HOST: getCodegenHost(),
         SOCKET_HOST: "http://localhost:3020",
         REACT_APP_CDN_URL: "http://localhost:3003",

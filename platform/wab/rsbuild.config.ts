@@ -25,7 +25,6 @@ const backendPort: number = process.env.BACKEND_PORT
   : 3004;
 const publicUrl: string =
   process.env.PUBLIC_URL ?? (isProd ? homepage : `http://localhost:${port}`);
-const buildFolder = isProd ? "build" : "dev-build";
 
 console.log(`Starting rsbuild...
 - commitHash: ${commitHash}
