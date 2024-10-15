@@ -33,4 +33,4 @@ COPY --from=builder /home/normaluser/platform/wab/build/ /home/normaluser/platfo
 
 EXPOSE 80
 
-CMD ["http-server", "platform/wab/build", "-p", "80", "-d", "false"]
+CMD ["npx", "http-server", "platform/wab/build", "-p", "80", "-d", "false"]
