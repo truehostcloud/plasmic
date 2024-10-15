@@ -15,20 +15,12 @@ env:
   REACT_APP_DEFAULT_HOST_URL: ${{ secrets.REACT_APP_DEFAULT_HOST_URL }}
 
 jobs:
-  build:
+  build-client:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
       cancel-in-progress: true
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-  build-client:
-    runs-on: ubuntu-latest
-    needs: build
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -62,7 +54,10 @@ jobs:
 
   build-server:
     runs-on: ubuntu-latest
-    needs: build
+    timeout-minutes: 40
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
