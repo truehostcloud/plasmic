@@ -19,6 +19,8 @@ WORKDIR /home/normaluser/plasmic/
 
 RUN yarn install --frozen-lockfile && yarn cypress cache clear
 
+COPY --chown=normaluser . .
+
 # We copy plasmic-deployed.json, which has been stuffed into .tmp,
 # to its rightful place. We do this because we don't want `make` to
 # generate it, as generating it requires using `git`, and `.git` is
@@ -27,7 +29,7 @@ COPY --chown=normaluser .tmp/plasmic-deployed.json /home/normaluser/src/wab/clie
 
 # Run make, but touch src/wab/client/plasmic-deployed.json so it
 # doesn't get made (see above)
-RUN mkdir -p src/wab/gen/ && touch src/wab/client/plasmic-deployed.json && make
+RUN mkdir -p src/wab/gen/ && [[ -f src/wab/client/plasmic-deployed.json ]] && touch src/wab/client/plasmic-deployed.json && make
 
 RUN rm -rf ./node_modules
 RUN yarn install --production --frozen-lockfile && yarn cache clean
@@ -43,7 +45,11 @@ RUN yarn install && yarn cache clean
 # loader-html-hydrate is expected to be a peer folder to wab, so we copy it there
 COPY --chown=normaluser .tmp/loader-html-hydrate /home/normaluser/loader-html-hydrate
 WORKDIR /home/normaluser/loader-html-hydrate
-RUN yarn install && yarn build && yarn cache clean
+
+ARG REACT_APP_DEFAULT_HOST_URL
+ENV REACT_APP_DEFAULT_HOST_URL=$REACT_APP_DEFAULT_HOST_URL
+
+RUN yarn install && REACT_APP_DEFAULT_HOST_URL=$REACT_APP_DEFAULT_HOST_URL yarn build && yarn cache clean
 
 # Expose main server port
 EXPOSE 3004
