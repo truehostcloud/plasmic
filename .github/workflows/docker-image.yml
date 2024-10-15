@@ -13,6 +13,7 @@ env:
   CLIENT_DOCKER_IMAGE_TAG: latest
   SERVER_IMAGE_TAG: latest
   REACT_APP_DEFAULT_HOST_URL: ${{ secrets.REACT_APP_DEFAULT_HOST_URL }}
+  REACT_APP_DEV_HOST_PROXY: ${{ secrets.REACT_APP_DEV_HOST_PROXY }}
 
 jobs:
   build:
@@ -56,6 +57,7 @@ jobs:
           build-args: |
             COMMIT_HASH=${{ env.COMMIT_HASH }}
             REACT_APP_DEFAULT_HOST_URL=${{ env.REACT_APP_DEFAULT_HOST_URL }}
+            REACT_APP_DEV_HOST_PROXY=${{ env.REACT_APP_DEV_HOST_PROXY }}
 
       - name: Build and Push Server Docker image
         uses: docker/build-push-action@v6
