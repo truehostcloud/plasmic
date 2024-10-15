@@ -23,6 +23,14 @@ WORKDIR /home/normaluser/platform/wab/
 
 RUN REACT_APP_DEFAULT_HOST_URL=$REACT_APP_DEFAULT_HOST_URL yarn build
 
-FROM nginx:1.26.2-alpine
+FROM node:18.19-alpine3.18
 
-COPY --from=builder /home/normaluser/platform/wab/build /usr/share/nginx/html
+RUN yarn add http-server@14.1.1
+
+WORKDIR /home/normaluser/
+
+COPY --from=builder /home/normaluser/platform/wab/build/ /home/normaluser/platform/wab/build/
+
+EXPOSE 80
+
+CMD ["http-server", "platform/wab/build", "-p", "80", "-d", "false"]
