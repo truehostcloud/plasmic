@@ -395,7 +395,9 @@ const DEFAULT_DEVFLAGS = {
     process.env.CODEGEN_HOST ||
     "http://codegen-origin.plasmic.app",
   adminTeamDomain: production ? "plasmic.app" : "admin.example.com",
-  defaultHostUrl: "https://studio.olitt.net/static/host.html",
+  defaultHostUrl:
+    process.env.REACT_APP_DEFAULT_HOST_URL ||
+    "https://host.plasmicdev.com/static/host.html",
   defaultOpenStylePanels: true,
   dynamicPages: true,
   enablePlasmicHosting: true,
