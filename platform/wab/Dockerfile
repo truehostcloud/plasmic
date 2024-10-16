@@ -48,7 +48,6 @@ WORKDIR /home/normaluser/loader-html-hydrate
 
 ARG REACT_APP_DEFAULT_HOST_URL
 ENV REACT_APP_DEFAULT_HOST_URL=$REACT_APP_DEFAULT_HOST_URL
-ENV NODE_ENV=production
 
 RUN yarn install && REACT_APP_DEFAULT_HOST_URL=$REACT_APP_DEFAULT_HOST_URL yarn build && yarn cache clean
 
