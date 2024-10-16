@@ -36,6 +36,6 @@ WORKDIR /home/normaluser/
 
 COPY --from=builder /home/normaluser/platform/wab/build/ /home/normaluser/platform/wab/build/
 
-FROM nginx:1.26.2-alpine
+EXPOSE 80
 
-COPY --from=builder /home/normaluser/platform/wab/build /usr/share/nginx/html
+CMD ["npx", "http-server", "platform/wab/build", "-p", "80", "-d", "false"]
