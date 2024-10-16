@@ -13,6 +13,7 @@ env:
   CLIENT_IMAGE_TAG: latest
   SERVER_IMAGE_TAG: latest
   REACT_APP_DEFAULT_HOST_URL: ${{ secrets.REACT_APP_DEFAULT_HOST_URL }}
+  REACT_APP_PUBLIC_URL: ${{ secrets.REACT_APP_PUBLIC_URL }}
 
 jobs:
   build-client:
@@ -51,6 +52,7 @@ jobs:
           build-args: |
             COMMIT_HASH=${{ env.COMMIT_HASH }}
             REACT_APP_DEFAULT_HOST_URL=${{ env.REACT_APP_DEFAULT_HOST_URL }}
+            REACT_APP_PUBLIC_URL=${{ env.REACT_APP_PUBLIC_URL }}
 
   build-server:
     runs-on: ubuntu-latest
