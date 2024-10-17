@@ -1,8 +1,7 @@
 /// <reference types="@types/jest" />
 
-
-import { Upload } from "@aws-sdk/lib-storage";
 import { S3 } from "@aws-sdk/client-s3";
+import { Upload } from "@aws-sdk/lib-storage";
 import cypress from "cypress";
 import fs from "fs";
 import glob from "glob";
@@ -56,22 +55,23 @@ export async function runCypressTest(opts: {
 
     if (result.status === "failed" && diffFiles.length > 0) {
       console.log("Diff files", diffFiles);
-      const s3 = new S3();
+      const s3 = new S3({
+        forcePathStyle: process.env.S3_FORCE_PATH_STYLE === "true",
+      });
       for (const diffFile of diffFiles) {
         const { Location } = await new Upload({
           client: s3,
 
           params: {
-              Bucket: "plasmic-cypress",
-              Key: `${
-                process.env["BUILD_NUMBER"] ?? "local"
-              }/loader-tests/${diffFile}`,
-              Body: fs.readFileSync(diffFile),
-              ContentType: "image/png",
-              ACL: "public-read",
-            },
-        })
-          .done();
+            Bucket: "plasmic-cypress",
+            Key: `${
+              process.env["BUILD_NUMBER"] ?? "local"
+            }/loader-tests/${diffFile}`,
+            Body: fs.readFileSync(diffFile),
+            ContentType: "image/png",
+            ACL: "public-read",
+          },
+        }).done();
         console.log(`Diff: ${Location}`);
       }
     }

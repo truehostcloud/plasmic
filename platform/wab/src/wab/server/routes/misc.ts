@@ -1,9 +1,9 @@
-import { ensureInstance, ensureType } from "@/wab/shared/common";
 import "@/wab/server/extensions";
 import { userAnalytics } from "@/wab/server/routes/util";
 import { GetClipResponse } from "@/wab/shared/ApiSchema";
-import { Upload } from "@aws-sdk/lib-storage";
+import { ensureInstance, ensureType } from "@/wab/shared/common";
 import { S3 } from "@aws-sdk/client-s3";
+import { Upload } from "@aws-sdk/lib-storage";
 import { Request, Response } from "express-serve-static-core";
 
 export async function getAppConfig(req: Request, res: Response) {
@@ -13,12 +13,13 @@ export async function getAppConfig(req: Request, res: Response) {
 
 export async function putClip(req: Request, res: Response) {
   const { clipId } = req.params;
-  const s3 = new S3();
+  const s3 = new S3({
+    forcePathStyle: process.env.S3_FORCE_PATH_STYLE === "true",
+  });
   await new Upload({
     client: s3,
     params: { Bucket: "plasmic-clips", Key: clipId, Body: req.body.content },
-  })
-    .done();
+  }).done();
   userAnalytics(req).track({
     event: "Figma put clip",
     properties: { size: req.body.content.length },
@@ -28,12 +29,13 @@ export async function putClip(req: Request, res: Response) {
 
 export async function getClip(req: Request, res: Response) {
   const { clipId } = req.params;
-  const s3 = new S3();
-  const result = await s3
-    .getObject({
-      Bucket: "plasmic-clips",
-      Key: clipId,
-    });
+  const s3 = new S3({
+    forcePathStyle: process.env.S3_FORCE_PATH_STYLE === "true",
+  });
+  const result = await s3.getObject({
+    Bucket: "plasmic-clips",
+    Key: clipId,
+  });
   const content = ensureInstance(result.Body, Buffer).toString("utf8");
   userAnalytics(req).track({
     event: "Figma get clip",

@@ -1,9 +1,9 @@
 import { md5 } from "@/wab/server/util/hash";
 import { parseDataUrl } from "@/wab/shared/data-urls";
 import { isSVG } from "@/wab/shared/svg-utils";
-import * as Sentry from "@sentry/node";
-import { Upload } from "@aws-sdk/lib-storage";
 import { S3 } from "@aws-sdk/client-s3";
+import { Upload } from "@aws-sdk/lib-storage";
+import * as Sentry from "@sentry/node";
 import FileType from "file-type";
 import { extension } from "mime-types";
 import sharp from "sharp";
@@ -70,7 +70,9 @@ export async function uploadFileToS3(
       const storagePath = `${fileHash}.${ext}`;
 
       try {
-        const s3 = new S3();
+        const s3 = new S3({
+          forcePathStyle: process.env.S3_FORCE_PATH_STYLE === "true",
+        });
         const { Location } = await new Upload({
           client: s3,
           params: {

@@ -494,11 +494,12 @@ async function fetchImageAssetsFromS3(site: Site) {
         return;
       }
       const storagePath = new URL(i.dataUri).pathname.replace(/^\//, "");
-      const res = await new S3()
-        .getObject({
-          Bucket: siteAssetsBucket,
-          Key: storagePath,
-        });
+      const res = await new S3({
+        forcePathStyle: process.env.S3_FORCE_PATH_STYLE === "true",
+      }).getObject({
+        Bucket: siteAssetsBucket,
+        Key: storagePath,
+      });
       i.dataUri = asDataUrl(
         Buffer.from(
           ensure(res.Body, "Unexpected null body response") as unknown as string

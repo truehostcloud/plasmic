@@ -418,13 +418,14 @@ export async function getLoaderChunk(req: Request, res: Response) {
 
   console.log(`Loading S3 bundle from ${LOADER_ASSETS_BUCKET} ${bundleKey}`);
 
-  const s3 = new S3();
+  const s3 = new S3({
+    forcePathStyle: process.env.S3_FORCE_PATH_STYLE === "true",
+  });
 
-  const obj = await s3
-    .getObject({
-      Bucket: LOADER_ASSETS_BUCKET,
-      Key: bundleKey,
-    });
+  const obj = await s3.getObject({
+    Bucket: LOADER_ASSETS_BUCKET,
+    Key: bundleKey,
+  });
   const serialized = ensureInstance(obj.Body, Buffer).toString("utf8");
 
   const bundle: LoaderBundleOutput = JSON.parse(serialized);
