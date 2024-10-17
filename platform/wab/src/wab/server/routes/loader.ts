@@ -42,7 +42,7 @@ import { tplToPlasmicElements } from "@/wab/shared/element-repr/gen-element-repr
 import { LocalizationKeyScheme } from "@/wab/shared/localization";
 import { toJson } from "@/wab/shared/model/model-tree-util";
 import { getCodegenUrl } from "@/wab/shared/urls";
-import S3 from "aws-sdk/clients/s3";
+import { S3 } from "@aws-sdk/client-s3";
 import execa from "execa";
 import { Request, Response } from "express-serve-static-core";
 import fs from "fs";
@@ -424,8 +424,7 @@ export async function getLoaderChunk(req: Request, res: Response) {
     .getObject({
       Bucket: LOADER_ASSETS_BUCKET,
       Key: bundleKey,
-    })
-    .promise();
+    });
   const serialized = ensureInstance(obj.Body, Buffer).toString("utf8");
 
   const bundle: LoaderBundleOutput = JSON.parse(serialized);

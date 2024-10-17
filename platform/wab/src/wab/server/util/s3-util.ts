@@ -1,5 +1,5 @@
 import { ensureInstance } from "@/wab/shared/common";
-import S3 from "aws-sdk/clients/s3";
+import { S3 } from "@aws-sdk/client-s3";
 import path from "path";
 
 export async function upsertS3CacheEntry<T>(opts: {
@@ -17,8 +17,7 @@ export async function upsertS3CacheEntry<T>(opts: {
       .getObject({
         Bucket: bucket,
         Key: key,
-      })
-      .promise();
+      });
     const serialized = ensureInstance(obj.Body, Buffer).toString("utf8");
     console.log(`S3 cache hit for ${bucket} ${key}`);
     const data = deserialize(serialized);
@@ -32,8 +31,7 @@ export async function upsertS3CacheEntry<T>(opts: {
         Bucket: bucket,
         Key: key,
         Body: serialized,
-      })
-      .promise();
+      });
     return content;
   }
 }
@@ -52,8 +50,7 @@ export async function uploadFilesToS3(opts: {
           Bucket: bucket,
           Key: path.join(key, file),
           Body: content,
-        })
-        .promise();
+        });
     })
   );
 }

@@ -50,7 +50,7 @@ import { asDataUrl } from "@/wab/shared/data-urls";
 import { isAdminTeamEmail } from "@/wab/shared/devflag-utils";
 import { DEVFLAGS, getProjectFlags } from "@/wab/shared/devflags";
 import { Site } from "@/wab/shared/model/classes";
-import S3 from "aws-sdk/clients/s3";
+import { S3 } from "@aws-sdk/client-s3";
 import fs from "fs";
 import { ConnectionOptions } from "typeorm";
 
@@ -498,11 +498,10 @@ async function fetchImageAssetsFromS3(site: Site) {
         .getObject({
           Bucket: siteAssetsBucket,
           Key: storagePath,
-        })
-        .promise();
+        });
       i.dataUri = asDataUrl(
         Buffer.from(
-          ensure(res.Body, "Unexpected null body response") as string
+          ensure(res.Body, "Unexpected null body response") as unknown as string
         ),
         ensure(res.ContentType, "Unexpected response with no contentType")
       );

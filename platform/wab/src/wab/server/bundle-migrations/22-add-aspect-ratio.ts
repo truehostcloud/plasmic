@@ -10,7 +10,7 @@ import {
   SVG_MEDIA_TYPE,
 } from "@/wab/shared/data-urls";
 import { ASPECT_RATIO_SCALE_FACTOR } from "@/wab/shared/core/tpls";
-import S3 from "aws-sdk/clients/s3";
+import { S3 } from "@aws-sdk/client-s3";
 
 const siteAssetsBucket = process.env.SITE_ASSETS_BUCKET as string;
 
@@ -30,10 +30,9 @@ export const migrate: BundledMigrationFn = async (bundle) => {
           .getObject({
             Bucket: siteAssetsBucket,
             Key: storagePath,
-          })
-          .promise();
+          });
         const dataUrl = asDataUrl(
-          Buffer.from(ensure(res.Body, "must exist") as string),
+          Buffer.from(ensure(res.Body, "must exist") as unknown as string),
           ensure(res.ContentType, "must exist")
         );
         const parsed = parseDataUrl(dataUrl);
