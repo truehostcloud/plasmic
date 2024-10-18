@@ -1,5 +1,5 @@
 import "@/wab/server/extensions";
-import { userAnalytics } from "@/wab/server/routes/util";
+import { streamToBuffer, userAnalytics } from "@/wab/server/routes/util";
 import { GetClipResponse } from "@/wab/shared/ApiSchema";
 import { ensureInstance, ensureType } from "@/wab/shared/common";
 import { S3 } from "@aws-sdk/client-s3";
@@ -43,13 +43,4 @@ export async function getClip(req: Request, res: Response) {
     properties: { size: content.length },
   });
   res.json(ensureType<GetClipResponse>({ content }));
-}
-
-async function streamToBuffer(stream: NodeJS.ReadableStream): Promise<Buffer> {
-  return new Promise<Buffer>((resolve, reject) => {
-    const chunks: Buffer[] = [];
-    stream.on("data", (chunk) => chunks.push(chunk));
-    stream.on("end", () => resolve(Buffer.concat(chunks)));
-    stream.on("error", reject);
-  });
 }

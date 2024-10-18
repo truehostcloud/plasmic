@@ -24,7 +24,12 @@ import {
   parseProjectIdSpec,
   resolveLatestProjectRevisions,
 } from "@/wab/server/loader/resolve-projects";
-import { superDbMgr, userAnalytics, userDbMgr } from "@/wab/server/routes/util";
+import {
+  streamToBuffer,
+  superDbMgr,
+  userAnalytics,
+  userDbMgr,
+} from "@/wab/server/routes/util";
 import { prefillCloudfront } from "@/wab/server/workers/prefill-cloudfront";
 import { BadRequestError, NotFoundError } from "@/wab/shared/ApiErrors/errors";
 import { ProjectId } from "@/wab/shared/ApiSchema";
@@ -422,11 +427,12 @@ export async function getLoaderChunk(req: Request, res: Response) {
     forcePathStyle: process.env.S3_FORCE_PATH_STYLE === "true",
   });
 
-  const obj = await s3.getObject({
+  const result = await s3.getObject({
     Bucket: LOADER_ASSETS_BUCKET,
     Key: bundleKey,
   });
-  const serialized = ensureInstance(obj.Body, Buffer).toString("utf8");
+  const bodyBuffer = await streamToBuffer(result.Body as NodeJS.ReadableStream);
+  const serialized = ensureInstance(bodyBuffer, Buffer).toString("utf8");
 
   const bundle: LoaderBundleOutput = JSON.parse(serialized);
 
