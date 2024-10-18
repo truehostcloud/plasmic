@@ -36,10 +36,20 @@ export async function getClip(req: Request, res: Response) {
     Bucket: "plasmic-clips",
     Key: clipId,
   });
-  const content = ensureInstance(result.Body, Buffer).toString("utf8");
+  const bodyBuffer = await streamToBuffer(result.Body as NodeJS.ReadableStream);
+  const content = ensureInstance(bodyBuffer, Buffer).toString("utf8");
   userAnalytics(req).track({
     event: "Figma get clip",
     properties: { size: content.length },
   });
   res.json(ensureType<GetClipResponse>({ content }));
+}
+
+async function streamToBuffer(stream: NodeJS.ReadableStream): Promise<Buffer> {
+  return new Promise<Buffer>((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    stream.on("data", (chunk) => chunks.push(chunk));
+    stream.on("end", () => resolve(Buffer.concat(chunks)));
+    stream.on("error", reject);
+  });
 }
