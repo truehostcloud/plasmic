@@ -11,6 +11,8 @@ import { useClientTokenResolver } from "@/wab/client/components/widgets/ColorPic
 import { Icon } from "@/wab/client/components/widgets/Icon";
 import Select from "@/wab/client/components/widgets/Select";
 import StrikeIcon from "@/wab/client/plasmic/plasmic_kit/PlasmicIcon__Strike";
+import SubscriptIcon from "@/wab/client/plasmic/plasmic_kit_icons/icons/PlasmicIcon__Subscript";
+import SuperscriptIcon from "@/wab/client/plasmic/plasmic_kit_icons/icons/PlasmicIcon__Superscript";
 import {
   DefaultRichTextToolbarProps,
   PlasmicRichTextToolbar,
@@ -117,6 +119,9 @@ function RichTextToolbar_(
 
   // Current marks (i.e. CSS props applied to current selection).
   const [marks, setMarks] = React.useState<Omit<Text, "text">>({});
+  const fontWeight = marks["font-weight"];
+  const fontStyle = marks["font-style"];
+  const textDecorationLine = marks["text-decoration-line"];
 
   // Current block tag (e.g. "h1", "ul" or undefined for no block).
   const [block, setBlock] = React.useState<(typeof tags)[number] | undefined>(
@@ -173,6 +178,50 @@ function RichTextToolbar_(
       defaultContentEditorVisible: false, // matches what's chosen in Sections.tsx
     }
   );
+
+  const inlineMenuItems = [
+    {
+      label: "Link",
+      action: "LINK",
+      icon: LinksvgIcon,
+    },
+    {
+      label: "Inline code",
+      action: "CODE",
+      icon: CodesvgIcon,
+    },
+    {
+      label: "Span element",
+      action: "SPAN",
+      icon: TextsvgIcon,
+    },
+    {
+      label: "Strong element",
+      action: "STRONG",
+      icon: BoldsvgIcon,
+    },
+    {
+      label: "Italic element",
+      action: "ITALIC",
+      icon: ItalicsvgIcon,
+    },
+    {
+      label: "Emphasis element",
+      action: "EMPHASIS",
+      icon: ItalicsvgIcon,
+    },
+    {
+      label: "Subscript element",
+      action: "SUBSCRIPT",
+      icon: SubscriptIcon,
+    },
+    {
+      label: "Superscript element",
+      action: "SUPERSCRIPT",
+      icon: SuperscriptIcon,
+    },
+  ].sort((a, b) => a.label.localeCompare(b.label));
+
   return (
     <SidebarModalProvider>
       <PlasmicRichTextToolbar
@@ -255,9 +304,15 @@ function RichTextToolbar_(
         }}
         fontWeight={{
           props: {
-            // TODO: Make button active if selection is bold according to marks.
             "aria-label": "Bold",
-            onClick: () => runInEditor("BOLD"),
+            type: fontWeight ? ["noDivider", "secondary"] : "noDivider",
+            onClick: () => {
+              if (fontWeight) {
+                markCss({ fontWeight: undefined });
+              } else {
+                runInEditor("BOLD");
+              }
+            },
             menu: () => (
               <Menu>
                 {fontWeightOptions.map((option) => (
@@ -282,26 +337,28 @@ function RichTextToolbar_(
           },
         }}
         fontStyle={{
-          // TODO: Make button active if selection is italic according to marks.
           props: {
+            type: fontStyle ? "secondary" : undefined,
             onClick: () => runInEditor("ITALIC"),
           },
         }}
         textDecoration={{
-          // TODO: Make button active if selection has text-decoration according
-          // to marks.
           props: {
             "aria-label": "Underline",
+            type: textDecorationLine ? ["noDivider", "secondary"] : "noDivider",
             onClick: () => runInEditor("UNDERLINE"),
             menu: () => (
               <Menu>
                 <Menu.Item
+                  key="underline"
                   aria-label="Underline"
                   onClick={() => runInEditor("UNDERLINE")}
                 >
-                  <Icon icon={UnderlinesvgIcon} /> Underline
+                  <Icon icon={UnderlinesvgIcon} />
+                  Underline
                 </Menu.Item>
                 <Menu.Item
+                  key="line-through"
                   aria-label="Strikethrough"
                   onClick={() => runInEditor("STRIKETHROUGH")}
                 >
@@ -324,48 +381,16 @@ function RichTextToolbar_(
             onClick: () => runInEditor("LINK"),
             menu: () => (
               <Menu>
-                <Menu.Item
-                  aria-label="Link"
-                  onClick={() => runInEditor("LINK")}
-                >
-                  <Icon icon={LinksvgIcon} style={{ marginRight: 4 }} />
-                  Link
-                </Menu.Item>
-                <Menu.Item
-                  aria-label="Inline code"
-                  onClick={() => runInEditor("CODE")}
-                >
-                  <Icon icon={CodesvgIcon} style={{ marginRight: 4 }} />
-                  Inline code
-                </Menu.Item>
-                <Menu.Item
-                  aria-label="Span element"
-                  onClick={() => runInEditor("SPAN")}
-                >
-                  <Icon icon={TextsvgIcon} style={{ marginRight: 4 }} />
-                  Span element
-                </Menu.Item>
-                <Menu.Item
-                  aria-label="Strong element"
-                  onClick={() => runInEditor("STRONG")}
-                >
-                  <Icon icon={BoldsvgIcon} style={{ marginRight: 4 }} />
-                  Strong element
-                </Menu.Item>
-                <Menu.Item
-                  aria-label="Italic element"
-                  onClick={() => runInEditor("ITALIC_TAG")}
-                >
-                  <Icon icon={ItalicsvgIcon} style={{ marginRight: 4 }} />
-                  Italic element
-                </Menu.Item>
-                <Menu.Item
-                  aria-label="Emphasis element"
-                  onClick={() => runInEditor("EMPHASIS")}
-                >
-                  <Icon icon={ItalicsvgIcon} style={{ marginRight: 4 }} />
-                  Emphasis element
-                </Menu.Item>
+                {inlineMenuItems.map((item) => (
+                  <Menu.Item
+                    key={item.action}
+                    aria-label={item.label}
+                    onClick={() => runInEditor(item.action)}
+                  >
+                    <Icon icon={item.icon} style={{ marginRight: 4 }} />
+                    {item.label}
+                  </Menu.Item>
+                ))}
               </Menu>
             ),
           },
