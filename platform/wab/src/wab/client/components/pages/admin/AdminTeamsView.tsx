@@ -726,6 +726,14 @@ const DEFAULT_SSO_CONFIG_TEMPLATES = {
   "clientSecret": ""
 }
   `.trim(),
+  fusionauth: `
+{
+  "clientId": "",
+  "clientSecret": "",
+  "issuer": "",
+  "audience": ""
+}
+  `.trim(),
 };
 
 function ConfigureSso({ team, refetch }: TeamProps) {
@@ -800,6 +808,7 @@ function ConfigureSso({ team, refetch }: TeamProps) {
                   }
                 >
                   <Select.Option value="okta">Okta</Select.Option>
+                  <Select.Option value="fusionauth">Fusionauth</Select.Option>
                 </Select>
               </Form.Item>
               <Form.Item name="config" label="Config">

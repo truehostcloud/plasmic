@@ -2,6 +2,7 @@ import type * as express from "express";
 import { Profile } from "passport";
 import { _StrategyOptionsBase } from "passport-google-oauth20";
 import {
+  Strategy as OAuth2Strategy,
   StrategyOptions,
   StrategyOptionsWithRequest,
   VerifyFunction,
@@ -10,7 +11,7 @@ import {
 import OktaStrategy from "passport-okta-oauth20/dist/src/Strategy";
 import { Strategy as AbstractStrategy } from "passport-strategy";
 
-export type KnownProvider = "okta";
+export type KnownProvider = "okta" | "fusionauth";
 
 export type StrategyOptionsCallback = (
   err: Error | null,
@@ -89,6 +90,8 @@ export class MultiOAuth2Strategy extends AbstractStrategy {
     const make = () => {
       if (provider === "okta") {
         return new OktaStrategy(options, this.verify);
+      } else if (provider === "fusionauth") {
+        return new OAuth2Strategy(options, this.verify);
       } else {
         throw new Error(`Unknown provider ${provider}`);
       }

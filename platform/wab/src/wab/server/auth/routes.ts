@@ -565,6 +565,10 @@ async function handleOauthCallback(
         strategy: "sso";
         provider: "okta";
       }
+    | {
+        strategy: "sso";
+        provider: "fusionauth";
+      }
   )
 ) {
   const logPrefix = strategy
