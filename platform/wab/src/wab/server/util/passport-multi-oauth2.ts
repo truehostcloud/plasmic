@@ -91,7 +91,7 @@ export class MultiOAuth2Strategy extends AbstractStrategy {
       if (provider === "okta") {
         return new OktaStrategy(options, this.verify);
       } else if (provider === "fusionauth") {
-        return new OAuth2Strategy(options, this.verify);
+        return new CustomFusionAuthStrategy(options, this.verify);
       } else {
         throw new Error(`Unknown provider ${provider}`);
       }
@@ -104,5 +104,47 @@ export class MultiOAuth2Strategy extends AbstractStrategy {
     strategy.pass = this.pass;
     strategy.error = this.error;
     return strategy;
+  }
+}
+
+interface FusionStrategyOptions extends StrategyOptions {
+  userProfileURL: string;
+}
+
+class CustomFusionAuthStrategy extends OAuth2Strategy {
+  private readonly _userProfileURL: string;
+
+  constructor(options: FusionStrategyOptions, verify: VerifyFunction) {
+    super(options, verify);
+    this.name = "fusionauth";
+    this._userProfileURL = options.userProfileURL;
+  }
+
+  userProfile(
+    accessToken: string,
+    done: (err?: Error | null, profile?: Profile) => void
+  ): void {
+    this._oauth2.get(this._userProfileURL, accessToken, (err, body) => {
+      if (err) {
+        return done(new Error("Failed to fetch user profile"));
+      }
+
+      try {
+        const json = JSON.parse(body as string);
+        const profile: Profile = {
+          provider: "fusionauth",
+          id: json.sub,
+          displayName: json.name,
+          name: {
+            familyName: json.family_name,
+            givenName: json.given_name,
+          },
+          emails: [{ value: json.email }],
+        };
+        done(null, profile);
+      } catch (e) {
+        done(e);
+      }
+    });
   }
 }
