@@ -107,14 +107,19 @@ export class MultiOAuth2Strategy extends AbstractStrategy {
   }
 }
 
-interface FusionStrategyOptions extends StrategyOptions {
+interface FusionAuthStrategyOptions extends StrategyOptions {
   userProfileURL: string;
+}
+
+interface FusionAuthProfile extends Profile {
+  emailVerified: boolean;
+  _json: Record<string, unknown>;
 }
 
 class CustomFusionAuthStrategy extends OAuth2Strategy {
   private readonly _userProfileURL: string;
 
-  constructor(options: FusionStrategyOptions, verify: VerifyFunction) {
+  constructor(options: FusionAuthStrategyOptions, verify: VerifyFunction) {
     super(options, verify);
     this.name = "fusionauth";
     this._userProfileURL = options.userProfileURL;
@@ -122,7 +127,7 @@ class CustomFusionAuthStrategy extends OAuth2Strategy {
 
   userProfile(
     accessToken: string,
-    done: (err?: Error | null, profile?: Profile) => void
+    done: (err?: Error | null, profile?: FusionAuthProfile) => void
   ): void {
     const options = {
       method: "GET",
@@ -139,15 +144,17 @@ class CustomFusionAuthStrategy extends OAuth2Strategy {
         return response.json();
       })
       .then((json) => {
-        const profile: Profile = {
+        const profile: FusionAuthProfile = {
           provider: "fusionauth",
           id: json.sub,
-          displayName: json.name,
+          displayName: `${json.given_name} ${json.family_name}`,
           name: {
             familyName: json.family_name,
             givenName: json.given_name,
           },
           emails: [{ value: json.email }],
+          emailVerified: json.email_verified,
+          _json: json,
         };
         done(null, profile);
       })
