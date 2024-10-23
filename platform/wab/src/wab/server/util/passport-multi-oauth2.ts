@@ -124,13 +124,21 @@ class CustomFusionAuthStrategy extends OAuth2Strategy {
     accessToken: string,
     done: (err?: Error | null, profile?: Profile) => void
   ): void {
-    this._oauth2.get(this._userProfileURL, accessToken, (err, body) => {
-      if (err) {
-        return done(new Error("Failed to fetch user profile"));
-      }
+    const options = {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    };
 
-      try {
-        const json = JSON.parse(body as string);
+    fetch(this._userProfileURL, options)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Failed to fetch user profile");
+        }
+        return response.json();
+      })
+      .then((json) => {
         const profile: Profile = {
           provider: "fusionauth",
           id: json.sub,
@@ -142,9 +150,9 @@ class CustomFusionAuthStrategy extends OAuth2Strategy {
           emails: [{ value: json.email }],
         };
         done(null, profile);
-      } catch (e) {
-        done(e);
-      }
-    });
+      })
+      .catch((error) => {
+        done(error);
+      });
   }
 }
