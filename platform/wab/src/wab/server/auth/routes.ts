@@ -70,6 +70,7 @@ import passport from "passport";
 import { AuthenticateOptionsGoogle } from "passport-google-oauth20";
 import { IVerifyOptions } from "passport-local";
 import util from "util";
+import { getFusionAuthConfig } from "@/wab/server/secrets";
 
 export function csrf(req: Request, res: Response, _next: NextFunction) {
   res.json({ csrf: res.locals._csrf });
@@ -720,7 +721,7 @@ export async function isValidSsoEmail(req: Request, res: Response) {
   ) {
     const domain = extractDomainFromEmail(req.query.email);
     const db = userDbMgr(req);
-    const config = await db.getSsoConfigByDomain(domain);
+    const config = await db.getSsoConfigByDomain(domain) || getFusionAuthConfig();
     if (config) {
       res.json({ valid: true, tenantId: config.tenantId });
       return;

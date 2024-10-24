@@ -673,7 +673,8 @@ export type OauthTokenProvider =
   | "ping"
   | "shopify"
   | "airtable"
-  | "google-sheets";
+  | "google-sheets"
+  | "fusionauth";
 
 const cryptr = new Cryptr(getEncryptionKey());
 const encryptTransformer = {
