@@ -149,6 +149,9 @@ export function getDiscourseConnectSecret() {
 
 export function getFusionAuthConfig() {
   const config = loadSecrets().fusionauth;
+  if (!config) {
+    return undefined;
+  }
   return {
     provider: "fusionauth" as "okta" | "fusionauth",
     tenantId: "global",
