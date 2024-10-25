@@ -132,6 +132,8 @@ export const PositioningPanelSection = observer(
         "justify-self",
         "align-self",
       ];
+
+      const collapsableIndicatorNames = ["z-index", ...standardSides];
       return (
         <>
           <StylePanelSection
@@ -146,6 +148,7 @@ export const PositioningPanelSection = observer(
                 : []
             }
             styleProps={styleProps}
+            collapsableIndicatorNames={collapsableIndicatorNames}
             controls={
               <StyleToggleButtonGroup
                 value={curPosition}
@@ -326,14 +329,14 @@ const FreeChildSettings = observer(function FreeChildSettings({
   return (
     <>
       <FullRow>
-        <PosControls2 expsProvider={expsProvider} />
+        <PosPushButtons expsProvider={expsProvider} />
       </FullRow>
       {renderMaybeCollapsibleRows?.([
         {
           collapsible: true,
           content: (
             <FullRow>
-              <PosPushButtons expsProvider={expsProvider} />
+              <PosControls2 expsProvider={expsProvider} />
             </FullRow>
           ),
         },
