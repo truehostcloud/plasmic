@@ -50,6 +50,7 @@ import {
   upsertEndUser,
 } from "@/wab/server/routes/app-oauth";
 import { getAppCtx } from "@/wab/server/routes/appctx";
+import { bigCommerceGraphql } from "@/wab/server/routes/bigcommerce";
 import {
   cachePublicCmsRead,
   countTable,
@@ -322,6 +323,7 @@ const csrfFreeStaticRoutes = [
   "/api/v1/admin/clone",
   "/api/v1/admin/deactivate-user",
   "/api/v1/admin/revert-project-revision",
+  "/api/v1/bigcommerce/graphql",
   "/api/v1/mail/subscribe",
   "/api/v1/plume-pkg/versions",
   "/api/v1/localization/gen-texts",
@@ -406,13 +408,6 @@ function addSentry(app: express.Application, config: Config) {
       return event;
     },
   });
-
-  app.use(Sentry.Handlers.requestHandler());
-  app.use(Sentry.Handlers.tracingHandler());
-
-  // This anonymous handler uses Sentry.setTag() to modify the current scope.
-  // To ensure the global scope is not modified, the handler must be after
-  // Sentry.Handlers.requestHandler(), which creates a new scope per-request.
   app.use((req, _res, next) => {
     // Some routes get project ID as a path param (e.g.
     // /projects/:projectId/code/components) while others get it as query
@@ -423,6 +418,8 @@ function addSentry(app: express.Application, config: Config) {
     }
     next();
   });
+  app.use(Sentry.Handlers.requestHandler());
+  app.use(Sentry.Handlers.tracingHandler());
 }
 
 // Copied from @sentry: https://github.com/getsentry/sentry-javascript/blob/master/packages/node/src/handlers.ts
@@ -1922,6 +1919,14 @@ export function addMainAppServerRoutes(
   app.get("/api/v1/demodata/testimonials", withNext(getFakeTestimonials));
 
   /**
+   * BigCommerce proxy for demos
+   */
+  // allow pre-flight request for CORS
+  // https://stackoverflow.com/questions/33483675/getting-express-server-to-accept-cors-request
+  app.options("/api/v1/bigcommerce/graphql", cors() as any);
+  app.post("/api/v1/bigcommerce/graphql", cors(), withNext(bigCommerceGraphql));
+
+  /**
    * Discourse SSO
    */
   app.get("/api/v1/auth/discourse-connect", withNext(discourseConnect));
@@ -2266,7 +2271,7 @@ export function makeExpressSessionMiddleware(config: Config) {
     // https, so that we can set secure cookies above.
     proxy: true,
     resave: false,
-    saveUninitialized: false,
+    saveUninitialized: true,
     secret: config.sessionSecret,
     store: new TypeormStore({
       // Don't clean up expired sessions for now till we figure out
@@ -2274,7 +2279,7 @@ export function makeExpressSessionMiddleware(config: Config) {
       cleanupLimit: 0,
       // By not using a subquery, maybe less likely for deadlock
       limitSubquery: false,
-      onError: (err) => console.error('Session Store Error:', err),
+      onError: () => {},
       //ttl: 86400,
     }).connect(getConnection().getRepository(ExpressSession)),
   });
