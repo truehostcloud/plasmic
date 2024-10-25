@@ -2266,7 +2266,7 @@ export function makeExpressSessionMiddleware(config: Config) {
     // https, so that we can set secure cookies above.
     proxy: true,
     resave: false,
-    saveUninitialized: false,
+    saveUninitialized: true,
     secret: config.sessionSecret,
     store: new TypeormStore({
       // Don't clean up expired sessions for now till we figure out
@@ -2274,7 +2274,7 @@ export function makeExpressSessionMiddleware(config: Config) {
       cleanupLimit: 0,
       // By not using a subquery, maybe less likely for deadlock
       limitSubquery: false,
-      onError: (err) => console.error('Session Store Error:', err),
+      onError: () => {},
       //ttl: 86400,
     }).connect(getConnection().getRepository(ExpressSession)),
   });
