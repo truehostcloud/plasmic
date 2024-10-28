@@ -4,7 +4,16 @@ import { ensure } from "@/wab/shared/common";
 let globalAnalytics: Analytics;
 
 export function analytics(): Analytics {
-  return globalAnalytics;
+  return (
+    globalAnalytics ?? {
+      appendBaseEventProperties: () => {},
+      setUser: () => {},
+      setAnonymousUser: () => {},
+      identify: () => {},
+      track: () => {},
+      recordSession: () => {},
+    }
+  );
 }
 
 export function initBrowserAnalytics(analyticsInstance: Analytics) {
