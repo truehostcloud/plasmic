@@ -25,6 +25,7 @@ export interface BasePopoverProps
 
 export function BasePopover(props: BasePopoverProps) {
   const { resetClassName, setControlContextData, ...restProps } = props;
+  // Popover can be inside DialogTrigger, Select, Combobox, etc. So we can't just use a particular context like DialogTrigger (like we do in Modal) to decide if it is standalone
   const isStandalone = !React.useContext(PopoverContext);
   const context = React.useContext(PlasmicPopoverContext);
   const triggerRef = React.useRef<any>(null);
@@ -48,6 +49,11 @@ export function BasePopover(props: BasePopoverProps) {
       ? {
           triggerRef,
           isNonModal: true,
+          /**
+           * Always true, because we assume that popover is always going to be controlled by a parent like Select, Combobox, DialogTrigger, etc, and its only really standalone in component view
+           * In component view, we never want to start with an empty artboard, so isOpen has to be true
+           *  */
+
           isOpen: true,
         }
       : null
@@ -164,6 +170,7 @@ export function registerPopover(
           type: "themeResetClass",
         },
       },
+      // No isOpen state for popover, because we assume that its open state is always going to be controlled by a parent like Select, Combobox, DialogTrigger, etc.
       styleSections: true,
       trapsFocus: true,
     },
