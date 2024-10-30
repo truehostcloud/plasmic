@@ -67,7 +67,6 @@ export function BaseListBox(props: BaseListBoxProps) {
   );
 
   useEffect(() => {
-    console.log("sarah useEffect", { setControlContextData, ids });
     setControlContextData?.({
       itemIds: ids,
       isStandalone,

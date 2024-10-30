@@ -5,8 +5,19 @@ import {
   normalizeTemplateSpec,
 } from "@/wab/client/studio-ctx/StudioCtx";
 import { ViewCtx } from "@/wab/client/studio-ctx/view-ctx";
-import { ensure, maybe, switchType } from "@/wab/shared/common";
+import { BranchId } from "@/wab/shared/ApiSchema";
+import { PkgInfo, PkgVersionInfo } from "@/wab/shared/SharedApi";
+import { $$$ } from "@/wab/shared/TplQuery";
+import { getBaseVariant } from "@/wab/shared/Variants";
+import { FastBundler } from "@/wab/shared/bundler";
+import { Bundle, getBundle } from "@/wab/shared/bundles";
+import { assert, ensure, maybe, switchType } from "@/wab/shared/common";
 import { PageComponent } from "@/wab/shared/core/components";
+import {
+  unbundleProjectDependency,
+  unbundleSite,
+} from "@/wab/shared/core/tagged-unbundle";
+import { deepTrackComponents } from "@/wab/shared/core/tpls";
 import {
   InsertableTemplateComponentResolution,
   InsertableTemplateTokenResolution,
@@ -14,12 +25,6 @@ import {
   InsertableTemplatesItem,
   flattenInsertableTemplatesByType,
 } from "@/wab/shared/devflags";
-import { BranchId } from "@/wab/shared/ApiSchema";
-import { PkgInfo, PkgVersionInfo } from "@/wab/shared/SharedApi";
-import { $$$ } from "@/wab/shared/TplQuery";
-import { getBaseVariant } from "@/wab/shared/Variants";
-import { FastBundler } from "@/wab/shared/bundler";
-import { Bundle, getBundle } from "@/wab/shared/bundles";
 import { cloneInsertableTemplate } from "@/wab/shared/insertable-templates";
 import {
   CopyElementsReference,
@@ -38,9 +43,7 @@ import {
   TplTag,
   Variant,
 } from "@/wab/shared/model/classes";
-import { unbundleProjectDependency, unbundleSite } from "@/wab/shared/core/tagged-unbundle";
-import { deepTrackComponents } from "@/wab/shared/core/tpls";
-import { flatten, fromPairs } from "lodash";
+import { Dictionary, flatten, fromPairs } from "lodash";
 
 export const getPageTemplatesGroups = (studioCtx: StudioCtx) => {
   const insertableTemplates =
@@ -173,38 +176,69 @@ export const getScreenVariantToInsertableTemplate = async (
 export const getHostLessDependenciesToInsertableTemplate = async (
   studioCtx: StudioCtx,
   sourceSite: Site
-) => {
+): Promise<{
+  hostLessDependencies: Dictionary<{
+    pkg: PkgInfo;
+    projectDependency: ProjectDependency;
+  }>;
+}> => {
   const appCtx = studioCtx.appCtx;
-  const hostLessProjectIds = sourceSite.projectDependencies
-    .filter((dep) => dep.site.hostLessPackageInfo)
-    .map((dep) => dep.projectId);
+  const hostLessProjects = sourceSite.projectDependencies.filter(
+    (dep) => dep.site.hostLessPackageInfo
+  );
   const hostLessDependencies = fromPairs(
     await Promise.all(
-      hostLessProjectIds.map(async (hostLessProjectId) => {
-        const { pkg: maybePkg } = await appCtx.api.getPkgByProjectId(
-          hostLessProjectId
-        );
-        const pkg = ensure(maybePkg, "Hostless package should exist");
-        const { pkg: latest, depPkgs } = await appCtx.api.getPkgVersion(pkg.id);
-        const { projectDependency } = unbundleProjectDependency(
-          studioCtx.bundler(),
-          latest,
-          depPkgs
-        );
-        return [
-          hostLessProjectId,
-          {
-            pkg,
-            projectDependency,
-          },
-        ] as [
-          string,
-          {
-            pkg: PkgInfo;
-            projectDependency: ProjectDependency;
+      hostLessProjects.map(
+        async ({
+          projectId: hostLessProjectId,
+          version: hostLessProjectVersion,
+          pkgId: hostLessPkgId,
+          name: hostLessPkgName,
+        }) => {
+          const dep = studioCtx.site.projectDependencies.find(
+            (d) => d.projectId === hostLessProjectId
+          );
+          if (dep) {
+            assert(
+              dep.version === hostLessProjectVersion,
+              `${dep.name} has version ${dep.version}, but expected ${hostLessProjectVersion}`
+            );
+            return [
+              hostLessProjectId,
+              {
+                pkg: {
+                  id: dep.pkgId,
+                  name: dep.name,
+                  projectId: dep.projectId,
+                },
+                projectDependency: dep,
+              },
+            ];
           }
-        ];
-      })
+          // You can't just use the projectDependency from the sourceSite, as it needs to be unbundled by studioCtx.bundler() to be usable here
+          const { pkg: latest, depPkgs } = await appCtx.api.getPkgVersion(
+            hostLessPkgId,
+            hostLessProjectVersion
+          );
+          const { projectDependency } = unbundleProjectDependency(
+            studioCtx.bundler(),
+            latest,
+            depPkgs
+          );
+
+          return [
+            hostLessProjectId,
+            {
+              pkg: {
+                id: hostLessPkgId,
+                name: hostLessPkgName,
+                projectId: hostLessProjectId,
+              },
+              projectDependency,
+            },
+          ];
+        }
+      )
     )
   );
 

@@ -153,29 +153,23 @@ export function createAddInstallable(meta: Installable): AddInstallableItem {
       const { projectId, groupName } = meta;
       return sc.app.withSpinner(
         (async () => {
-          await sc.projectDependencyManager.fetchInsertableTemplate(
-            meta.projectId
-          );
-          const site =
-            sc.projectDependencyManager.insertableSites[meta.projectId];
-          const missingDeps = site.projectDependencies
-            .filter(
-              (d) =>
-                !sc.site.projectDependencies.find((td) => d.pkgId === td.pkgId)
-            )
-            .map((d) => d.projectId);
+          const installableSite =
+            await sc.projectDependencyManager.addInstallable(
+              projectId,
+              meta.name
+            );
 
-          for (const id of missingDeps) {
-            await sc.projectDependencyManager.addByProjectId(id);
-          }
           const { screenVariant } = await getScreenVariantToInsertableTemplate(
             sc
           );
 
           const commonInfo: InsertableTemplateExtraInfo = {
-            site,
+            site: installableSite,
             screenVariant,
-            ...(await getHostLessDependenciesToInsertableTemplate(sc, site)),
+            ...(await getHostLessDependenciesToInsertableTemplate(
+              sc,
+              installableSite
+            )),
             projectId,
             groupName,
             resolution: {
@@ -183,8 +177,9 @@ export function createAddInstallable(meta: Installable): AddInstallableItem {
               component: "reuse",
             },
           };
+
           if (meta.entryPoint.type === "arena") {
-            const arena = site.arenas.find(
+            const arena = installableSite.arenas.find(
               (c) => c.name === meta.entryPoint.name
             );
 
@@ -198,7 +193,7 @@ export function createAddInstallable(meta: Installable): AddInstallableItem {
             };
           }
 
-          const component = site.components.find(
+          const component = installableSite.components.find(
             (c) => c.name === meta.entryPoint.name
           );
 
