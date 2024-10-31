@@ -1825,7 +1825,7 @@ export class DbMgr implements MigrationDbMgr {
       bcrypt: password ? bcrypt.hashSync(password, bcrypt.genSaltSync()) : "",
       org: orgId ? { id: orgId } : null,
       needsIntroSplash: true,
-      needsSurvey: true,
+      needsSurvey: false,
       waitingEmailVerification: password ? true : false,
       needsTeamCreationPrompt,
       isWhiteLabel,
