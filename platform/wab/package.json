@@ -323,6 +323,7 @@
     "dotenv": "^8.2.0",
     "downscale": "^1.0.6",
     "downshift": "^6.1.9",
+    "elastic-apm-node": "^4.8.0",
     "emoji-picker-react": "^4.9.3",
     "errorhandler": "^1.5.1",
     "es7-shim": "^6.0.0",
