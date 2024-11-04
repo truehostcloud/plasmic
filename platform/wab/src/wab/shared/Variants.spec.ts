@@ -1,12 +1,13 @@
 import { ComponentType, mkComponent } from "@/wab/shared/core/components";
+import { mkTplTagX } from "@/wab/shared/core/tpls";
+import { StateParam } from "@/wab/shared/model/classes";
 import {
   ensureValidCombo,
+  isMaybeInteractiveStyleVariant,
   mkBaseVariant,
   mkComponentVariantGroup,
   mkVariant,
 } from "@/wab/shared/Variants";
-import { StateParam } from "@/wab/shared/model/classes";
-import { mkTplTagX } from "@/wab/shared/core/tpls";
 
 function getComponentWithVariantGroups() {
   const singleChoiceVariants = [0, 1, 2].map((i) => {
@@ -60,6 +61,86 @@ function getComponentWithVariantGroups() {
 }
 
 describe("Variants", () => {
+  describe("isMaybeInteractiveStyleVariant", () => {
+    it("should return true for interactive style variants", () => {
+      expect(
+        isMaybeInteractiveStyleVariant(
+          mkVariant({
+            name: "",
+            selectors: ["HoveReffect"],
+          })
+        )
+      ).toBe(true);
+      expect(
+        isMaybeInteractiveStyleVariant(
+          mkVariant({
+            name: "",
+            selectors: ["pressEd"],
+          })
+        )
+      ).toBe(true);
+      expect(
+        isMaybeInteractiveStyleVariant(
+          mkVariant({
+            name: "",
+            selectors: ["12345", "focused"],
+          })
+        )
+      ).toBe(true);
+      expect(
+        isMaybeInteractiveStyleVariant(
+          mkVariant({
+            name: "",
+            selectors: ["wertrty", "focus-visible"],
+          })
+        )
+      ).toBe(true);
+      expect(
+        isMaybeInteractiveStyleVariant(
+          mkVariant({
+            name: "",
+            selectors: ["sdfghxcvb", "place-left"],
+          })
+        )
+      ).toBe(false);
+      expect(
+        isMaybeInteractiveStyleVariant(
+          mkVariant({
+            name: "",
+            selectors: ["yuioijhgf", "indeterminate"],
+          })
+        )
+      ).toBe(false);
+      expect(
+        isMaybeInteractiveStyleVariant(
+          mkVariant({
+            name: "",
+            selectors: ["jhgvfcvbn", "selected"],
+          })
+        )
+      ).toBe(false);
+      expect(
+        isMaybeInteractiveStyleVariant(
+          mkVariant({
+            name: "",
+            selectors: [
+              "dsgj ksdgj ksdjg ksdjgk jsdkgj sdkjg ksd",
+              "sdghjsdg",
+              "dshgjsdhgs",
+            ],
+          })
+        )
+      ).toBe(false);
+      expect(
+        isMaybeInteractiveStyleVariant(
+          mkVariant({
+            name: "",
+            selectors: [],
+          })
+        )
+      ).toBe(false);
+    });
+  });
   describe("ensureValidCombo", () => {
     it("should return a valid subset of variants", () => {
       const {
