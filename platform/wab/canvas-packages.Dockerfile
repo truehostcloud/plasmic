@@ -1,4 +1,4 @@
-FROM node:18.19-alpine3.18 as build
+FROM node:18.19-alpine3.18 AS build
 
 # System setup
 RUN apk add --no-cache bash=5.2.15-r5 make=4.4.1-r1 bubblewrap=0.8.0-r1
