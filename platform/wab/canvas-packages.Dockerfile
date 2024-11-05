@@ -9,7 +9,9 @@ USER normaluser
 
 WORKDIR /home/normaluser/
 
-COPY --chown=normaluser . .
+COPY --chown=normaluser package.json .
+
+COPY --chown=normaluser platform/canvas-packages/ platform/canvas-packages/
 
 RUN yarn setup:canvas-packages
 
