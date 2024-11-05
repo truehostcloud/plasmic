@@ -14,7 +14,7 @@ COPY --chown=normaluser . .
 RUN yarn setup:canvas-packages
 
 # DEBUG
-RUN ls -la /home/normaluser/canvas-packages/
+RUN ls -la /home/normaluser/platform/canvas-packages/
 
 FROM alpine:3.14
 
@@ -22,4 +22,4 @@ USER normaluser
 
 WORKDIR /home/normaluser/
 
-COPY --from=build /home/normaluser/canvas-packages/build-server/ /home/normaluser/canvas-packages/build-server/
+COPY --from=build /home/normaluser/platform/canvas-packages/build-server/ /home/normaluser/canvas-packages/build-server/
