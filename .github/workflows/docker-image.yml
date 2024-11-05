@@ -94,7 +94,7 @@ jobs:
   build-server:
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    wait-for: [build-canvas-packages]
+    needs: [build-canvas-packages]
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}-server
       cancel-in-progress: true
