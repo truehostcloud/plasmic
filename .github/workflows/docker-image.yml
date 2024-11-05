@@ -21,7 +21,7 @@ env:
 jobs:
   build-client:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 20
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}-client
       cancel-in-progress: true
@@ -58,9 +58,43 @@ jobs:
             REACT_APP_PUBLIC_URL=${{ env.REACT_APP_PUBLIC_URL }}
             ADMIN_TEAM_DOMAIN=${{ env.ADMIN_TEAM_DOMAIN }}
 
+  build-canvas-packages:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}-canvas-packages
+      cancel-in-progress: true
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ env.DOCKER_USERNAME }}
+          password: ${{ env.DOCKER_PASSWORD }}
+
+      - name: Generate Image Tag
+        run: |
+          echo "CANVAS_PACKAGES_IMAGE_TAG=$(git rev-parse --short HEAD)-${{ github.ref_name }}" >> $GITHUB_ENV
+
+      - name: Build and Push Canvas Packages Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: platform/wab/canvas-packages.Dockerfile
+          push: true
+          tags: docker.io/${{ env.DOCKER_USERNAME }}/${{ env.CANVAS_PACKAGES_DOCKER_REPO_NAME }}:${{ env.CANVAS_PACKAGES_IMAGE_TAG }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
   build-server:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 20
+    wait-for: [build-canvas-packages]
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}-server
       cancel-in-progress: true
@@ -91,36 +125,4 @@ jobs:
           cache-to: type=gha,mode=max
           build-args: |
             REACT_APP_DEFAULT_HOST_URL=${{ env.REACT_APP_DEFAULT_HOST_URL }}
-
-  build-canvas-packages:
-    runs-on: ubuntu-latest
-    timeout-minutes: 40
-    concurrency:
-      group: ${{ github.workflow }}-${{ github.ref }}-canvas-packages
-      cancel-in-progress: true
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ env.DOCKER_USERNAME }}
-          password: ${{ env.DOCKER_PASSWORD }}
-
-      - name: Generate Image Tag
-        run: |
-          echo "CANVAS_PACKAGES_IMAGE_TAG=$(git rev-parse --short HEAD)-${{ github.ref_name }}" >> $GITHUB_ENV
-
-      - name: Build and Push Canvas Packages Docker image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: platform/wab/canvas-packages.Dockerfile
-          push: true
-          tags: docker.io/${{ env.DOCKER_USERNAME }}/${{ env.CANVAS_PACKAGES_DOCKER_REPO_NAME }}:${{ env.CANVAS_PACKAGES_IMAGE_TAG }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+            CANVAS_PACKAGES_IMAGE_REF=${{ env.DOCKER_USERNAME }}/${{ env.CANVAS_PACKAGES_DOCKER_REPO_NAME }}:${{ env.CANVAS_PACKAGES_IMAGE_TAG }}

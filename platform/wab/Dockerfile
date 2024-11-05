@@ -1,3 +1,7 @@
+ARG CANVAS_PACKAGES_IMAGE_REF
+
+FROM $CANVAS_PACKAGES_IMAGE_REF AS canvas-packages
+
 # Need newer alpine for bubblewrap to work
 FROM node:18.19-alpine3.18
 
@@ -56,6 +60,8 @@ EXPOSE 3004
 
 # Switch workdir back to wab
 WORKDIR /home/normaluser/plasmic
+
+COPY --from=canvas-packages /home/normaluser/canvas-packages/build-server/ /home/normaluser/canvas-packages/build-server/
 
 # Run the main server by default
 CMD ["yarn", "backend"]
