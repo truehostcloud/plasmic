@@ -114,6 +114,7 @@ jobs:
       - name: Generate Image Tag
         run: |
           echo "SERVER_IMAGE_TAG=$(git rev-parse --short HEAD)-${{ github.ref_name }}" >> $GITHUB_ENV
+          echo "CANVAS_PACKAGES_IMAGE_TAG=$(git rev-parse --short HEAD)-${{ github.ref_name }}" >> $GITHUB_ENV
 
       - name: Build and Push Server Docker image
         uses: docker/build-push-action@v6
