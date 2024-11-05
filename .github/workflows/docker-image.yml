@@ -96,7 +96,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     concurrency:
-      group: ${{ github.workflow }}-${{ github.ref }}-server
+      group: ${{ github.workflow }}-${{ github.ref }}-canvas-packages
       cancel-in-progress: true
     steps:
       - name: Checkout code
