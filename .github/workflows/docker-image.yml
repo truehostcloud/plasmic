@@ -26,6 +26,40 @@ jobs:
       group: ${{ github.workflow }}-${{ github.ref }}-client
       cancel-in-progress: true
     steps:
+      - name: Init
+        run: |
+          echo "$GITHUB_WORKSPACE"
+          df -h
+      - name: "Remove swap"
+        run: |
+          sudo swapoff -a
+          sudo rm -f /swapfile
+          df -h
+      - name: "Remove boost & tools"
+        run: |
+          sudo rm -rf "/usr/local/share/boost"
+          df -h
+      - name: "Remove dotnet"
+        run: |
+          sudo rm -rf /usr/share/dotnet/shared/
+          sudo rm -rf /usr/share/dotnet/host/
+          sudo rm -rf /usr/share/dotnet/sdk/
+          df -h
+      - name: "Remove android"
+        run: |
+          sudo rm -rf "$ANDROID_SDK_ROOT"
+          sudo rm -rf /usr/local/lib/android
+          df -h
+      - name: "Remove swift"
+        run: |
+          sudo rm -rf "$SWIFT_PATH"
+          sudo rm -rf /usr/share/swift
+          df -h
+      - name: "Remove docker images"
+        run: |
+          docker rmi $(docker image ls -aq)
+          df -h
+
       - name: Checkout code
         uses: actions/checkout@v4
 
