@@ -70,7 +70,6 @@ import passport from "passport";
 import { AuthenticateOptionsGoogle } from "passport-google-oauth20";
 import { IVerifyOptions } from "passport-local";
 import util from "util";
-import { getFusionAuthConfig } from "@/wab/server/secrets";
 
 export function csrf(req: Request, res: Response, _next: NextFunction) {
   res.json({ csrf: res.locals._csrf });
@@ -108,16 +107,16 @@ export async function login(req: Request, res: Response, next: NextFunction) {
 }
 
 export async function createUserFull({
-  mgr,
-  email,
-  password,
-  firstName,
-  lastName,
-  req,
-  nextPath,
-  noWelcomeEmailAndSurvey,
-  appInfo,
-}: {
+                                       mgr,
+                                       email,
+                                       password,
+                                       firstName,
+                                       lastName,
+                                       req,
+                                       nextPath,
+                                       noWelcomeEmailAndSurvey,
+                                       appInfo,
+                                     }: {
   mgr: DbMgr;
   email: string;
   password?: string;
@@ -140,8 +139,8 @@ export async function createUserFull({
     signUpPromotionCode,
     ...(noWelcomeEmailAndSurvey != null
       ? {
-          needsSurvey: !noWelcomeEmailAndSurvey,
-        }
+        needsSurvey: !noWelcomeEmailAndSurvey,
+      }
       : {}),
     needsTeamCreationPrompt:
       !noWelcomeEmailAndSurvey && req.devflags.createTeamPrompt,
@@ -201,9 +200,9 @@ export async function signUp(req: Request, res: Response, next: NextFunction) {
       secret,
       appInfo
         ? {
-            appName: appInfo.appName,
-            nextPath: appInfo.authorizationPath,
-          }
+          appName: appInfo.appName,
+          nextPath: appInfo.authorizationPath,
+        }
         : undefined
     );
     res.json(
@@ -362,9 +361,9 @@ export async function forgotPassword(req: Request, res: Response) {
       secret,
       appName
         ? {
-            appName,
-            nextPath,
-          }
+          appName,
+          nextPath,
+        }
         : undefined
     );
   }
@@ -556,22 +555,7 @@ async function handleOauthCallback(
      * Return false to stop. Callback is expected to respond.
      */
     beforeLogin?: (user: User) => Promise<boolean>;
-    ssoConfig?:
-      | SsoConfig
-      | {
-          provider: "okta" | "fusionauth";
-          tenantId: string;
-          id: undefined;
-          teamId: undefined;
-          config: {
-            clientID: string;
-            clientSecret: string;
-            tokenURL: string;
-            userProfileURL: string;
-            authorizationURL: string;
-            maxAge?: number;
-          };
-        };
+    ssoConfig?: SsoConfig;
   }
 ) {
   const strategy = ssoConfig ? "sso" : "google";
@@ -730,7 +714,7 @@ export async function isValidSsoEmail(req: Request, res: Response) {
   ) {
     const domain = extractDomainFromEmail(req.query.email);
     const db = userDbMgr(req);
-    const config = await db.getSsoConfigByDomain(domain) || getFusionAuthConfig();
+    const config = await db.getSsoConfigByDomain(domain);
     if (config) {
       res.json({ valid: true, tenantId: config.tenantId });
       return;
@@ -769,8 +753,8 @@ function callbackHtml(_authStatus: string) {
   // in the current scope. See the "${JSON.stringify(var)}" in the "HTML".
   return eval(
     "`" +
-      fs.readFileSync(__dirname + "/callback.html", { encoding: "utf8" }) +
-      "`"
+    fs.readFileSync(__dirname + "/callback.html", { encoding: "utf8" }) +
+    "`"
   );
 }
 
