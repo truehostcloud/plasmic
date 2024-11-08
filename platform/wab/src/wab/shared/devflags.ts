@@ -9,11 +9,6 @@ import {
 import { assert, ensureType, mergeSane } from "@/wab/shared/common";
 import { DEFAULT_DEVFLAG_OVERRIDES } from "@/wab/shared/devflag-overrides";
 import {
-  InsertableId,
-  PLEXUS_INSERTABLE_ID,
-  PLUME_INSERTABLE_ID,
-} from "@/wab/shared/insertables";
-import {
   featureTiers,
   newFeatureTiers,
 } from "@/wab/shared/pricing/pricing-utils";
@@ -568,9 +563,8 @@ const DEFAULT_DEVFLAGS = {
   ccStubs: false,
   workspaces: false,
   noObserve: false,
+  plexus: false,
   incrementalObservables: false,
-  plexusEnabled: false,
-  defaultInsertable: ensureType<InsertableId>(PLUME_INSERTABLE_ID),
   spacing: true,
   spacingArea: true,
   setHostLessProject: false,
@@ -723,9 +717,8 @@ export function applyPlasmicUserDevFlagOverrides(target: DevFlagsType) {
     ancestorsBoxes: true,
     multiSelect: true,
     insert2022Q4: true,
+    plexus: true,
     incrementalObservables: true,
-    plexusEnabled: true,
-    defaultInsertable: PLEXUS_INSERTABLE_ID,
     branching: true,
     comments: true,
     pageLayout: true,

@@ -5,16 +5,11 @@ import { Popover, PopoverContext } from "react-aria-components";
 import { PlasmicPopoverContext } from "./contexts";
 import {
   CodeComponentMetaOverrides,
-  HasControlContextData,
   makeComponentName,
   Registerable,
   registerComponentHelper,
 } from "./utils";
 import { pickAriaComponentVariants, WithVariants } from "./variant-utils";
-
-export interface PopoverControlContextData {
-  defaultShouldFlip?: boolean;
-}
 
 /*
     NOTE: Placement should be managed as variants, not just props.
@@ -34,38 +29,26 @@ const { variants, withObservedValues } =
 
 export interface BasePopoverProps
   extends React.ComponentProps<typeof Popover>,
-    WithVariants<typeof POPOVER_VARIANTS>,
-    HasControlContextData<PopoverControlContextData> {
+    WithVariants<typeof POPOVER_VARIANTS> {
   className?: string;
   resetClassName?: string;
-  defaultShouldFlip?: boolean;
   children?: React.ReactNode;
 }
 
 export function BasePopover(props: BasePopoverProps) {
-  const {
-    resetClassName,
-    setControlContextData,
-    plasmicUpdateVariant,
-    ...restProps
-  } = props;
+  const { resetClassName, plasmicUpdateVariant, ...restProps } = props;
   // Popover can be inside DialogTrigger, Select, Combobox, etc. So we can't just use a particular context like DialogTrigger (like we do in Modal) to decide if it is standalone
   const isStandalone = !React.useContext(PopoverContext);
   const context = React.useContext(PlasmicPopoverContext);
   const triggerRef = React.useRef<any>(null);
-  const isEditMode = !!usePlasmicCanvasContext();
-
+  const canvasContext = usePlasmicCanvasContext();
   const { children, ...mergedProps } = mergeProps(
     {
       isOpen: context?.isOpen,
-      shouldFlip: context?.defaultShouldFlip,
+      // isNonModal: Whether the popover is non-modal, i.e. elements outside the popover may be interacted with by assistive technologies.
+      // Setting isNonModal to true in edit mode (canvas) means that the popover will not prevent the user from interacting with the canvas while the popover is open.
+      isNonModal: canvasContext && !canvasContext.interactive,
     },
-    /**
-     * isNonModal: Whether the popover is non-modal, i.e. elements outside the popover may be interacted with by assistive technologies. *
-     *
-     * Setting isNonModal to true in edit mode (canvas) means that the popover will not prevent the user from interacting with the canvas while the popover is open.
-     */
-    isEditMode ? { isNonModal: true } : null,
     restProps,
     { className: `${resetClassName}` },
     // Override some props if the popover is standalone
@@ -73,19 +56,13 @@ export function BasePopover(props: BasePopoverProps) {
       ? {
           triggerRef,
           isNonModal: true,
-          /**
-           * Always true, because we assume that popover is always going to be controlled by a parent like Select, Combobox, DialogTrigger, etc, and its only really standalone in component view
-           * In component view, we never want to start with an empty artboard, so isOpen has to be true
-           *  */
-
+          // Always true, because we assume that popover is always going to be controlled by a parent like Select, Combobox, DialogTrigger, etc, and its only really standalone in component view
+          // In component view, we never want to start with an empty artboard, so isOpen has to be true
           isOpen: true,
         }
       : null
   );
 
-  setControlContextData?.({
-    defaultShouldFlip: context?.defaultShouldFlip ?? true,
-  });
   return (
     <>
       {isStandalone && <div ref={triggerRef} />}
@@ -187,7 +164,7 @@ export function registerPopover(
           type: "boolean",
           description:
             "Whether the element should flip its orientation (e.g. top to bottom or left to right) when there is insufficient room for it to render completely.",
-          defaultValueHint: (_props, ctx) => ctx?.defaultShouldFlip,
+          defaultValueHint: true,
         },
         placement: {
           type: "choice",
