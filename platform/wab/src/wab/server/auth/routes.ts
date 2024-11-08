@@ -70,6 +70,7 @@ import passport from "passport";
 import { AuthenticateOptionsGoogle } from "passport-google-oauth20";
 import { IVerifyOptions } from "passport-local";
 import util from "util";
+import { getFusionAuthConfig } from "@/wab/server/secrets";
 
 export function csrf(req: Request, res: Response, _next: NextFunction) {
   res.json({ csrf: res.locals._csrf });
@@ -555,7 +556,22 @@ async function handleOauthCallback(
      * Return false to stop. Callback is expected to respond.
      */
     beforeLogin?: (user: User) => Promise<boolean>;
-    ssoConfig?: SsoConfig;
+    ssoConfig?:
+      | SsoConfig
+      | {
+      provider: "okta" | "fusionauth";
+      tenantId: string;
+      id: undefined;
+      teamId: undefined;
+      config: {
+        clientID: string;
+        clientSecret: string;
+        tokenURL: string;
+        userProfileURL: string;
+        authorizationURL: string;
+        maxAge?: number;
+      };
+    };
   }
 ) {
   const strategy = ssoConfig ? "sso" : "google";
@@ -714,7 +730,7 @@ export async function isValidSsoEmail(req: Request, res: Response) {
   ) {
     const domain = extractDomainFromEmail(req.query.email);
     const db = userDbMgr(req);
-    const config = await db.getSsoConfigByDomain(domain);
+    const config = await db.getSsoConfigByDomain(domain) || getFusionAuthConfig();
     if (config) {
       res.json({ valid: true, tenantId: config.tenantId });
       return;
