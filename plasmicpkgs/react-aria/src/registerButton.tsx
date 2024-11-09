@@ -29,7 +29,7 @@ interface BaseButtonProps
   submitsForm?: boolean;
 }
 
-const BaseButton = React.forwardRef(
+export const BaseButton = React.forwardRef(
   (props: BaseButtonProps, ref: React.Ref<HTMLButtonElement>) => {
     const { submitsForm, resetsForm, children, plasmicUpdateVariant, ...rest } =
       props;
@@ -111,6 +111,10 @@ export function registerButton(
           advanced: true,
         },
         onPress: {
+          type: "eventHandler",
+          argTypes: [{ name: "event", type: "object" }],
+        },
+        onFocus: {
           type: "eventHandler",
           argTypes: [{ name: "event", type: "object" }],
         },
