@@ -1,7 +1,7 @@
-import { mergeProps } from "@react-aria/utils";
 import React from "react";
 import { Header, Section } from "react-aria-components";
 import { PlasmicListBoxContext } from "./contexts";
+import { BaseListBox } from "./registerListBox";
 import {
   CodeComponentMetaOverrides,
   makeComponentName,
@@ -18,14 +18,24 @@ export interface BaseSectionProps extends Styleable {
 export function BaseSection(props: BaseSectionProps) {
   const { header, items, ...rest } = props;
   const contextProps = React.useContext(PlasmicListBoxContext);
-  const mergedProps = mergeProps(contextProps, rest);
+  const isStandalone = !contextProps;
 
-  return (
-    <Section {...mergedProps}>
+  const section = (
+    <Section {...rest}>
       <Header>{header}</Header>
       {items}
     </Section>
   );
+
+  if (isStandalone) {
+    return (
+      // BaseListbox should give section a listbox context (that it can't be used without)
+      // as well as the id manager (that is needed to identify and warn about duplication of ids)
+      <BaseListBox>{section}</BaseListBox>
+    );
+  }
+
+  return section;
 }
 
 export function registerSection(
