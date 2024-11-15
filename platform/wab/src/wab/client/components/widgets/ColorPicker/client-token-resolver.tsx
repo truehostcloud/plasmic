@@ -29,6 +29,8 @@ const RE_VARIABLE_REF = /var\((--[^)]+)\)/;
 export function useClientTokenResolver(): TokenValueResolver {
   const sc = useStudioCtx();
   const vc = sc.focusedViewCtx();
+  // depend on first render observable
+  vc?.isFirstRenderComplete;
   const resolver = makeTokenResolver(sc.site);
   return makeClientTokenResolver(resolver, vc ?? sc);
 }

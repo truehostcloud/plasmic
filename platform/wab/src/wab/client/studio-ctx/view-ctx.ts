@@ -174,6 +174,10 @@ export class ViewCtx extends WithDbCtx {
 
   csEvaluator: DevCliSvrEvaluator;
 
+  get isFirstRenderComplete() {
+    return this.csEvaluator.isFirstRenderComplete;
+  }
+
   private disposals: (() => void)[] = [];
   private _isDisposed = false;
 

@@ -123,7 +123,6 @@ const LeftGeneralTokensPanel = observer(function LeftGeneralTokensPanel() {
   );
 
   const [isTargeting, setIsTargeting] = React.useState(false);
-
   const resolver = useClientTokenResolver();
 
   const getTokenValue = React.useCallback(
