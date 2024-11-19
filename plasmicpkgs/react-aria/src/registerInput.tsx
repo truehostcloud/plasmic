@@ -162,6 +162,7 @@ export function registerInput(
           ...inputHelpers.states.value,
         },
       },
+
       componentHelpers: {
         helpers: inputHelpers,
         importName: "inputHelpers",

@@ -4,14 +4,11 @@ import { TextField } from "react-aria-components";
 import { getCommonProps, resolveAutoComplete } from "./common";
 import { PlasmicTextFieldContext } from "./contexts";
 import { DESCRIPTION_COMPONENT_NAME } from "./registerDescription";
-import { registerFieldError } from "./registerFieldError";
-import { INPUT_COMPONENT_NAME, registerInput } from "./registerInput";
-import { LABEL_COMPONENT_NAME, registerLabel } from "./registerLabel";
-import { registerTextArea } from "./registerTextArea";
+import { INPUT_COMPONENT_NAME } from "./registerInput";
+import { LABEL_COMPONENT_NAME } from "./registerLabel";
 import {
   CodeComponentMetaOverrides,
   Registerable,
-  makeChildComponentName,
   makeComponentName,
   registerComponentHelper,
 } from "./utils";
@@ -112,6 +109,7 @@ export function registerTextField(
               alignItems: "flex-start",
               width: "300px",
               gap: "5px",
+              padding: 0,
             },
             children: [
               {
@@ -170,14 +168,4 @@ export function registerTextField(
     },
     overrides
   );
-
-  const thisName = makeChildComponentName(
-    overrides?.parentComponentName,
-    TEXT_FIELD_COMPONENT_NAME
-  );
-
-  registerFieldError(loader, { parentComponentName: thisName });
-  registerInput(loader, { parentComponentName: thisName });
-  registerLabel(loader, { parentComponentName: thisName });
-  registerTextArea(loader, { parentComponentName: thisName });
 }
