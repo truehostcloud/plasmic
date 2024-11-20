@@ -74,7 +74,7 @@ jobs:
 
       - name: Generate Image Tag
         run: |
-          echo "CLIENT_IMAGE_TAG=$(git rev-parse --short HEAD)-${{ github.ref_name }}" >> $GITHUB_ENV
+          echo "CLIENT_IMAGE_TAG=$(uuidgen | cut -c1-6)-${{ github.ref_name }}" >> $GITHUB_ENV
 
       - name: Get commit hash
         run: echo "COMMIT_HASH=$(git rev-parse HEAD)" >> $GITHUB_ENV
@@ -147,7 +147,7 @@ jobs:
 
       - name: Generate Image Tag
         run: |
-          echo "SERVER_IMAGE_TAG=$(git rev-parse --short HEAD)-${{ github.ref_name }}" >> $GITHUB_ENV
+          echo "SERVER_IMAGE_TAG=$(uuidgen | cut -c1-6)-${{ github.ref_name }}" >> $GITHUB_ENV
           echo "CANVAS_PACKAGES_IMAGE_TAG=$(git rev-parse --short HEAD)-${{ github.ref_name }}" >> $GITHUB_ENV
 
       - name: Build and Push Server Docker image
