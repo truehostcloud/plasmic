@@ -25,12 +25,13 @@ const backendPort: number = process.env.BACKEND_PORT
   : 3004;
 const publicUrl: string =
   process.env.PUBLIC_URL ?? (isProd ? homepage : `http://localhost:${port}`);
-const cdnUrl = process.env.CDN_URL ?? publicUrl;
+const cdnUrl: string = process.env.CDN_URL ?? publicUrl;
 
 console.log(`Starting rsbuild...
 - commitHash: ${commitHash}
 - buildEnv: ${buildEnv}
 - publicUrl: ${publicUrl}
+- cdnUrl: ${cdnUrl}
 - port: ${port}
 - backendPort: ${backendPort}
 `);
@@ -55,7 +56,7 @@ class AppendSourceMapWithHash implements RspackPluginInstance {
           // We use the full path (with publicUrl) because the files may be
           // loaded from the inner frame and so the relative path would be
           // wrong.
-          const newMapping = `//# sourceMappingURL=${publicUrl}/${sourceMapFilePath}`;
+          const newMapping = `//# sourceMappingURL=${cdnUrl}/${sourceMapFilePath}`;
           if (content.includes("//# sourceMappingURL=")) {
             content = content
               .toString()
