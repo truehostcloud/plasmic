@@ -242,6 +242,7 @@ export default defineConfig({
           template: "../sub/public/static/host.html",
           filename: `static/host.html`,
           inject: false,
+          publicUrl: cdnUrl,
           templateParameters: {
             commitHash,
           },
@@ -250,6 +251,7 @@ export default defineConfig({
           template: "../sub/public/static/popup.html",
           filename: `static/popup.html`,
           inject: false,
+          publicUrl: cdnUrl,
         }),
         new ProvidePlugin({
           process: [require.resolve("process/browser")],
@@ -270,6 +272,7 @@ export default defineConfig({
             {
               inject: true,
               template: "./public/index.html",
+              publicUrl: cdnUrl,
             },
             buildEnv === "production"
               ? {
