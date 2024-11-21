@@ -17,6 +17,7 @@ env:
   REACT_APP_DEFAULT_HOST_URL: ${{ secrets.REACT_APP_DEFAULT_HOST_URL }}
   REACT_APP_PUBLIC_URL: ${{ secrets.REACT_APP_PUBLIC_URL }}
   ADMIN_TEAM_DOMAIN: ${{ secrets.ADMIN_TEAM_DOMAIN }}
+  CDN_URL: ${{ secrets.CDN_URL }}
 
 jobs:
   build-client:

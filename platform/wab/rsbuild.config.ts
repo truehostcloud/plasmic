@@ -25,6 +25,7 @@ const backendPort: number = process.env.BACKEND_PORT
   : 3004;
 const publicUrl: string =
   process.env.PUBLIC_URL ?? (isProd ? homepage : `http://localhost:${port}`);
+const cdnUrl = process.env.CDN_URL ?? publicUrl;
 
 console.log(`Starting rsbuild...
 - commitHash: ${commitHash}
@@ -254,7 +255,7 @@ export default defineConfig({
           Buffer: ["buffer", "Buffer"],
         }),
         new DefinePlugin({
-          PUBLICPATH: JSON.stringify(publicUrl),
+          PUBLICPATH: JSON.stringify(cdnUrl),
           COMMITHASH: JSON.stringify(commitHash),
           DEPLOYENV: JSON.stringify(buildEnv),
           "process.env": JSON.stringify({
