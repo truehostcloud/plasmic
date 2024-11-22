@@ -2217,7 +2217,7 @@ export function makeExpressSessionMiddleware(config: Config) {
         // all the dev servers in https mode.
         sameSite: "none",
         secure: true,
-        partitioned: false,
+        partitioned: process.env.EXPRESS_SESSION_COOKIE_PARTITIONED === "true",
       }),
     },
     genid: function (req: any) {
