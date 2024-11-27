@@ -1,7 +1,8 @@
-import { PlasmicElement, usePlasmicCanvasContext } from "@plasmicapp/host";
+import { usePlasmicCanvasContext } from "@plasmicapp/host";
 import { mergeProps } from "@react-aria/utils";
 import React, { useEffect } from "react";
 import { Popover, PopoverContext } from "react-aria-components";
+import { getCommonOverlayProps } from "./common";
 import { PlasmicPopoverTriggerContext } from "./contexts";
 import {
   CodeComponentMetaOverrides,
@@ -109,18 +110,6 @@ export function BasePopover(props: BasePopoverProps) {
 }
 
 export const POPOVER_COMPONENT_NAME = makeComponentName("popover");
-export const POPOVER_ARROW_IMG: PlasmicElement = {
-  type: "img",
-  src: "https://static1.plasmic.app/arrow-up.svg",
-  styles: {
-    position: "absolute",
-    top: "-14px",
-    // center the arrow horizontally on the popover
-    left: "50%",
-    transform: "translateX(-50%)",
-    width: "15px",
-  },
-};
 
 export function registerPopover(
   loader?: Registerable,
@@ -139,7 +128,6 @@ export function registerPopover(
         borderWidth: "1px",
         borderStyle: "solid",
         borderColor: "black",
-        padding: "20px",
         width: "300px",
         backgroundColor: "#FDE3C3",
       },
@@ -148,12 +136,11 @@ export function registerPopover(
           type: "slot",
           mergeWithParent: true,
           defaultValue: [
-            POPOVER_ARROW_IMG,
             {
               type: "vbox",
               styles: {
                 width: "stretch",
-                padding: 0,
+                padding: "20px",
                 rowGap: "10px",
               },
               children: [
@@ -177,32 +164,13 @@ export function registerPopover(
             },
           ],
         },
-        offset: {
-          type: "number",
-          displayName: "Offset",
-          description:
-            "Additional offset applied vertically between the popover and its trigger",
-          defaultValueHint: 8,
-        },
         shouldFlip: {
           type: "boolean",
           description:
             "Whether the element should flip its orientation (e.g. top to bottom or left to right) when there is insufficient room for it to render completely.",
           defaultValueHint: true,
         },
-        placement: {
-          type: "choice",
-          description:
-            "Default placement of the popover relative to the trigger, if there is enough space",
-          defaultValueHint: "bottom",
-          options: [
-            // Not allowing other placement options here because of https://github.com/adobe/react-spectrum/issues/6825
-            "top",
-            "bottom",
-            "left",
-            "right",
-          ],
-        },
+
         resetClassName: {
           type: "themeResetClass",
         },
@@ -211,6 +179,12 @@ export function registerPopover(
           defaultValue: true,
           hidden: (_props, ctx) => !ctx?.canMatchTriggerWidth,
         },
+        ...getCommonOverlayProps<BasePopoverProps>("popover", {
+          placement: { defaultValueHint: "bottom" },
+          offset: { defaultValueHint: 8 },
+          containerPadding: { defaultValueHint: 12 },
+          crossOffset: { defaultValueHint: 0 },
+        }),
       },
       // No isOpen state for popover, because we assume that its open state is always going to be controlled by a parent like Select, Combobox, DialogTrigger, etc.
       styleSections: true,

@@ -1,4 +1,4 @@
-import { PropType } from "@plasmicapp/host";
+import { PlasmicElement, PropType } from "@plasmicapp/host";
 import {
   BaseControlContextData,
   HasControlContextData,
@@ -373,3 +373,102 @@ export function getCommonProps<T>(
 
   return filteredProps;
 }
+
+type Overrides = {
+  defaultValueHint?: any;
+};
+
+export function createPlacementProp<T>(
+  componentName: string,
+  overrides: Overrides
+): PropType<T> {
+  return {
+    type: "choice",
+    description: `Default placement of the ${componentName} relative to the trigger, if there is enough space`,
+    options: [
+      // Not allowing other placement options here because of https://github.com/adobe/react-spectrum/issues/6825
+      "top",
+      "bottom",
+      "start",
+      "end",
+      "left",
+      "right",
+    ],
+    ...(overrides ?? {}),
+  };
+}
+
+export function createOffsetProp<T>(
+  componentName: string,
+  overrides: Overrides
+): PropType<T> {
+  return {
+    type: "number",
+    displayName: "Offset",
+    description: `Additional offset applied along the main axis between the ${componentName} and its trigger`,
+    advanced: true,
+    ...(overrides ?? {}),
+  };
+}
+
+export function createContainerPaddingProp<T>(
+  componentName: string,
+  overrides: Overrides
+): PropType<T> {
+  return {
+    type: "number",
+    description: `The padding that should be applied between the ${componentName} and its surrounding container. This affects the positioning breakpoints that determine when it will attempt to flip.`,
+    advanced: true,
+    ...(overrides ?? {}),
+  };
+}
+
+export function createCrossOffsetProp<T>(
+  componentName: string,
+  overrides: Overrides
+): PropType<T> {
+  return {
+    type: "number",
+    description: `The additional offset applied along the cross axis between the ${componentName} and its anchor element.`,
+    advanced: true,
+    ...(overrides ?? {}),
+  };
+}
+
+export function getCommonOverlayProps<T>(
+  componentName: string,
+  overrides: Record<string, Overrides>
+) {
+  const commonProps: Record<string, PropType<T>> = {
+    placement: createPlacementProp<T>(componentName, overrides["placement"]),
+    offset: createOffsetProp<T>(componentName, overrides["offset"]),
+    containerPadding: createContainerPaddingProp<T>(
+      componentName,
+      overrides["containerPadding"]
+    ),
+    crossOffset: createCrossOffsetProp<T>(
+      componentName,
+      overrides["crossOffset"]
+    ),
+  };
+  return commonProps;
+}
+
+export const arrowDown: PlasmicElement = {
+  type: "hbox",
+  children: [],
+  styles: {
+    width: 0,
+    height: 0,
+    padding: 0,
+    borderLeftWidth: "5px",
+    borderRightWidth: "5px",
+    borderTopWidth: "5px",
+    borderLeftStyle: "solid",
+    borderRightStyle: "solid",
+    borderTopStyle: "solid",
+    borderLeftColor: "transparent",
+    borderRightColor: "transparent",
+    borderTopColor: "black",
+  },
+};
