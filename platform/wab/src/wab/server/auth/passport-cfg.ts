@@ -125,7 +125,7 @@ export async function setupPassport(
     new MultiOAuth2Strategy(
       {
         passReqToCallback: true,
-        state: true,
+        state: process.env.PASSPORT_VERIFY_OAUTH2_STATE === 'true' ?? true,
         scope: ["openid", "email", "profile"],
         getOAuth2Options(req, callback) {
           asyncToCallback(
