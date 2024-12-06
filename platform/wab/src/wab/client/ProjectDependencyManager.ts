@@ -61,6 +61,7 @@ export class ProjectDependencyManager {
 
   // Stores the Sites of "Insertable Templates" projects, keyed by projectId
   insertableSites: Record<string, Site> = {};
+  insertableVersions: Record<string, string> = {};
 
   // Which local screen variant will we use to map to the insertable template's screen variant?
   insertableSiteScreenVariant: Variant | undefined;
@@ -375,44 +376,9 @@ export class ProjectDependencyManager {
     return projectDependency;
   }
 
-  async addInstallable(projectId: string, name: string) {
-    // Get installable (e.g. Plexus) pkg info
-    const { pkg: pkgInfo } = await this._sc.appCtx.api.getPkgByProjectId(
-      projectId
-    );
-
-    /**
-     * Get installable (e.g. Plexus) pkg version info, and its deps' pkg version info
-     */
-    const { pkg, depPkgs } = await (pkgInfo
-      ? this._sc.appCtx.api.getPkgVersion(pkgInfo.id)
-      : {});
-
-    assert(
-      pkgInfo && pkg && depPkgs,
-      "Unable to load insertable templates project"
-    );
-
-    const { site: installableSite } = unbundleProjectDependency(
-      this._sc.bundler(),
-      pkg,
-      depPkgs
-    ).projectDependency;
-
-    assert(installableSite, `Unable to install ${name}`);
-
-    // ensure all dependencies are valid
-    installableSite.projectDependencies.forEach((importedDep) => {
-      this.canAddDependency(importedDep);
-    });
-
-    await Promise.all(
-      installableSite.projectDependencies
-        .filter((importedDep) => !this.containsPkgId(importedDep.pkgId))
-        .map((importedDep) => this.addDependency(importedDep))
-    );
-
-    return installableSite;
+  async maybeAddDependency(dep: ProjectDependency) {
+    this.canAddDependency(dep);
+    return await this.addDependency(dep);
   }
 
   addTransitiveDepAsDirectDep(dep: ProjectDependency) {
@@ -563,10 +529,6 @@ export class ProjectDependencyManager {
   }
 
   async fetchInsertableTemplate(projectId: string) {
-    if (this.insertableSites[projectId]) {
-      return;
-    }
-
     const bundler = new FastBundler();
     const { pkg } = await this._sc.appCtx.api.getPkgByProjectId(projectId);
     const latestPkgVersion = pkg
@@ -581,12 +543,18 @@ export class ProjectDependencyManager {
       console.warn(`Unable to load insertable templates project ${projectId}`);
       return;
     }
+
+    if (this.insertableVersions[projectId] === latestPkgVersion.etag) {
+      return;
+    }
+
     const insertableSite = unbundleProjectDependency(
       bundler,
       latestPkgVersion.pkg,
       latestPkgVersion.depPkgs
     ).projectDependency.site;
     this.insertableSites[projectId] = insertableSite;
+    this.insertableVersions[projectId] = latestPkgVersion.etag;
   }
 
   /**

@@ -9,6 +9,7 @@ import { ProjectDependencyManager } from "@/wab/client/ProjectDependencyManager"
 import { zoomJump } from "@/wab/client/Zoom";
 import { apiKey, invalidationKey } from "@/wab/client/api";
 import { getProjectReleases } from "@/wab/client/api-hooks";
+import { storageViewAsKey } from "@/wab/client/app-auth/constants";
 import {
   UU,
   mkProjectLocation,
@@ -22,7 +23,6 @@ import {
   showReloadError,
   showSaveErrorRecoveredNotice,
 } from "@/wab/client/components/Messages";
-import { storageViewAsKey } from "@/wab/client/components/app-auth/ViewAsButton";
 import { CanvasCtx } from "@/wab/client/components/canvas/canvas-ctx";
 import { SiteOps } from "@/wab/client/components/canvas/site-ops";
 import {
@@ -795,6 +795,15 @@ export class StudioCtx extends WithDbCtx {
           );
         },
         { name: "StudioCtx.updateFocusPreference" }
+      ),
+      reaction(
+        () => [getSiteArenas(this.site)],
+        () => {
+          this.recentArenas = this.recentArenas.filter((arena) =>
+            isValidArena(this.site, arena)
+          );
+        },
+        { name: "StudioCtx.fixRecentArenas" }
       ),
       ...(this.appCtx.appConfig.incrementalObservables
         ? [
@@ -1677,9 +1686,8 @@ export class StudioCtx extends WithDbCtx {
       if (fixedRecentArenas.length > RECENT_ARENAS_LIMIT) {
         fixedRecentArenas.shift();
       }
-      this._recentArenas.set(fixedRecentArenas);
+      this.recentArenas = fixedRecentArenas;
     }
-
     this._currentArena.set(arena);
   }
 
@@ -1690,6 +1698,10 @@ export class StudioCtx extends WithDbCtx {
 
   get recentArenas() {
     return this._recentArenas.get();
+  }
+
+  set recentArenas(arenas: AnyArena[]) {
+    this._recentArenas.set(arenas);
   }
 
   get currentComponent() {

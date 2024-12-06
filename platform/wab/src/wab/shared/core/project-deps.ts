@@ -1073,6 +1073,7 @@ function upgradeProjectDep(
   // the site for every tpl
   const attachedTpls = getAllAttachedTpls(site);
   const fixTpl = (tpl: TplNode, owner: Component | ArenaFrame) => {
+    // If the Tpl is not attached anymore, cleanup states and return
     if (!attachedTpls.has(tpl)) {
       return;
     }
