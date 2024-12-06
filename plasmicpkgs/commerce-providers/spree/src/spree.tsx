@@ -4,6 +4,7 @@ import {
 } from '@plasmicpkgs/commerce'
 import { getSpreeProvider, SpreeProvider } from './provider'
 
+export type { SpreeProvider }
 
 export const useCommerce = () => useCoreCommerce<SpreeProvider>()
 
