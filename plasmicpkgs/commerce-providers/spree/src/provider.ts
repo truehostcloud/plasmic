@@ -14,6 +14,24 @@ import { handler as useWishlistAddItem } from './wishlist/use-add-item'
 import { handler as useWishlistRemoveItem } from './wishlist/use-remove-item'
 import { requireConfigValue } from './isomorphic-config'
 
+export const getSpreeProvider = (apiHost: string) => (
+  {
+    locale: requireConfigValue('defaultLocale') as string,
+    cartCookie: requireConfigValue('cartCookieName') as string,
+    fetcher: (requestOptions) => fetcher(apiHost, requestOptions),
+    cart: { useCart, useAddItem, useUpdateItem, useRemoveItem },
+    customer: { useCustomer },
+    products: { useSearch },
+    auth: { useLogin, useLogout, useSignup },
+    checkout: { useCheckout },
+    wishlist: {
+      useWishlist,
+      useAddItem: useWishlistAddItem,
+      useRemoveItem: useWishlistRemoveItem,
+    },
+  }
+)
+
 const spreeProvider = {
   locale: requireConfigValue('defaultLocale') as string,
   cartCookie: requireConfigValue('cartCookieName') as string,

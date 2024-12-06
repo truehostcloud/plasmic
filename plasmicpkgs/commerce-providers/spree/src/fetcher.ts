@@ -3,7 +3,6 @@ import convertSpreeErrorToGraphQlError from './utils/convert-spree-error-to-grap
 import { makeClient, errors } from '@spree/storefront-api-v2-sdk'
 import type { ResultResponse } from '@spree/storefront-api-v2-sdk/types/interfaces/ResultResponse'
 import type { GraphQLFetcherResult } from '@vercel/commerce/api'
-import { requireConfigValue } from './isomorphic-config'
 import getSpreeSdkMethodFromEndpointPath from './utils/get-spree-sdk-method-from-endpoint-path'
 import SpreeSdkMethodFromEndpointPathError from './errors/SpreeSdkMethodFromEndpointPathError'
 import type {
@@ -18,8 +17,8 @@ import ensureFreshUserAccessToken from './utils/tokens/ensure-fresh-user-access-
 import RefreshTokenError from './errors/RefreshTokenError'
 import prettyPrintSpreeSdkErrors from './utils/pretty-print-spree-sdk-errors'
 
-const client = makeClient({
-  host: requireConfigValue('apiHost') as string,
+const client = (apiHost: string) => makeClient({
+  host: apiHost,
   createFetcher: (fetcherOptions) => {
     return createCustomizedFetchFetcher({
       fetch: globalThis.fetch,
@@ -42,7 +41,7 @@ const normalizeSpreeSuccessResponse = (
 }
 
 const fetcher: Fetcher<GraphQLFetcherResult<SpreeSdkResponse>> = async (
-  requestOptions
+  apiHost: string, requestOptions
 ) => {
   const { url, method, variables, query } = requestOptions
 
@@ -68,10 +67,10 @@ const fetcher: Fetcher<GraphQLFetcherResult<SpreeSdkResponse>> = async (
   } = variables as FetcherVariables
 
   if (refreshExpiredAccessToken) {
-    await ensureFreshUserAccessToken(client)
+    await ensureFreshUserAccessToken(client(apiHost))
   }
 
-  const spreeSdkMethod = getSpreeSdkMethodFromEndpointPath(client, methodPath)
+  const spreeSdkMethod = getSpreeSdkMethodFromEndpointPath(client(apiHost), methodPath)
 
   const storeResponse: ResultResponse<SpreeSdkResponseWithRawResponse> =
     await spreeSdkMethod(...args)
@@ -91,7 +90,7 @@ const fetcher: Fetcher<GraphQLFetcherResult<SpreeSdkResponse>> = async (
       'Request ended with 401. Replaying request after refreshing the user token.'
     )
 
-    await ensureFreshUserAccessToken(client)
+    await ensureFreshUserAccessToken(client(apiHost))
 
     const replayedStoreResponse: ResultResponse<SpreeSdkResponseWithRawResponse> =
       await spreeSdkMethod(...args)
