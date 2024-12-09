@@ -1,4 +1,4 @@
-import type { Fetcher } from '@plasmicpkgs/commerce/utils/types'
+import { Fetcher, FetcherOptions } from "@plasmicpkgs/commerce";
 import convertSpreeErrorToGraphQlError from './utils/convert-spree-error-to-graph-ql-error'
 import { makeClient, errors } from '@spree/storefront-api-v2-sdk'
 import type { ResultResponse } from '@spree/storefront-api-v2-sdk/types/interfaces/ResultResponse'
@@ -41,9 +41,9 @@ const normalizeSpreeSuccessResponse = (
 }
 
 const fetcher: Fetcher<GraphQLFetcherResult<SpreeSdkResponse>> = async (
-  apiHost: string, requestOptions
+  requestOptions: FetcherOptions
 ) => {
-  const { url, method, variables, query } = requestOptions
+  const { url, variables } = requestOptions
 
   console.log(
     'Fetcher called. Configuration: ',

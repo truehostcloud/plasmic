@@ -1,4 +1,4 @@
-import { registerAll } from "commerce-spree/src";
+import { registerAll } from "commerce-spree";
 
 export function register() {
   registerAll();
