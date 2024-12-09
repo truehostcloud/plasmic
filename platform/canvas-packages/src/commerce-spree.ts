@@ -1,4 +1,4 @@
-import { registerAll } from "../internal_pkgs/spree/src";
+import { registerAll } from "commerce-spree/src";
 
 export function register() {
   registerAll();
