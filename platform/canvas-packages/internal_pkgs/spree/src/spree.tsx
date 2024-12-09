@@ -1,7 +1,7 @@
 import {
   getCommerceProvider as getCoreCommerceProvider,
   useCommerce as useCoreCommerce,
-} from '@plasmicpkgs/commerce'
+} from '@vercel/commerce'
 import { getSpreeProvider, SpreeProvider } from './provider'
 
 export type { SpreeProvider }

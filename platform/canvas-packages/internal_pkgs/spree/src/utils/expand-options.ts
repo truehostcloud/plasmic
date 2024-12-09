@@ -1,4 +1,4 @@
-import type { ProductOptionValues } from '@plasmicpkgs/commerce/types/product'
+import type { ProductOptionValues } from '@vercel/commerce/types/product'
 import type {
   JsonApiDocument,
   JsonApiResponse,

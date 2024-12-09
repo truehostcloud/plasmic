@@ -6,7 +6,7 @@ import type { WishedItemAttr } from '@spree/storefront-api-v2-sdk/types/interfac
 import type { WishlistAttr } from '@spree/storefront-api-v2-sdk/types/interfaces/Wishlist'
 import type { SpreeSdkResponse, VariantAttr } from '../../types'
 import normalizeProduct from './normalize-product'
-import { Wishlist } from '@plasmicpkgs/commerce/types/wishlist'
+import { Wishlist } from '@vercel/commerce/types/wishlist'
 
 const normalizeWishlist = (
   spreeSuccessResponse: SpreeSdkResponse,

@@ -1,13 +1,13 @@
 import { useMemo } from 'react'
-import type { SWRHook } from '@plasmicpkgs/commerce'
-import useCart from '@plasmicpkgs/commerce'
-import type { UseCart } from '@plasmicpkgs/commerce'
-import type { GetCartHook } from '@plasmicpkgs/commerce/dist/types/cart'
+import type { SWRHook } from '@vercel/commerce/utils/types'
+import useCart from '@vercel/commerce/cart/use-cart'
+import type { UseCart } from '@vercel/commerce/cart/use-cart'
+import type { GetCartHook } from '@vercel/commerce/types/cart'
 import normalizeCart from '../utils/normalizations/normalize-cart'
-import type { GraphQLFetcherResult } from '@plasmicpkgs/commerce/dist/api'
+import type { GraphQLFetcherResult } from '@vercel/commerce/api'
 import type { IOrder } from '@spree/storefront-api-v2-sdk/types/interfaces/Order'
 import type { IToken } from '@spree/storefront-api-v2-sdk/types/interfaces/Token'
-import { FetcherError } from '@plasmicpkgs/commerce'
+import { FetcherError } from '@vercel/commerce/utils/errors'
 import { setCartToken } from '../utils/tokens/cart-token'
 import ensureIToken from '../utils/tokens/ensure-itoken'
 import isLoggedIn from '../utils/tokens/is-logged-in'
@@ -17,7 +17,7 @@ import { requireConfigValue } from '../isomorphic-config'
 const imagesSize = requireConfigValue('imagesSize') as string
 const imagesQuality = requireConfigValue('imagesQuality') as number
 
-export default useCart as unknown as UseCart<typeof handler>
+export default useCart as UseCart<typeof handler>
 
 // This handler avoids calling /api/cart.
 // There doesn't seem to be a good reason to call it.
@@ -92,11 +92,11 @@ export const handler: SWRHook<GetCartHook> = {
       spreeCartResponse = spreeCartCreateSuccessResponse
 
       if (!isLoggedIn()) {
-        setCartToken(spreeCartResponse?.data.attributes.token ?? "")
+        setCartToken(spreeCartResponse.data.attributes.token)
       }
     }
 
-    return normalizeCart(spreeCartResponse, spreeCartResponse?.data)
+    return normalizeCart(spreeCartResponse, spreeCartResponse.data)
   },
   useHook: ({ useData }) => {
     const useWrappedHook: ReturnType<SWRHook<GetCartHook>['useHook']> = (

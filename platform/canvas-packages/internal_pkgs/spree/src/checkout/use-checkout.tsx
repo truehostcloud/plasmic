@@ -1,7 +1,7 @@
-import { SWRHook } from '@plasmicpkgs/commerce/utils/types'
+import { SWRHook } from '@vercel/commerce/utils/types'
 import useCheckout, {
   UseCheckout,
-} from '@plasmicpkgs/commerce/checkout/use-checkout'
+} from '@vercel/commerce/checkout/use-checkout'
 
 export default useCheckout as UseCheckout<typeof handler>
 

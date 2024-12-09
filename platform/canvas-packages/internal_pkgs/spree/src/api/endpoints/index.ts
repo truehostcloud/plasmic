@@ -1,5 +1,5 @@
 import type { SpreeApiProvider, SpreeApi } from '..'
-import createEndpoints from '@plasmicpkgs/commerce/api/endpoints'
+import createEndpoints from '@vercel/commerce/api/endpoints'
 import checkout from './checkout'
 
 const endpoints = {

@@ -1,5 +1,5 @@
-import type { GraphQLFetcherResult } from '@plasmicpkgs/commerce/api'
-import type { HookFetcherContext } from '@plasmicpkgs/commerce/utils/types'
+import type { GraphQLFetcherResult } from '@vercel/commerce/api'
+import type { HookFetcherContext } from '@vercel/commerce/utils/types'
 import TokensNotRejectedError from '../../errors/TokensNotRejectedError'
 import type { UserOAuthTokens } from '../../types'
 import type { EmptyObjectResponse } from '@spree/storefront-api-v2-sdk/types/interfaces/EmptyObject'

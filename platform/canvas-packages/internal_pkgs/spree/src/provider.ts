@@ -10,7 +10,7 @@ import { handler as useWishlist } from './wishlist/use-wishlist'
 import { handler as useWishlistAddItem } from './wishlist/use-add-item'
 import { handler as useWishlistRemoveItem } from './wishlist/use-remove-item'
 import { requireConfigValue } from './isomorphic-config'
-import { Fetcher as BaseFetcher } from '@plasmicpkgs/commerce'
+import type { Fetcher } from '@vercel/commerce/utils/types'
 
 export const getSpreeProvider = (apiHost: string) => (
   {
@@ -32,7 +32,7 @@ export const getSpreeProvider = (apiHost: string) => (
 export type SpreeProvider = {
   locale: string,
   cartCookie: string,
-  fetcher: BaseFetcher,
+  fetcher: Fetcher,
   cart: {
     useCart: typeof useCart;
     useAddItem: typeof useAddItem;

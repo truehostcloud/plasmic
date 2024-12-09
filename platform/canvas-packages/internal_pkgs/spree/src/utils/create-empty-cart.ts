@@ -1,5 +1,5 @@
-import type { GraphQLFetcherResult } from '@plasmicpkgs/commerce/api'
-import type { HookFetcherContext } from '@plasmicpkgs/commerce/utils/types'
+import type { GraphQLFetcherResult } from '@vercel/commerce/api'
+import type { HookFetcherContext } from '@vercel/commerce/utils/types'
 import type { IOrder } from '@spree/storefront-api-v2-sdk/types/interfaces/Order'
 import type { IToken } from '@spree/storefront-api-v2-sdk/types/interfaces/Token'
 import ensureIToken from './tokens/ensure-itoken'

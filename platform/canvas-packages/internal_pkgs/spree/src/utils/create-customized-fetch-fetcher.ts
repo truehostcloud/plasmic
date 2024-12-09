@@ -20,7 +20,7 @@ const createCustomizedFetchFetcher: CreateCustomizedFetchFetcher = (
   return {
     fetch: async (fetchOptions) => {
       // This fetcher always returns request equal null,
-      // because @plasmicpkgs/fetch doesn't accept a Request object as argument
+      // because @vercel/fetch doesn't accept a Request object as argument
       // and it's not used by NJC anyway.
       try {
         const { url, params, method, headers, responseParsing } = fetchOptions

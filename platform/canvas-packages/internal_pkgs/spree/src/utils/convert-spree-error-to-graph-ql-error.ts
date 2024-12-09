@@ -1,4 +1,4 @@
-import { FetcherError } from '@plasmicpkgs/commerce/utils/errors'
+import { FetcherError } from '@vercel/commerce/utils/errors'
 import { errors } from '@spree/storefront-api-v2-sdk'
 
 const convertSpreeErrorToGraphQlError = (

@@ -1,21 +1,21 @@
-import type { MutationHook } from '@plasmicpkgs/commerce'
-import useRemoveItem from '@plasmicpkgs/commerce'
-import type { UseRemoveItem } from '@plasmicpkgs/commerce'
-import type { RemoveItemHook } from '@plasmicpkgs/commerce/dist/types/cart'
+import type { MutationHook } from '@vercel/commerce/utils/types'
+import useRemoveItem from '@vercel/commerce/cart/use-remove-item'
+import type { UseRemoveItem } from '@vercel/commerce/cart/use-remove-item'
+import type { RemoveItemHook } from '@vercel/commerce/types/cart'
 import useCart from './use-cart'
 import { useCallback } from 'react'
 import normalizeCart from '../utils/normalizations/normalize-cart'
 import type { IOrder } from '@spree/storefront-api-v2-sdk/types/interfaces/Order'
-import type { GraphQLFetcherResult } from '@plasmicpkgs/commerce/dist/api'
+import type { GraphQLFetcherResult } from '@vercel/commerce/api'
 import type { IQuery } from '@spree/storefront-api-v2-sdk/types/interfaces/Query'
 import type { IToken } from '@spree/storefront-api-v2-sdk/types/interfaces/Token'
 import ensureIToken from '../utils/tokens/ensure-itoken'
 import createEmptyCart from '../utils/create-empty-cart'
 import { setCartToken } from '../utils/tokens/cart-token'
-import { FetcherError } from '@plasmicpkgs/commerce'
+import { FetcherError } from '@vercel/commerce/utils/errors'
 import isLoggedIn from '../utils/tokens/is-logged-in'
 
-export default useRemoveItem as unknown as UseRemoveItem<typeof handler>
+export default useRemoveItem as UseRemoveItem<typeof handler>
 
 export const handler: MutationHook<RemoveItemHook> = {
   // Provide fetchOptions for SWR cache key

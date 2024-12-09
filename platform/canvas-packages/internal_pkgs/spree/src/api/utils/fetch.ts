@@ -1,3 +1,3 @@
-import vercelFetch from '@plasmicpkgs/fetch'
+import vercelFetch from '@vercel/fetch'
 
 export default vercelFetch()
