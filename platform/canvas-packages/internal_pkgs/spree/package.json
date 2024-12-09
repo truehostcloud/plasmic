@@ -1,5 +1,5 @@
 {
-  "name": "@plasmicpkgs/commerce-spree",
+  "name": "commerce-spree",
   "version": "0.0.1",
   "description": "Plasmic registration calls for spree commerce provider",
   "main": "dist/index.js",

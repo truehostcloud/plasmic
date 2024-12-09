@@ -3425,10 +3425,6 @@
     debounce "^1.2.1"
     js-cookie "^3.0.5"
 
-"@plasmicpkgs/commerce-spree@link:../../plasmicpkgs/commerce-providers/spree":
-  version "0.0.0"
-  uid ""
-
 "@plasmicpkgs/commerce-swell@^0.0.214":
   version "0.0.214"
   resolved "https://registry.yarnpkg.com/@plasmicpkgs/commerce-swell/-/commerce-swell-0.0.214.tgz#5e9215518a33f6cefefe1dad5c5a9d113864abaa"
@@ -7274,6 +7270,10 @@ commander@^7.2.0:
   version "7.2.0"
   resolved "https://registry.yarnpkg.com/commander/-/commander-7.2.0.tgz#a36cb57d0b501ce108e4d20559a150a391d97ab7"
   integrity sha512-QrWXB+ZQSVPmIWIhtEO9H+gwHaMGYiF5ChvoJ+K9ZGHG/sVsa6yiesAD1GC/x46sET00Xlwo1u49RVVVzvcSkw==
+
+"commerce-spree@link:./internal_pkgs/spree":
+  version "0.0.0"
+  uid ""
 
 commondir@^1.0.1:
   version "1.0.1"
