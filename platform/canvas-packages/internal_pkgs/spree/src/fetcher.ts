@@ -2,7 +2,6 @@ import { Fetcher, FetcherOptions } from "@plasmicpkgs/commerce";
 import convertSpreeErrorToGraphQlError from './utils/convert-spree-error-to-graph-ql-error'
 import { makeClient, errors } from '@spree/storefront-api-v2-sdk'
 import type { ResultResponse } from '@spree/storefront-api-v2-sdk/types/interfaces/ResultResponse'
-import type { GraphQLFetcherResult } from '@plasmicpkgs/commerce/api'
 import getSpreeSdkMethodFromEndpointPath from './utils/get-spree-sdk-method-from-endpoint-path'
 import SpreeSdkMethodFromEndpointPathError from './errors/SpreeSdkMethodFromEndpointPathError'
 import type {
@@ -16,6 +15,7 @@ import createCustomizedFetchFetcher, {
 import ensureFreshUserAccessToken from './utils/tokens/ensure-fresh-user-access-token'
 import RefreshTokenError from './errors/RefreshTokenError'
 import prettyPrintSpreeSdkErrors from './utils/pretty-print-spree-sdk-errors'
+import { GraphQLFetcherResult } from "@plasmicpkgs/commerce/dist/api";
 
 const client = (apiHost: string) => makeClient({
   host: apiHost,
@@ -40,7 +40,9 @@ const normalizeSpreeSuccessResponse = (
   }
 }
 
-const fetcher: Fetcher<GraphQLFetcherResult<SpreeSdkResponse>> = async (
+const fetcher:
+  (apiHost: string,  requestOptions: FetcherOptions) => Fetcher =
+  (apiHost) => async (
   requestOptions: FetcherOptions
 ) => {
   const { url, variables } = requestOptions

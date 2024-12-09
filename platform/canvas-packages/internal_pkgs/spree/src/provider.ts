@@ -10,16 +10,13 @@ import { handler as useWishlist } from './wishlist/use-wishlist'
 import { handler as useWishlistAddItem } from './wishlist/use-add-item'
 import { handler as useWishlistRemoveItem } from './wishlist/use-remove-item'
 import { requireConfigValue } from './isomorphic-config'
-import { Fetcher as BaseFetcher, FetcherOptions } from "@plasmicpkgs/commerce";
+import { Fetcher as BaseFetcher } from '@plasmicpkgs/commerce'
 
 export const getSpreeProvider = (apiHost: string) => (
   {
     locale: requireConfigValue('defaultLocale') as string,
     cartCookie: requireConfigValue('cartCookieName') as string,
-    fetcher: (requestOptions: FetcherOptions) => {
-      requestOptions.url = `${apiHost}${requestOptions.url}`
-      return fetcher(requestOptions)
-    },
+    fetcher: (requestOptions: object) => fetcher(apiHost, requestOptions),
     cart: { useCart, useAddItem, useUpdateItem, useRemoveItem },
     customer: { useCustomer },
     products: { useSearch },
