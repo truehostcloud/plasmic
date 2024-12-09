@@ -17,7 +17,7 @@ import { requireConfigValue } from '../isomorphic-config'
 const imagesSize = requireConfigValue('imagesSize') as string
 const imagesQuality = requireConfigValue('imagesQuality') as number
 
-export default useCart as UseCart<typeof handler>
+export default useCart as unknown as UseCart<typeof handler>
 
 // This handler avoids calling /api/cart.
 // There doesn't seem to be a good reason to call it.
@@ -92,11 +92,11 @@ export const handler: SWRHook<GetCartHook> = {
       spreeCartResponse = spreeCartCreateSuccessResponse
 
       if (!isLoggedIn()) {
-        setCartToken(spreeCartResponse.data.attributes.token)
+        setCartToken(spreeCartResponse?.data.attributes.token ?? "")
       }
     }
 
-    return normalizeCart(spreeCartResponse, spreeCartResponse.data)
+    return normalizeCart(spreeCartResponse, spreeCartResponse?.data)
   },
   useHook: ({ useData }) => {
     const useWrappedHook: ReturnType<SWRHook<GetCartHook>['useHook']> = (

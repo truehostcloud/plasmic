@@ -15,7 +15,7 @@ import { setCartToken } from '../utils/tokens/cart-token'
 import { FetcherError } from '@plasmicpkgs/commerce'
 import isLoggedIn from '../utils/tokens/is-logged-in'
 
-export default useRemoveItem as UseRemoveItem<typeof handler>
+export default useRemoveItem as unknown as UseRemoveItem<typeof handler>
 
 export const handler: MutationHook<RemoveItemHook> = {
   // Provide fetchOptions for SWR cache key

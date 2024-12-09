@@ -15,7 +15,7 @@ import createEmptyCart from '../utils/create-empty-cart'
 import { FetcherError } from '@plasmicpkgs/commerce'
 import isLoggedIn from '../utils/tokens/is-logged-in'
 
-export default useAddItem as UseAddItem<typeof handler>
+export default useAddItem as unknown as UseAddItem<typeof handler>
 
 export const handler: MutationHook<AddItemHook> = {
   // Provide fetchOptions for SWR cache key
