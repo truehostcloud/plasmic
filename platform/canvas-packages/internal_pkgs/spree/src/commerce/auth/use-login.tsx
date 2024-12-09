@@ -1,7 +1,7 @@
-import { useHook, useMutationHook } from '../utils/use-hook'
-import { mutationFetcher } from '../utils/default-fetcher'
-import type { MutationHook, HookFetcherFn } from '../utils/types'
-import type { LoginHook } from '../types/login'
+import { useHook, useMutationHook } from '@plasmicpkgs/commerce/utils/use-hook'
+import { mutationFetcher } from '@plasmicpkgs/commerce/utils/default-fetcher'
+import type { MutationHook, HookFetcherFn } from '@plasmicpkgs/commerce/utils/types'
+import type { LoginHook } from '@plasmicpkgs/commerce/types/login'
 import type { Provider } from '..'
 
 export type UseLogin<
