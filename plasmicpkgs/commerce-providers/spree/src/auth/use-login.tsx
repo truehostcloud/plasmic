@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 import type { MutationHook } from '@plasmicpkgs/commerce/utils/types'
-import useLogin, { UseLogin } from '@plasmicpkgs/commerce/auth/use-login'
+import useLogin, { UseLogin } from '../commerce/auth/use-login'
 import type { LoginHook } from '@plasmicpkgs/commerce/types/login'
 import type { AuthTokenAttr } from '@spree/storefront-api-v2-sdk/types/interfaces/Authentication'
 import { FetcherError, ValidationError } from '@plasmicpkgs/commerce/utils/errors'

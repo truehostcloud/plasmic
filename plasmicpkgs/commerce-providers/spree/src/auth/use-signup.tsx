@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import type { GraphQLFetcherResult } from '@plasmicpkgs/commerce/api'
 import type { MutationHook } from '@plasmicpkgs/commerce/utils/types'
-import useSignup, { UseSignup } from '@plasmicpkgs/commerce/auth/use-signup'
+import useSignup, { UseSignup } from '../commerce/auth/use-signup'
 import type { SignupHook } from '@plasmicpkgs/commerce/types/signup'
 import { ValidationError } from '@plasmicpkgs/commerce/utils/errors'
 import type { IAccount } from '@spree/storefront-api-v2-sdk/types/interfaces/Account'

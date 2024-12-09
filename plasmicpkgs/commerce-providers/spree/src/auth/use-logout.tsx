@@ -1,5 +1,5 @@
 import { MutationHook } from '@plasmicpkgs/commerce/utils/types'
-import useLogout, { UseLogout } from '@plasmicpkgs/commerce/auth/use-logout'
+import useLogout, { UseLogout } from '../commerce/auth/use-logout'
 import type { LogoutHook } from '@plasmicpkgs/commerce/types/logout'
 import { useCallback } from 'react'
 import useCustomer from '../customer/use-customer'
