@@ -19,6 +19,7 @@ import type {
 } from './types'
 
 import type { Fetcher, SWRHook, MutationHook } from './utils/types'
+import React from 'react'
 
 const Commerce = createContext<CommerceContextValue<any> | {}>({})
 
