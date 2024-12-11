@@ -3,7 +3,8 @@ import MissingLineItemVariantError from '../../errors/MissingLineItemVariantErro
 import { requireConfigValue } from '../../isomorphic-config'
 import type { OrderAttr } from '@spree/storefront-api-v2-sdk/types/interfaces/Order'
 import type { ProductAttr } from '@spree/storefront-api-v2-sdk/types/interfaces/Product'
-import type { Image } from '@plasmicpkgs/commerce'
+import type { Image } from '../../types/common'
+import type { ProductVariant } from '../../types/product'
 import { jsonApi } from '@spree/storefront-api-v2-sdk'
 import createGetAbsoluteImageUrl from '../create-get-absolute-image-url'
 import getMediaGallery from '../get-media-gallery'
@@ -26,7 +27,7 @@ const isColorProductOption = (productOptionType: OptionTypeAttr) => {
 const normalizeVariant = (
   spreeSuccessResponse: SpreeSdkResponse,
   spreeVariant: VariantAttr
-): unknown => {
+): ProductVariant => {
   const spreeProduct = jsonApi.findSingleRelationshipDocument<ProductAttr>(
     spreeSuccessResponse,
     spreeVariant,
