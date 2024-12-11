@@ -4,6 +4,8 @@ import { handler as useAddItem } from './cart/use-add-item'
 import { handler as useUpdateItem } from './cart/use-update-item'
 import { handler as useRemoveItem } from './cart/use-remove-item'
 import { handler as useSearch } from './product/use-search'
+import { handler as useCategories } from './site/use-categories'
+import { handler as useBrands } from './site/use-brands'
 import { requireConfigValue } from './isomorphic-config'
 import type { Fetcher } from '@plasmicpkgs/commerce'
 
@@ -14,6 +16,7 @@ export const getSpreeProvider = (apiHost: string) => (
     fetcher: (requestOptions: object) => fetcher(apiHost, requestOptions),
     cart: { useCart, useAddItem, useUpdateItem, useRemoveItem },
     products: { useSearch },
+    site: { useCategories, useBrands }
   }
 )
 
@@ -28,4 +31,5 @@ export type SpreeProvider = {
     useRemoveItem: typeof useRemoveItem
   };
   products: { useSearch: typeof useSearch},
+  site: { useCategories: typeof useCategories, useBrands: typeof useBrands }
 }

@@ -10,7 +10,7 @@ export const handler: SWRHook<GetCategoriesHook> = {
     query: "use-categories",
   },
   async fetcher({ fetch }) {
-    const data = await fetch({
+    const data: any = await fetch({
       query: "use-categories",
     });
     return data?.collection ? [data?.collection] : [];

@@ -20,7 +20,7 @@ const nextToSpreeSortMap: { [key: string]: string } = {
   'price-desc': '-price',
 }
 
-export const handler: SWRHook<SearchProductsHook> = {
+export const handler: SWRHook<any> = {
   // Provide fetchOptions for SWR cache key
   fetchOptions: {
     url: 'products',
