@@ -45,7 +45,7 @@ export interface ProductVariant {
   /**
    * The SKU (stock keeping unit) associated with the product variant.
    */
-  sku?: string
+  sku: string
   /**
    * The product variant’s name, or the product's name.
    */
@@ -66,7 +66,7 @@ export interface ProductVariant {
    * Whether a customer needs to provide a shipping address when placing
    * an order for the product variant.
    */
-  requiresShipping?: boolean
+  requiresShipping: boolean
   /**
    * The image associated with the variant.
    */
