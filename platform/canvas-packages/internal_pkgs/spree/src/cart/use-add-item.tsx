@@ -5,7 +5,7 @@ import { useCallback } from 'react'
 import useCart from './use-cart'
 import type { AddItemHook } from '../types/cart'
 import normalizeCart from '../utils/normalizations/normalize-cart'
-import type { GraphQLFetcherResult } from '../api'
+import type { GraphQLFetcherResult } from '../types'
 import type { IOrder } from '@spree/storefront-api-v2-sdk/types/interfaces/Order'
 import type { IToken } from '@spree/storefront-api-v2-sdk/types/interfaces/Token'
 import type { AddItem } from '@spree/storefront-api-v2-sdk/types/interfaces/endpoints/CartClass'
@@ -15,7 +15,7 @@ import createEmptyCart from '../utils/create-empty-cart'
 import { FetcherError } from '@plasmicpkgs/commerce'
 import isLoggedIn from '../utils/tokens/is-logged-in'
 
-export default useAddItem as UseAddItem<typeof handler>
+export default useAddItem as unknown as UseAddItem<typeof handler>
 
 export const handler: MutationHook<AddItemHook> = {
   // Provide fetchOptions for SWR cache key

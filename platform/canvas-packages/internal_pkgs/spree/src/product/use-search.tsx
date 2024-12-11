@@ -6,7 +6,7 @@ import type {
 } from '@plasmicpkgs/commerce'
 import type { UseSearch } from '@plasmicpkgs/commerce'
 import normalizeProduct from '../utils/normalizations/normalize-product'
-import type { GraphQLFetcherResult } from '../api'
+import type { GraphQLFetcherResult } from '../types'
 import { IProducts } from '@spree/storefront-api-v2-sdk/types/interfaces/Product'
 import { requireConfigValue } from '../isomorphic-config'
 
@@ -101,4 +101,4 @@ export const handler: SWRHook<SearchProductsHook> = {
   },
 }
 
-export default useSearch as UseSearch<typeof handler>
+export default useSearch as unknown as UseSearch<typeof handler>

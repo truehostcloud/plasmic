@@ -15,7 +15,7 @@ import createCustomizedFetchFetcher, {
 import ensureFreshUserAccessToken from './utils/tokens/ensure-fresh-user-access-token'
 import RefreshTokenError from './errors/RefreshTokenError'
 import prettyPrintSpreeSdkErrors from './utils/pretty-print-spree-sdk-errors'
-import type { GraphQLFetcherResult } from './api'
+import type { GraphQLFetcherResult } from './types'
 
 const client = (apiHost: string) => makeClient({
   host: apiHost,

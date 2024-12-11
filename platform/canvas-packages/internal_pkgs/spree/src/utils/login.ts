@@ -1,4 +1,4 @@
-import type { GraphQLFetcherResult } from '../api'
+import type { GraphQLFetcherResult } from '../types'
 import type { HookFetcherContext } from '@plasmicpkgs/commerce'
 import type { AuthTokenAttr } from '@spree/storefront-api-v2-sdk/types/interfaces/Authentication'
 import type { AssociateCart } from '@spree/storefront-api-v2-sdk/types/interfaces/endpoints/CartClass'

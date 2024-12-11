@@ -1,4 +1,4 @@
-import type { GraphQLFetcherResult } from '../../api'
+import type { GraphQLFetcherResult } from '../../types'
 import type { HookFetcherContext } from '@plasmicpkgs/commerce'
 import TokensNotRejectedError from '../../errors/TokensNotRejectedError'
 import type { UserOAuthTokens } from '../../types'

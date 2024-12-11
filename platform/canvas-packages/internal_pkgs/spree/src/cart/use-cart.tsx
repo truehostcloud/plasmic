@@ -4,7 +4,7 @@ import useCart from '@plasmicpkgs/commerce'
 import type { UseCart } from '@plasmicpkgs/commerce'
 import type { GetCartHook } from '@plasmicpkgs/commerce'
 import normalizeCart from '../utils/normalizations/normalize-cart'
-import type { GraphQLFetcherResult } from '../api'
+import type { GraphQLFetcherResult } from '../types'
 import type { IOrder } from '@spree/storefront-api-v2-sdk/types/interfaces/Order'
 import type { IToken } from '@spree/storefront-api-v2-sdk/types/interfaces/Token'
 import { FetcherError } from '@plasmicpkgs/commerce'
@@ -17,7 +17,7 @@ import { requireConfigValue } from '../isomorphic-config'
 const imagesSize = requireConfigValue('imagesSize') as string
 const imagesQuality = requireConfigValue('imagesQuality') as number
 
-export default useCart as UseCart<typeof handler>
+export default useCart as unknown as UseCart<typeof handler>
 
 // This handler avoids calling /api/cart.
 // There doesn't seem to be a good reason to call it.

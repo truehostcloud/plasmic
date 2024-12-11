@@ -6,11 +6,7 @@ import type {
 } from '@spree/storefront-api-v2-sdk/types/interfaces/JsonApi'
 import type { ResultResponse } from '@spree/storefront-api-v2-sdk/types/interfaces/ResultResponse'
 import type { ProductOption } from '@plasmicpkgs/commerce'
-import type {
-  Wishlist as CoreWishlist,
-  WishlistItemBody as CoreWishlistItemBody,
-  RemoveItemHook as CoreRemoveItemHook,
-} from '@plasmicpkgs/commerce'
+import type { FetchOptions } from '@vercel/fetch'
 
 export type UnknownObjectValues = Record<string, unknown>
 
@@ -132,22 +128,21 @@ export type UserOAuthTokens = {
   accessToken: string
 }
 
-export interface Wishlist extends CoreWishlist {
-  token: string
+export type GraphQLFetcher<
+  Data extends GraphQLFetcherResult = GraphQLFetcherResult,
+  Variables = any
+> = (
+  query: string,
+  queryData?: CommerceAPIFetchOptions<Variables>,
+  fetchOptions?: FetchOptions
+) => Promise<Data>
+
+export interface GraphQLFetcherResult<Data = any> {
+  data: Data
+  res: Response
 }
 
-export interface WishlistItemBody extends CoreWishlistItemBody {
-  wishlistToken: string
-}
-
-export type AddItemHook = {
-  data: Wishlist | null | undefined
-  body: { item: WishlistItemBody }
-  fetcherInput: { item: WishlistItemBody }
-  actionInput: WishlistItemBody
-}
-
-export type RemoveItemHook = CoreRemoveItemHook & {
-  fetcherInput: { itemId: string; wishlistToken?: string }
-  body: { temId: string; wishlistToken?: string }
+export interface CommerceAPIFetchOptions<Variables> {
+  variables?: Variables
+  preview?: boolean
 }
