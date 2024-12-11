@@ -1,9 +1,4 @@
-import type {
-  Cart,
-  LineItem,
-  ProductVariant,
-  SelectedOption,
-} from '@plasmicpkgs/commerce'
+import { Cart, LineItem, SelectedOption } from '../../types/cart'
 import MissingLineItemVariantError from '../../errors/MissingLineItemVariantError'
 import { requireConfigValue } from '../../isomorphic-config'
 import type { OrderAttr } from '@spree/storefront-api-v2-sdk/types/interfaces/Order'
@@ -31,7 +26,7 @@ const isColorProductOption = (productOptionType: OptionTypeAttr) => {
 const normalizeVariant = (
   spreeSuccessResponse: SpreeSdkResponse,
   spreeVariant: VariantAttr
-): ProductVariant => {
+): unknown => {
   const spreeProduct = jsonApi.findSingleRelationshipDocument<ProductAttr>(
     spreeSuccessResponse,
     spreeVariant,

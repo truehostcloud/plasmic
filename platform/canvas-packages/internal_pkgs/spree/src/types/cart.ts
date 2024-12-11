@@ -36,3 +36,18 @@ export type GetCartHandler = CartHandlers['getCart']
 export type AddItemHandler = CartHandlers['addItem']
 export type UpdateItemHandler = CartHandlers['updateItem']
 export type RemoveItemHandler = CartHandlers['removeItem']
+
+export interface SelectedOption {
+  /**
+   * The unique identifier for the option.
+   */
+  id?: string
+  /**
+   *  The product option’s name, such as "Color" or "Size".
+   */
+  name: string
+  /**
+   * The product option’s value, such as "Red" or "XL".
+   */
+  value: string
+}
