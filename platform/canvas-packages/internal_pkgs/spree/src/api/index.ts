@@ -1,5 +1,5 @@
-import type { CommerceAPI, CommerceAPIConfig } from '@vercel/commerce/api'
-import { getCommerceApi as commerceApi } from '@vercel/commerce/api'
+import type { CommerceAPI, CommerceAPIConfig } from '@plasmicpkgs/commerce'
+import { getCommerceApi as commerceApi } from '@plasmicpkgs/commerce'
 import createApiFetch from './utils/create-api-fetch'
 
 import getAllPages from './operations/get-all-pages'

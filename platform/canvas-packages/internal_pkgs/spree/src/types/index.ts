@@ -5,12 +5,12 @@ import type {
   JsonApiSingleResponse,
 } from '@spree/storefront-api-v2-sdk/types/interfaces/JsonApi'
 import type { ResultResponse } from '@spree/storefront-api-v2-sdk/types/interfaces/ResultResponse'
-import type { ProductOption } from '@vercel/commerce/types/product'
+import type { ProductOption } from '@plasmicpkgs/commerce'
 import type {
   Wishlist as CoreWishlist,
   WishlistItemBody as CoreWishlistItemBody,
   RemoveItemHook as CoreRemoveItemHook,
-} from '@vercel/commerce/types/wishlist'
+} from '@plasmicpkgs/commerce'
 
 export type UnknownObjectValues = Record<string, unknown>
 

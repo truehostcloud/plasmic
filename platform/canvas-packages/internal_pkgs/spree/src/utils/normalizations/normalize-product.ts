@@ -2,8 +2,8 @@ import type {
   Product,
   ProductPrice,
   ProductVariant,
-} from '@vercel/commerce/types/product'
-import type { Image } from '@vercel/commerce/types/common'
+} from '@plasmicpkgs/commerce'
+import type { Image } from '@plasmicpkgs/commerce'
 import type { ProductAttr } from '@spree/storefront-api-v2-sdk/types/interfaces/Product'
 import type { RelationType } from '@spree/storefront-api-v2-sdk/types/interfaces/Relationships'
 import { jsonApi } from '@spree/storefront-api-v2-sdk'

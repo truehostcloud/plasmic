@@ -1,4 +1,4 @@
-import { Page } from '@vercel/commerce/types/page'
+import { Page } from '@plasmicpkgs/commerce'
 import type { PageAttr } from '@spree/storefront-api-v2-sdk/types/interfaces/Page'
 import { SpreeSdkResponse } from '../../types'
 

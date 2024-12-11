@@ -1,15 +1,15 @@
 import { useMemo } from 'react'
-import type { SWRHook } from '@vercel/commerce/utils/types'
-import useWishlist from '@vercel/commerce/wishlist/use-wishlist'
-import type { UseWishlist } from '@vercel/commerce/wishlist/use-wishlist'
-import type { GetWishlistHook } from '@vercel/commerce/types/wishlist'
+import type { SWRHook } from '@plasmicpkgs/commerce'
+import useWishlist from '@plasmicpkgs/commerce'
+import type { UseWishlist } from '@plasmicpkgs/commerce'
+import type { GetWishlistHook } from '@plasmicpkgs/commerce'
 import type { IToken } from '@spree/storefront-api-v2-sdk/types/interfaces/Token'
-import type { GraphQLFetcherResult } from '@vercel/commerce/api'
+import type { GraphQLFetcherResult } from '@plasmicpkgs/commerce'
 import type { Wishlist } from '@spree/storefront-api-v2-sdk/types/interfaces/Wishlist'
 import ensureIToken from '../utils/tokens/ensure-itoken'
 import normalizeWishlist from '../utils/normalizations/normalize-wishlist'
 import isLoggedIn from '../utils/tokens/is-logged-in'
-import { ValidationError } from '@vercel/commerce/utils/errors'
+import { ValidationError } from '@plasmicpkgs/commerce'
 
 export default useWishlist as UseWishlist<typeof handler>
 

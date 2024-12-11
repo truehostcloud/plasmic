@@ -1,15 +1,15 @@
 import { useCallback } from 'react'
-import type { MutationHook } from '@vercel/commerce/utils/types'
-import useAddItem from '@vercel/commerce/wishlist/use-add-item'
-import type { UseAddItem } from '@vercel/commerce/wishlist/use-add-item'
-import type { AddItemHook } from '@vercel/commerce/types/wishlist'
+import type { MutationHook } from '@plasmicpkgs/commerce'
+import useAddItem from '@plasmicpkgs/commerce'
+import type { UseAddItem } from '@plasmicpkgs/commerce'
+import type { AddItemHook } from '@plasmicpkgs/commerce'
 import useWishlist from './use-wishlist'
 
 import type {
   WishedItem,
   WishlistsAddWishedItem,
 } from '@spree/storefront-api-v2-sdk/types/interfaces/WishedItem'
-import type { GraphQLFetcherResult } from '@vercel/commerce/api'
+import type { GraphQLFetcherResult } from '@plasmicpkgs/commerce'
 import ensureIToken from '../utils/tokens/ensure-itoken'
 import type { IToken } from '@spree/storefront-api-v2-sdk/types/interfaces/Token'
 

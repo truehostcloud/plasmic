@@ -1,5 +1,5 @@
-import type { GraphQLFetcherResult } from '@vercel/commerce/api'
-import type { HookFetcherContext } from '@vercel/commerce/utils/types'
+import type { GraphQLFetcherResult } from '@plasmicpkgs/commerce'
+import type { HookFetcherContext } from '@plasmicpkgs/commerce'
 import type { AuthTokenAttr } from '@spree/storefront-api-v2-sdk/types/interfaces/Authentication'
 import type { AssociateCart } from '@spree/storefront-api-v2-sdk/types/interfaces/endpoints/CartClass'
 import type { IOrder } from '@spree/storefront-api-v2-sdk/types/interfaces/Order'

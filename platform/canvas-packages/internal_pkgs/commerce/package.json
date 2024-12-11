@@ -6,21 +6,22 @@
   "types": "dist/index.d.ts",
   "module": "dist/commerce.esm.js",
   "files": [
-    "dist"
+    "dist",
+    "dist/**/*.d.ts"
   ],
   "type": "module",
   "exports": {
     ".": "./dist/index.js",
-    "./api/*": "./dist/api/*.d.ts",
-    "./auth/*": "./dist/auth/*.d.ts",
-    "./cart/*": "./dist/cart/*.d.ts",
-    "./checkout/*": "./dist/checkout/*.d.ts",
-    "./customer/*": "./dist/customer/*.d.ts",
-    "./product/*": "./dist/product/*.d.ts",
-    "./schemas/*": "./dist/schemas/*.d.ts",
-    "./types/*": "./dist/types/*.d.ts",
-    "./utils/*": "./dist/utils/*.d.ts",
-    "./wishlist/*": "./dist/wishlist/*.d.ts"
+    "./api/*": "./dist/api/*.ts",
+    "./auth/*": "./dist/auth/*.ts",
+    "./cart/*": "./dist/cart/*.ts",
+    "./checkout/*": "./dist/checkout/*.ts",
+    "./customer/*": "./dist/customer/*.ts",
+    "./product/*": "./dist/product/*.ts",
+    "./schemas/*": "./dist/schemas/*.ts",
+    "./types/*": "./dist/types/*.ts",
+    "./utils/*": "./dist/utils/*.ts",
+    "./wishlist/*": "./dist/wishlist/*.ts"
   },
   "typesVersions": {
     "*": {

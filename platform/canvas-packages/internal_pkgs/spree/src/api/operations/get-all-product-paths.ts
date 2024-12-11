@@ -1,9 +1,9 @@
 import type {
   OperationContext,
   OperationOptions,
-} from '@vercel/commerce/api/operations'
-import type { Product } from '@vercel/commerce/types/product'
-import type { GetAllProductPathsOperation } from '@vercel/commerce/types/product'
+} from '@plasmicpkgs/commerce'
+import type { Product } from '@plasmicpkgs/commerce'
+import type { GetAllProductPathsOperation } from '@plasmicpkgs/commerce'
 import { requireConfigValue } from '../../isomorphic-config'
 import type { IProductsSlugs, SpreeSdkVariables } from '../../types'
 import getProductPath from '../../utils/get-product-path'

@@ -1,12 +1,12 @@
-import type { SWRHook } from '@vercel/commerce/utils/types'
-import useSearch from '@vercel/commerce/product/use-search'
+import type { SWRHook } from '@plasmicpkgs/commerce'
+import useSearch from '@plasmicpkgs/commerce'
 import type {
   Product,
   SearchProductsHook,
-} from '@vercel/commerce/types/product'
-import type { UseSearch } from '@vercel/commerce/product/use-search'
+} from '@plasmicpkgs/commerce'
+import type { UseSearch } from '@plasmicpkgs/commerce'
 import normalizeProduct from '../utils/normalizations/normalize-product'
-import type { GraphQLFetcherResult } from '@vercel/commerce/api'
+import type { GraphQLFetcherResult } from '@plasmicpkgs/commerce'
 import { IProducts } from '@spree/storefront-api-v2-sdk/types/interfaces/Product'
 import { requireConfigValue } from '../isomorphic-config'
 

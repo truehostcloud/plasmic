@@ -1,11 +1,11 @@
 import type {
   OperationContext,
   OperationOptions,
-} from '@vercel/commerce/api/operations'
+} from '@plasmicpkgs/commerce'
 import type {
   Category,
   GetSiteInfoOperation,
-} from '@vercel/commerce/types/site'
+} from '@plasmicpkgs/commerce'
 import type {
   ITaxons,
   TaxonAttr,

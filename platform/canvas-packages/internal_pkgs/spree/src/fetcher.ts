@@ -1,4 +1,4 @@
-import { Fetcher, FetcherOptions } from "@vercel/commerce/utils/types";
+import { Fetcher, FetcherOptions } from "@plasmicpkgs/commerce'
 import convertSpreeErrorToGraphQlError from './utils/convert-spree-error-to-graph-ql-error'
 import { makeClient, errors } from '@spree/storefront-api-v2-sdk'
 import type { ResultResponse } from '@spree/storefront-api-v2-sdk/types/interfaces/ResultResponse'
@@ -15,7 +15,7 @@ import createCustomizedFetchFetcher, {
 import ensureFreshUserAccessToken from './utils/tokens/ensure-fresh-user-access-token'
 import RefreshTokenError from './errors/RefreshTokenError'
 import prettyPrintSpreeSdkErrors from './utils/pretty-print-spree-sdk-errors'
-import type { GraphQLFetcherResult } from '@vercel/commerce/api'
+import type { GraphQLFetcherResult } from '@plasmicpkgs/commerce'
 
 const client = (apiHost: string) => makeClient({
   host: apiHost,

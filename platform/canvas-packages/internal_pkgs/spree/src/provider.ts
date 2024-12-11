@@ -10,7 +10,7 @@ import { handler as useWishlist } from './wishlist/use-wishlist'
 import { handler as useWishlistAddItem } from './wishlist/use-add-item'
 import { handler as useWishlistRemoveItem } from './wishlist/use-remove-item'
 import { requireConfigValue } from './isomorphic-config'
-import type { Fetcher } from '@vercel/commerce/utils/types'
+import type { Fetcher } from '@plasmicpkgs/commerce'
 
 export const getSpreeProvider = (apiHost: string) => (
   {

@@ -1,13 +1,13 @@
 import { useCallback } from 'react'
-import type { MutationHook } from '@vercel/commerce/utils/types'
-import useRemoveItem from '@vercel/commerce/wishlist/use-remove-item'
-import type { UseRemoveItem } from '@vercel/commerce/wishlist/use-remove-item'
-import type { RemoveItemHook } from '@vercel/commerce/types/wishlist'
+import type { MutationHook } from '@plasmicpkgs/commerce'
+import useRemoveItem from '@plasmicpkgs/commerce'
+import type { UseRemoveItem } from '@plasmicpkgs/commerce'
+import type { RemoveItemHook } from '@plasmicpkgs/commerce'
 import useWishlist from './use-wishlist'
 import isLoggedIn from '../utils/tokens/is-logged-in'
 import ensureIToken from '../utils/tokens/ensure-itoken'
 import type { IToken } from '@spree/storefront-api-v2-sdk/types/interfaces/Token'
-import type { GraphQLFetcherResult } from '@vercel/commerce/api'
+import type { GraphQLFetcherResult } from '@plasmicpkgs/commerce'
 import type { WishedItem } from '@spree/storefront-api-v2-sdk/types/interfaces/WishedItem'
 
 export default useRemoveItem as UseRemoveItem<typeof handler>

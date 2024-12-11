@@ -1,8 +1,8 @@
 import type {
   OperationContext,
   OperationOptions,
-} from '@vercel/commerce/api/operations'
-import type { GetPageOperation } from '@vercel/commerce/types/page'
+} from '@plasmicpkgs/commerce'
+import type { GetPageOperation } from '@plasmicpkgs/commerce'
 import type { SpreeSdkVariables } from '../../types'
 import type { SpreeApiConfig, SpreeApiProvider } from '..'
 import type { IPage } from '@spree/storefront-api-v2-sdk/types/interfaces/Page'

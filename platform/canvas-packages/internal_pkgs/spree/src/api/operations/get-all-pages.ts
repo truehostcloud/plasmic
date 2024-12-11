@@ -1,8 +1,8 @@
 import type {
   OperationContext,
   OperationOptions,
-} from '@vercel/commerce/api/operations'
-import type { GetAllPagesOperation, Page } from '@vercel/commerce/types/page'
+} from '@plasmicpkgs/commerce'
+import type { GetAllPagesOperation, Page } from '@plasmicpkgs/commerce'
 import { requireConfigValue } from '../../isomorphic-config'
 import normalizePage from '../../utils/normalizations/normalize-page'
 import type { IPages } from '@spree/storefront-api-v2-sdk/types/interfaces/Page'
