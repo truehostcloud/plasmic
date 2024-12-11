@@ -3,7 +3,7 @@ import useSearch from '@plasmicpkgs/commerce'
 import type {
   Product,
   SearchProductsHook,
-} from '@plasmicpkgs/commerce'
+} from '../types/product'
 import type { UseSearch } from '@plasmicpkgs/commerce'
 import normalizeProduct from '../utils/normalizations/normalize-product'
 import type { GraphQLFetcherResult } from '../types'
