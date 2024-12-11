@@ -6,7 +6,7 @@ import type {
 } from '@plasmicpkgs/commerce'
 import type { UseSearch } from '@plasmicpkgs/commerce'
 import normalizeProduct from '../utils/normalizations/normalize-product'
-import type { GraphQLFetcherResult } from '@plasmicpkgs/commerce'
+import type { GraphQLFetcherResult } from '../api'
 import { IProducts } from '@spree/storefront-api-v2-sdk/types/interfaces/Product'
 import { requireConfigValue } from '../isomorphic-config'
 

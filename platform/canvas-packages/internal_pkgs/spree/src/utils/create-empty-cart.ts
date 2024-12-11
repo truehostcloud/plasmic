@@ -1,4 +1,4 @@
-import type { GraphQLFetcherResult } from '@plasmicpkgs/commerce'
+import type { GraphQLFetcherResult } from '../api'
 import type { HookFetcherContext } from '@plasmicpkgs/commerce'
 import type { IOrder } from '@spree/storefront-api-v2-sdk/types/interfaces/Order'
 import type { IToken } from '@spree/storefront-api-v2-sdk/types/interfaces/Token'

@@ -3,9 +3,9 @@ import type { UseAddItem } from '@plasmicpkgs/commerce'
 import type { MutationHook } from '@plasmicpkgs/commerce'
 import { useCallback } from 'react'
 import useCart from './use-cart'
-import type { AddItemHook } from '@plasmicpkgs/commerce'
+import type { AddItemHook } from '../types/cart'
 import normalizeCart from '../utils/normalizations/normalize-cart'
-import type { GraphQLFetcherResult } from '@plasmicpkgs/commerce'
+import type { GraphQLFetcherResult } from '../api'
 import type { IOrder } from '@spree/storefront-api-v2-sdk/types/interfaces/Order'
 import type { IToken } from '@spree/storefront-api-v2-sdk/types/interfaces/Token'
 import type { AddItem } from '@spree/storefront-api-v2-sdk/types/interfaces/endpoints/CartClass'
@@ -32,7 +32,7 @@ export const handler: MutationHook<AddItemHook> = {
       options
     )
 
-    const { quantity, productId, variantId } = input
+    const { quantity, variantId } = input
 
     const safeQuantity = quantity ?? 1
 

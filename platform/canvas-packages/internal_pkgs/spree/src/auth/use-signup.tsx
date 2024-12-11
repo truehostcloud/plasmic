@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import type { GraphQLFetcherResult } from '@plasmicpkgs/commerce'
+import type { GraphQLFetcherResult } from '../api'
 import type { MutationHook } from '@plasmicpkgs/commerce'
 import useSignup, { UseSignup } from '@plasmicpkgs/commerce'
 import type { SignupHook } from '@plasmicpkgs/commerce'

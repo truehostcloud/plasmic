@@ -9,7 +9,7 @@ import type {
   WishedItem,
   WishlistsAddWishedItem,
 } from '@spree/storefront-api-v2-sdk/types/interfaces/WishedItem'
-import type { GraphQLFetcherResult } from '@plasmicpkgs/commerce'
+import type { GraphQLFetcherResult } from '../api'
 import ensureIToken from '../utils/tokens/ensure-itoken'
 import type { IToken } from '@spree/storefront-api-v2-sdk/types/interfaces/Token'
 

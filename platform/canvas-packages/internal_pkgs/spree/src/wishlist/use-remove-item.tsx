@@ -7,7 +7,7 @@ import useWishlist from './use-wishlist'
 import isLoggedIn from '../utils/tokens/is-logged-in'
 import ensureIToken from '../utils/tokens/ensure-itoken'
 import type { IToken } from '@spree/storefront-api-v2-sdk/types/interfaces/Token'
-import type { GraphQLFetcherResult } from '@plasmicpkgs/commerce'
+import type { GraphQLFetcherResult } from '../api'
 import type { WishedItem } from '@spree/storefront-api-v2-sdk/types/interfaces/WishedItem'
 
 export default useRemoveItem as UseRemoveItem<typeof handler>
