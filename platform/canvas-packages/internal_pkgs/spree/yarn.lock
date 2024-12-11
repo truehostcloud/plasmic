@@ -1585,21 +1585,6 @@
     semver "^7.3.2"
     tsutils "^3.17.1"
 
-"@vercel/commerce@file:../commerce":
-  version "0.0.1"
-  dependencies:
-    "@vercel/edge" "^0.0.4"
-    deepmerge "^4.2.2"
-    import-cwd "^3.0.0"
-    js-cookie "^3.0.1"
-    swr "^1.3.0"
-    zod "^3.19.1"
-
-"@vercel/edge@^0.0.4":
-  version "0.0.4"
-  resolved "https://registry.yarnpkg.com/@vercel/edge/-/edge-0.0.4.tgz#910306deb03321f038c0981510710d436391b291"
-  integrity sha512-KzZuSib25DsYjLa7UiMhAWfhfE9Oby1T90M0mkYMjCNK71i9vvEKRQXnhs3htmyNyid11KyI4wMEnIr7M9DqAA==
-
 "@vercel/fetch-cached-dns@^2.0.2":
   version "2.1.2"
   resolved "https://registry.yarnpkg.com/@vercel/fetch-cached-dns/-/fetch-cached-dns-2.1.2.tgz#747cfb12c378fbc8d5b3341e634303a7631b5bf9"
@@ -3920,13 +3905,6 @@ ignore@^5.2.0:
   resolved "https://registry.yarnpkg.com/ignore/-/ignore-5.3.2.tgz#3cd40e729f3643fd87cb04e50bf0eb722bc596f5"
   integrity sha512-hsBTNUqQTDwkWtcdYI2i06Y/nUBEsNEDJKjWdigLvegy8kDuJAS8uRlpkkcQpyEXL0Z/pjDy5HBmMjRCJ2gq+g==
 
-import-cwd@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/import-cwd/-/import-cwd-3.0.0.tgz#20845547718015126ea9b3676b7592fb8bd4cf92"
-  integrity sha512-4pnzH16plW+hgvRECbDWpQl3cqtvSofHWh44met7ESfZ8UZOWWddm8hEyDTqREJ9RbYHY8gi8DqmaelApoOGMg==
-  dependencies:
-    import-from "^3.0.0"
-
 import-fresh@^3.0.0, import-fresh@^3.1.0:
   version "3.3.0"
   resolved "https://registry.yarnpkg.com/import-fresh/-/import-fresh-3.3.0.tgz#37162c25fcb9ebaa2e6e53d5b4d88ce17d9e0c2b"
@@ -3934,13 +3912,6 @@ import-fresh@^3.0.0, import-fresh@^3.1.0:
   dependencies:
     parent-module "^1.0.0"
     resolve-from "^4.0.0"
-
-import-from@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/import-from/-/import-from-3.0.0.tgz#055cfec38cd5a27d8057ca51376d7d3bf0891966"
-  integrity sha512-CiuXOFFSzkU5x/CR0+z7T91Iht4CXgfCxVOFRhh2Zyhg5wOpWvvDLQUsWl+gcN+QscYBjez8hDCt85O7RLDttQ==
-  dependencies:
-    resolve-from "^5.0.0"
 
 import-local@^3.0.2:
   version "3.2.0"
@@ -7437,8 +7408,3 @@ yargs@^15.3.1:
     which-module "^2.0.0"
     y18n "^4.0.0"
     yargs-parser "^18.1.2"
-
-zod@^3.19.1:
-  version "3.24.1"
-  resolved "https://registry.yarnpkg.com/zod/-/zod-3.24.1.tgz#27445c912738c8ad1e9de1bea0359fa44d9d35ee"
-  integrity sha512-muH7gBL9sI1nciMZV67X5fTKKBLtwpZ5VBp1vsOQzj1MhrBZ4wlVCm3gedKZWLp0Oyel8sIGfeiz54Su+OVT+A==

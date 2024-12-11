@@ -2,7 +2,7 @@ import type { MutationHook } from '@plasmicpkgs/commerce'
 import useUpdateItem, {
   UseUpdateItem,
 } from '@plasmicpkgs/commerce'
-import type { UpdateItemHook } from '@plasmicpkgs/commerce'
+import type { UpdateItemHook } from '../types/cart'
 import useCart from './use-cart'
 import { useMemo } from 'react'
 import { FetcherError, ValidationError } from '@plasmicpkgs/commerce'

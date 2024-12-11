@@ -1,7 +1,7 @@
 import type { MutationHook } from '@plasmicpkgs/commerce'
 import useRemoveItem from '@plasmicpkgs/commerce'
 import type { UseRemoveItem } from '@plasmicpkgs/commerce'
-import type { RemoveItemHook } from '@plasmicpkgs/commerce'
+import type { RemoveItemHook } from '../types/cart'
 import useCart from './use-cart'
 import { useCallback } from 'react'
 import normalizeCart from '../utils/normalizations/normalize-cart'
