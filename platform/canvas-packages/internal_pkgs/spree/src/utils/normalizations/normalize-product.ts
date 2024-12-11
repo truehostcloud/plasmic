@@ -1,9 +1,5 @@
-import type {
-  Product,
-  ProductPrice,
-  ProductVariant,
-} from '@plasmicpkgs/commerce'
-import type { Image } from '@plasmicpkgs/commerce'
+import type { Image } from '../../types/common'
+import type { ProductVariant, Product, ProductPrice } from '../../types/product'
 import type { ProductAttr } from '@spree/storefront-api-v2-sdk/types/interfaces/Product'
 import type { RelationType } from '@spree/storefront-api-v2-sdk/types/interfaces/Relationships'
 import { jsonApi } from '@spree/storefront-api-v2-sdk'
