@@ -25,7 +25,7 @@ export const commerceProviderMeta: GlobalContextMeta<CommerceProviderProps> = {
     },
   },
   ...{ globalActions: globalActionsRegistrations },
-  importPath: "@plasmicpkgs/commerce-saleor",
+  importPath: "commerce-spree",
   importName: "CommerceProviderComponent",
 };
 
