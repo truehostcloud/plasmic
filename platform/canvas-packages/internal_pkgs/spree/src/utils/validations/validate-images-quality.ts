@@ -11,7 +11,7 @@ const validateImagesQuality = (quality: unknown): number => {
     )
   }
 
-  if (quality_level === NaN) {
+  if (isNaN(quality_level)) {
     throw new TypeError(
       'prerenderCount count must be a string containing a number or an integer.'
     )
