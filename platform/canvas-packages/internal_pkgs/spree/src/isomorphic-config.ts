@@ -51,7 +51,6 @@ export default forceIsomorphicConfigValues(
   isomorphicConfig,
   [],
   [
-    'apiHost',
     'defaultLocale',
     'cartCookieName',
     'cartCookieExpire',
