@@ -5,13 +5,13 @@ import {
   ComboBoxRenderProps,
   ComboBoxStateContext,
 } from "react-aria-components";
-import { arrowDown, getCommonProps } from "./common";
+import { arrowDown, COMMON_STYLES, getCommonProps } from "./common";
 import {
   PlasmicInputContext,
   PlasmicListBoxContext,
   PlasmicPopoverTriggerContext,
 } from "./contexts";
-import { ListBoxItemIdManager } from "./ListBoxItemIdManager";
+import { OptionsItemIdManager } from "./OptionsItemIdManager";
 import { BUTTON_COMPONENT_NAME } from "./registerButton";
 import { INPUT_COMPONENT_NAME } from "./registerInput";
 import { LABEL_COMPONENT_NAME } from "./registerLabel";
@@ -85,7 +85,7 @@ export function BaseComboBox(props: BaseComboboxProps) {
     [className, plasmicUpdateVariant]
   );
 
-  const idManager = useMemo(() => new ListBoxItemIdManager(), []);
+  const idManager = useMemo(() => new OptionsItemIdManager(), []);
 
   useEffect(() => {
     idManager.subscribe((ids: string[]) => {
@@ -96,7 +96,7 @@ export function BaseComboBox(props: BaseComboboxProps) {
   }, []);
 
   return (
-    <ComboBox className={classNameProp} {...rest}>
+    <ComboBox className={classNameProp} {...rest} style={COMMON_STYLES}>
       <PlasmicPopoverTriggerContext.Provider value={true}>
         <PlasmicListBoxContext.Provider
           value={{

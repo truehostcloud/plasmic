@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Key, ListBox, ListBoxRenderProps } from "react-aria-components";
+import { COMMON_STYLES } from "./common";
 import { PlasmicListBoxContext } from "./contexts";
-import { ListBoxItemIdManager } from "./ListBoxItemIdManager";
+import { OptionsItemIdManager } from "./OptionsItemIdManager";
 import {
   makeDefaultListBoxItemChildren,
   registerListBoxItem,
@@ -70,7 +71,7 @@ export function BaseListBox(props: BaseListBoxProps) {
   const isStandalone = !context;
   const [ids, setIds] = useState<string[]>([]);
   const idManager = useMemo(
-    () => context?.idManager ?? new ListBoxItemIdManager(),
+    () => context?.idManager ?? new OptionsItemIdManager(),
     []
   );
 
@@ -103,6 +104,7 @@ export function BaseListBox(props: BaseListBoxProps) {
       selectedKeys={normalizeSelectedKeys(selectedKeys)}
       defaultSelectedKeys={normalizeSelectedKeys(defaultSelectedKeys)}
       className={classNameProp}
+      style={COMMON_STYLES}
       {...rest}
     >
       {children}

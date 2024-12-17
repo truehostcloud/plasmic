@@ -8,7 +8,11 @@ import {
   PseudoSelectorOption,
 } from "@/wab/shared/core/styles";
 import { Site } from "@/wab/shared/model/classes";
-import { StyleVariant } from "@/wab/shared/Variants";
+import {
+  isCodeComponentVariant,
+  isStyleVariant,
+  StyleOrCodeComponentVariant,
+} from "@/wab/shared/Variants";
 import { Tooltip } from "antd";
 import { default as React, useLayoutEffect, useState } from "react";
 import type { TaggedUnion } from "type-fest";
@@ -30,7 +34,7 @@ export type Selector = TaggedUnion<
 >;
 
 function selectorToReactKey(selector: Selector): string {
-  return `${selector.type}-${selectorToVariantSelector(selector)}`;
+  return `${selector.type}-${getVariantIdentifier(selector)}`;
 }
 
 function selectorToDisplayName(
@@ -47,19 +51,13 @@ function selectorToDisplayName(
   }
 }
 
-/** Maps Selector to what should be stored in the Variant.selectors field. */
-function selectorToVariantSelector(selector: Selector): string {
+export function getVariantIdentifier(selector: Selector): string {
   switch (selector.type) {
     case "CodeComponentSelector":
       return selector.key;
     case "CssSelector":
       return selector.cssSelector;
   }
-}
-
-/** Maps Selectors to what should be stored in the Variant.selectors field. */
-export function selectorsToVariantSelectors(selectors: Selector[]) {
-  return selectors.map(selectorToVariantSelector);
 }
 
 function areSelectorsEqual(a: Selector, b: Selector) {
@@ -77,34 +75,41 @@ function areSelectorsEqual(a: Selector, b: Selector) {
 
 /**
  * StyleVariant.selectors currently stores:
- * - for code components: display name
+ * - for code components: null
  * - for preset selectors in src/wab/shared/core/styles.ts: display name
  * - for custom selectors: selector
- * TODO: write migration so code components use key, presets use selector
+ * TODO: write migration so presets use selector
+ *
+ * CodeComponentVariant.codeComponentVariantKeys stores the key of the code component variant
  */
-export function styleVariantToSelectors(
-  variant: StyleVariant,
+export function styleOrCodeComponentVariantToSelectors(
+  variant: StyleOrCodeComponentVariant,
   site: Site
 ): Selector[] {
-  const info = siteCCVariantsToInfos(site).get(variant);
-  if (info) {
-    return [...info.selectorsKeysToMetas.entries()].map(([key, meta]) => ({
-      type: "CodeComponentSelector",
-      componentUuid: info.component.uuid,
-      componentName: info.component.name,
-      key,
-      displayName: meta.displayName,
-    }));
+  if (isCodeComponentVariant(variant)) {
+    const info = siteCCVariantsToInfos(site).get(variant);
+    if (info) {
+      return [...info.keysToMetas.entries()].map(([key, meta]) => ({
+        type: "CodeComponentSelector",
+        componentUuid: info.component.uuid,
+        componentName: info.component.name,
+        key,
+        displayName: meta.displayName,
+      }));
+    }
+  }
+  if (isStyleVariant(variant)) {
+    return variant.selectors.map<Selector>((cssSelector) => {
+      const preset = getPseudoSelector(cssSelector);
+      return {
+        type: "CssSelector",
+        cssSelector,
+        preset,
+      };
+    });
   }
 
-  return variant.selectors.map<Selector>((cssSelector) => {
-    const preset = getPseudoSelector(cssSelector);
-    return {
-      type: "CssSelector",
-      cssSelector,
-      preset,
-    };
-  });
+  return [];
 }
 
 export interface SelectorsInputProps {
@@ -192,7 +197,11 @@ export function SelectorsInput({
 
   return (
     <XMultiSelect
-      placeholder={"e.g. :hover, :focus, :nth-child(odd)"}
+      placeholder={
+        codeComponent
+          ? "Choose a variant"
+          : "e.g. :hover, :focus, :nth-child(odd)"
+      }
       autoFocus={autoFocus}
       selectedItems={selectors}
       itemKey={(selector: Selector | null) =>
@@ -253,21 +262,24 @@ export function SelectorsInput({
             selectorToDisplayName(selector)
               .toLowerCase()
               .includes(inputLower) ||
-            selectorToVariantSelector(selector)
-              .toLowerCase()
-              .includes(inputLower)
+            getVariantIdentifier(selector).toLowerCase().includes(inputLower)
         );
       }}
     />
   );
 }
 
-export function SelectorTags(props: { selectors: Selector[] }) {
-  const { selectors } = props;
+export function SelectorTags(props: {
+  isCodeComponent: boolean;
+  selectors: Selector[];
+}) {
+  const { selectors, isCodeComponent } = props;
   if (selectors.length === 0) {
     return (
       <div key={"no-selector"} className={"no-selector-placeholder"}>
-        Double click to enter CSS selectors
+        {isCodeComponent
+          ? "Choose a variant"
+          : "Double click to enter CSS selectors"}
       </div>
     );
   }

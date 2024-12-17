@@ -46,14 +46,16 @@ import {
   getBaseVariant,
   getPartitionedScreenVariants,
   hasScreenVariant,
-  hasStyleVariant,
+  hasStyleOrCodeComponentVariant,
   isBaseVariant,
+  isCodeComponentVariant,
   isGlobalVariant,
   isGlobalVariantGroup,
   isScreenVariant,
   isScreenVariantGroup,
   isStandaloneVariant,
   isStandaloneVariantGroup,
+  isStyleOrCodeComponentVariant,
   isStyleVariant,
   isVariantSettingEmpty,
   mkBaseVariant,
@@ -97,6 +99,7 @@ import {
   isSuperVariantFrame,
   maybeEnsureManagedFrameForGlobalVariantInComponentArena,
   mkComponentArena,
+  moveVariantCellInComponentArena,
   removeCustomComponentFrame,
   removeSuperOrGlobalVariantComponentFrame,
 } from "@/wab/shared/component-arenas";
@@ -557,7 +560,7 @@ export class TplMgr {
     // This is to ensure that we are able to use the parent in the previous
     // steps
     for (const v of variants) {
-      if (isStyleVariant(v)) {
+      if (isStyleOrCodeComponentVariant(v)) {
         tryRemove(
           ensure(component, "Expected component to be not null").variants,
           v
@@ -599,10 +602,22 @@ export class TplMgr {
     });
   }
 
-  removeStyleVariantIfEmptyAndUnused(component: Component, variant: Variant) {
-    assert(isStyleVariant(variant), "Given variant should be a style variant");
+  removeStyleOrCodeComponentVariantIfEmptyAndUnused(
+    component: Component,
+    variant: Variant
+  ) {
+    assert(
+      isStyleOrCodeComponentVariant(variant),
+      "Given variant should be a registered variant"
+    );
+
+    if (isStyleVariant(variant) && variant.selectors.length > 0) {
+      return;
+    }
+
     if (
-      ensure(variant.selectors, "Style variant must have selectors").length > 0
+      isCodeComponentVariant(variant) &&
+      variant.codeComponentVariantKeys.length > 0
     ) {
       return;
     }
@@ -665,6 +680,25 @@ export class TplMgr {
     const variant = mkVariant({
       name: "",
       selectors,
+    });
+    component.variants.push(variant);
+
+    const arena = getComponentArena(this.site(), component);
+    if (arena) {
+      ensureManagedFrameForVariantInComponentArena(this.site(), arena, variant);
+    }
+    return variant;
+  }
+
+  createCodeComponentVariant(
+    component: Component,
+    codeComponentName: string,
+    codeComponentVariantKeys: string[] = []
+  ) {
+    const variant = mkVariant({
+      name: "",
+      codeComponentName,
+      codeComponentVariantKeys,
     });
     component.variants.push(variant);
 
@@ -2221,6 +2255,14 @@ export class TplMgr {
           }
         }
       }
+
+      moveVariantCellInComponentArena(
+        this.site(),
+        component,
+        variant,
+        oldParent,
+        newGroup
+      );
     }
   }
 
@@ -2232,8 +2274,8 @@ export class TplMgr {
       this.renameVariant(newVariant, newVariant.name);
     } else {
       assert(
-        isStyleVariant(variant),
-        "Variant with no parent is expected to be a style variant"
+        isStyleOrCodeComponentVariant(variant),
+        "Variant with no parent is expected to be a registered variant"
       );
       component.variants.push(newVariant);
     }
@@ -2520,7 +2562,8 @@ export class TplMgr {
     }[] = [];
 
     const isScreenOrStyleVS = (vs: VariantSetting) =>
-      hasScreenVariant(vs.variants) || hasStyleVariant(vs.variants);
+      hasScreenVariant(vs.variants) ||
+      hasStyleOrCodeComponentVariant(vs.variants);
 
     for (const component of this.site().components) {
       for (const tpl of flattenComponent(component)) {

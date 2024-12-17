@@ -1205,11 +1205,11 @@ async function fixCodeComponentsVariants(
 
     ctx.site.components.forEach((c) => {
       if (!isCodeComponent(c)) {
-        const { unregisterdSelectors } =
+        const { unregisterdKeys } =
           getInvalidCodeComponentVariantsInComponent(c);
 
-        if (unregisterdSelectors.length > 0) {
-          removedSelectorsByComponent.push([c, unregisterdSelectors]);
+        if (unregisterdKeys.length > 0) {
+          removedSelectorsByComponent.push([c, unregisterdKeys]);
           componentsToObserve.push(c);
         }
       }
@@ -1348,6 +1348,8 @@ function refreshCodeComponentMeta(
         ) {
           c.codeComponentMeta.helpers = componentHelpers;
         }
+      } else {
+        c.codeComponentMeta.helpers = null;
       }
 
       const maybeStylesObj =

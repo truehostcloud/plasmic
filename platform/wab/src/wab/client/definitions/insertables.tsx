@@ -72,6 +72,10 @@ interface AddItemCommon {
   /** Small icon shown when item is displayed in a single line. */
   icon: React.ReactNode;
   displayLabel?: React.ReactNode;
+  /**
+   * If a hostless component is not installed, `hostlessComponentName` is present.
+   * Otherwise, the hostless component would be presented as `component`.
+   */
   systemName?: string;
   /** Show a NEW banner over the item. **/
   isNew?: boolean;
@@ -214,8 +218,6 @@ export const INSERTABLES: readonly AddItem[] = [
         display: "flex",
         flexDirection: "row",
         position: "relative",
-        alignItems: "stretch",
-        justifyContent: "flex-start",
         ...getSimplifiedStyles(
           AddItemKey.hstack,
           vc.studioCtx.getAddItemPrefs()
@@ -237,8 +239,6 @@ export const INSERTABLES: readonly AddItem[] = [
         display: "flex",
         flexDirection: "column",
         position: "relative",
-        alignItems: "stretch",
-        justifyContent: "flex-start",
         ...getSimplifiedStyles(
           AddItemKey.vstack,
           vc.studioCtx.getAddItemPrefs()

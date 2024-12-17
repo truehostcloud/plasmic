@@ -37,13 +37,12 @@ import { assertSiteInvariants } from "@/wab/shared/site-invariants";
 
 export function cloneInsertableTemplateArena(
   site: Site,
-  info: InsertableTemplateArenaExtraInfo,
-  plumeSite: Site | undefined
+  info: InsertableTemplateArenaExtraInfo
 ) {
-  const { arena, groupName } = info;
+  const { arena } = info;
   const tplMgr = new TplMgr({ site });
   let newFonts = new Set<string>();
-  const newArena = tplMgr.addArena(`${groupName}/${arena.name}`);
+  const newArena = tplMgr.addArena(arena.name);
   arena.children.forEach((c) => {
     const { component, seenFonts } = cloneInsertableTemplateComponent(
       site,
@@ -51,7 +50,7 @@ export function cloneInsertableTemplateArena(
         ...info,
         component: c.container.component,
       },
-      plumeSite
+      undefined
     );
 
     const newVariants = [
@@ -112,7 +111,6 @@ export function cloneInsertableTemplateComponent(
     targetTokens,
     info.resolution.token,
     info.screenVariant,
-    info.groupName,
     (font) => seenFonts.add(font)
   );
 
@@ -151,7 +149,6 @@ export function getUnownedTreeCloneUtils(
     newTokens,
     info.resolution.token,
     info.screenVariant,
-    info.groupName,
     (font) => seenFonts.add(font)
   );
 

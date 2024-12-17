@@ -681,7 +681,7 @@ export abstract class SharedApi {
   getPkgVersionByProjectId(
     projectId: string,
     version
-  ): Promise<{ pkg: PkgVersionInfo; depPkgs: PkgVersionInfo[] }> {
+  ): Promise<{ pkg: PkgVersionInfo; depPkgs: PkgVersionInfo[]; etag: string }> {
     return this.get(`/pkgs/projectId/${projectId}`, { version });
   }
 
@@ -695,7 +695,7 @@ export abstract class SharedApi {
     pkgId: string,
     version?: string,
     branchId?: string
-  ): Promise<{ pkg: PkgVersionInfo; depPkgs: PkgVersionInfo[] }> {
+  ): Promise<{ pkg: PkgVersionInfo; depPkgs: PkgVersionInfo[]; etag: string }> {
     return this.get(`/pkgs/${pkgId}`, {
       version: version ?? "latest",
       meta: false,
@@ -1077,6 +1077,15 @@ export abstract class SharedApi {
 
   async listProjectsForOwner(ownerId: string): Promise<ListProjectsResponse> {
     return this.post(`/admin/projects`, { ownerId });
+  }
+
+  async adminCreateWorkspace(data: {
+    id: WorkspaceId;
+    name: string;
+    description: string;
+    teamId: TeamId;
+  }) {
+    return this.post(`/admin/workspaces`, data);
   }
 
   async listBranchesForProject(
@@ -1487,10 +1496,6 @@ export abstract class SharedApi {
 
   async deleteTrustedHost(id: string) {
     return this.delete(`/hosts/${id}`);
-  }
-
-  async setShopifyStorePassword(hostUrl: string, password: string) {
-    return this.put("/shopify/password", { hostUrl, password });
   }
 
   async listDataSources(

@@ -1,9 +1,9 @@
 import {
+  getVariantIdentifier,
   Selector,
   SelectorsInput,
-  selectorsToVariantSelectors,
   SelectorTags,
-  styleVariantToSelectors,
+  styleOrCodeComponentVariantToSelectors,
 } from "@/wab/client/components/sidebar/RuleSetControls";
 import S from "@/wab/client/components/VariantControls.module.scss";
 import Button from "@/wab/client/components/widgets/Button";
@@ -19,11 +19,13 @@ import { VARIANT_CAP, VARIANT_LOWER } from "@/wab/shared/Labels";
 import { Component, isKnownTplTag, Variant } from "@/wab/shared/model/classes";
 import {
   isBaseVariant,
+  isCodeComponentVariant,
   isGlobalVariant,
   isPrivateStyleVariant,
+  isStyleOrCodeComponentVariant,
   isStyleVariant,
   makeVariantName,
-  StyleVariant,
+  StyleOrCodeComponentVariant,
 } from "@/wab/shared/Variants";
 import { Menu } from "antd";
 import { default as classNames, default as cn } from "classnames";
@@ -90,7 +92,9 @@ const VariantLabel_: ForwardRefRenderFunction<
     <EditableLabel
       ref={ref}
       value={variantName}
-      disabled={isBaseVariant(variant) || isStyleVariant(variant)}
+      disabled={
+        isBaseVariant(variant) || isStyleOrCodeComponentVariant(variant)
+      }
       onEdit={_onRename}
       defaultEditing={defaultEditing}
       programmaticallyTriggered={programmaticallyTriggered}
@@ -125,7 +129,7 @@ export function makeCanvasVariantContextMenu({
   return (
     <Menu>
       <Menu.Item onClick={onRequestEditing}>
-        {isStyleVariant(variant)
+        {isStyleOrCodeComponentVariant(variant)
           ? `Change ${VARIANT_LOWER} selectors`
           : `Rename ${VARIANT_LOWER}`}
       </Menu.Item>
@@ -151,7 +155,7 @@ export const StyleVariantEditor = observer(function StyleVariantEditor_({
   onDismiss,
   variant,
 }: {
-  variant: StyleVariant;
+  variant: StyleOrCodeComponentVariant;
   component: Component;
   onDismiss?: () => void;
 }) {
@@ -161,10 +165,20 @@ export const StyleVariantEditor = observer(function StyleVariantEditor_({
   const maybeSubmit = async (opts?: { force?: boolean }) => {
     if (chosenSelectors.length || opts?.force) {
       return studioCtx.changeUnsafe(() => {
-        variant.selectors = selectorsToVariantSelectors(chosenSelectors);
+        if (isCodeComponentVariant(variant)) {
+          variant.codeComponentVariantKeys =
+            chosenSelectors.map(getVariantIdentifier);
+        } else {
+          variant.selectors = chosenSelectors.map(getVariantIdentifier);
+        }
+
         onDismiss?.();
 
-        if (isStyleVariant(variant) && variant.selectors?.length === 0) {
+        if (
+          (isCodeComponentVariant(variant) &&
+            variant.codeComponentVariantKeys?.length === 0) ||
+          (isStyleVariant(variant) && variant.selectors.length === 0)
+        ) {
           spawn(studioCtx.siteOps().removeVariant(component, variant));
         }
       });
@@ -182,7 +196,9 @@ export const StyleVariantEditor = observer(function StyleVariantEditor_({
   );
 
   useEffect(() => {
-    setChosenSelectors(styleVariantToSelectors(variant, studioCtx.site));
+    setChosenSelectors(
+      styleOrCodeComponentVariantToSelectors(variant, studioCtx.site)
+    );
   }, [variant.selectors?.join(",")]);
 
   const tplRoot = component.tplTree;
@@ -223,22 +239,36 @@ export const StyleVariantEditor = observer(function StyleVariantEditor_({
   );
 });
 
-export const StyleVariantLabel = observer(forwardRef(StyleVariantLabel_));
-function StyleVariantLabel_(
+export const StyleOrCodeComponentVariantLabel = observer(
+  forwardRef(StyleOrCodeComponentVariantLabel_)
+);
+function StyleOrCodeComponentVariantLabel_(
   props: {
     defaultEditing?: boolean;
-    variant: StyleVariant;
+    variant: StyleOrCodeComponentVariant;
     forTag: string;
     onSelectorsChange: (selectors: Selector[]) => void;
     onBlur?: () => void;
     forRoot?: boolean;
+    component: Component;
   },
   ref: React.Ref<EditableLabelHandles>
 ) {
   const studioCtx = useStudioCtx();
-  const { defaultEditing, variant, forTag, onSelectorsChange, forRoot } = props;
-  const selectors = styleVariantToSelectors(variant, studioCtx.site);
+  const {
+    defaultEditing,
+    variant,
+    forTag,
+    onSelectorsChange,
+    forRoot,
+    component,
+  } = props;
+  const selectors = styleOrCodeComponentVariantToSelectors(
+    variant,
+    studioCtx.site
+  );
 
+  const tplRoot = component.tplTree;
   const isPrivate = isPrivateStyleVariant(variant);
   return (
     <div
@@ -252,7 +282,10 @@ function StyleVariantLabel_(
         render={({ editing, onStart, onDone }) =>
           !editing ? (
             <div onDoubleClick={onStart}>
-              <SelectorTags selectors={selectors} />
+              <SelectorTags
+                isCodeComponent={isTplCodeComponent(tplRoot)}
+                selectors={selectors}
+              />
             </div>
           ) : (
             <SelectorsInput
@@ -269,6 +302,9 @@ function StyleVariantLabel_(
               className="textbox--listitem focused-input-bg"
               focusedClassName="focused"
               forRoot={forRoot}
+              codeComponent={
+                isTplCodeComponent(tplRoot) ? tplRoot.component : undefined
+              }
             />
           )
         }

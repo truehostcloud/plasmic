@@ -672,7 +672,6 @@ export type OauthTokenProvider =
   | "google"
   | "okta"
   | "ping"
-  | "shopify"
   | "airtable"
   | "google-sheets"
   | "fusionauth";
@@ -1014,7 +1013,6 @@ export class SsoConfig extends Base<"SsoConfigId"> {
 }
 
 export type KeyValueNamespace =
-  | "shopify-store-data"
   | "hosting-hit"
   | "copilot-cache"
   | "notification-settings";
@@ -1269,6 +1267,9 @@ export class Comment extends Base<"CommentId"> {
 
   @Column("boolean", { default: false })
   resolved: boolean;
+
+  @Column("boolean", { default: false })
+  isEmailNotificationSent: boolean;
 
   @Column("jsonb")
   location: CommentLocation;

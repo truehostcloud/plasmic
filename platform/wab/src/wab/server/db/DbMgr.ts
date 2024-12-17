@@ -22,6 +22,7 @@ import {
   unbundleProjectFromBundle,
   unbundleProjectFromData,
 } from "@/wab/server/db/DbBundleLoader";
+import { getDevFlagsMergedWithOverrides } from "@/wab/server/db/appconfig";
 import {
   AppAccessRegistry,
   AppAuthConfig,
@@ -149,7 +150,6 @@ import {
   ProjectId,
   ProjectIdAndToken,
   QueryCopilotFeedbackResponse,
-  ShopifySyncStateData,
   SsoConfigId,
   TeamId,
   TeamMember,
@@ -1138,11 +1138,7 @@ export class DbMgr implements MigrationDbMgr {
   ) {
     const userId = this.checkNormalUser();
     const user = await this.getUserById(userId);
-    const devflags = mergeSane(
-      {},
-      DEVFLAGS,
-      JSON.parse((await this.tryGetDevFlagOverrides())?.data ?? "{}")
-    ) as typeof DEVFLAGS;
+    const devflags = await getDevFlagsMergedWithOverrides(this);
     const team = this.teams().create({
       ...this.stampNew(true),
       name,
@@ -2315,6 +2311,29 @@ export class DbMgr implements MigrationDbMgr {
     return workspace;
   }
 
+  async createWorkspaceWithId({
+    id,
+    name,
+    description,
+    teamId,
+  }: {
+    id: WorkspaceId;
+    name: string;
+    description: string;
+    teamId: TeamId;
+  }): Promise<Workspace> {
+    this.checkSuperUser();
+    const workspace = this.workspaces().create({
+      ...this.stampNew(true),
+      id,
+      name,
+      description,
+      team: { id: teamId },
+    });
+    await this.entMgr.save(workspace);
+    return workspace;
+  }
+
   async deleteWorkspace(id: WorkspaceId) {
     return this._deleteResource({ type: "workspace", id });
   }
@@ -2592,17 +2611,10 @@ export class DbMgr implements MigrationDbMgr {
       ...(ownerId ? { createdBy: { id: ownerId } } : {}),
       ...(projectId ? { id: projectId } : {}),
     });
-    const rev = this.entMgr.create(ProjectRevision, {
-      ...this.stampNew(),
-      revision: 1,
-      project: { id: project.id },
-      // This is a placeholder.  The first client to load this placeholder will save back a valid initial
-      // project.
-      //
-      // Longer-term, the project code will actually be running on the server.
-      data: "{}",
-    });
-    await this.entMgr.save([project, rev]);
+
+    await this.entMgr.save(project);
+    const rev = await this.createFirstProjectRev(project.id);
+
     if (project.createdById) {
       await this.sudo()._assignResourceOwner(
         { type: "project", id: project.id },
@@ -3289,6 +3301,21 @@ export class DbMgr implements MigrationDbMgr {
     return await this.projectRevs().save(rev);
   }
 
+  async createFirstProjectRev(projectId: ProjectId) {
+    const revision = this.entMgr.create(ProjectRevision, {
+      ...this.stampNew(),
+      revision: 1,
+      project: { id: projectId },
+      // This is a placeholder.  The first client to load this placeholder will save back a valid initial
+      // project.
+      data: "{}",
+    });
+
+    await this.entMgr.save(revision);
+
+    return revision;
+  }
+
   async getPreviousPkgId(
     projectId: ProjectId,
     branchId: BranchId | undefined,
@@ -3338,11 +3365,7 @@ export class DbMgr implements MigrationDbMgr {
       "publish",
       true
     );
-    const devflags = mergeSane(
-      {},
-      DEVFLAGS,
-      JSON.parse((await this.tryGetDevFlagOverrides())?.data ?? "{}")
-    ) as typeof DEVFLAGS;
+    const devflags = await getDevFlagsMergedWithOverrides(this);
     if (!devflags.serverPublishProjectIds.includes(projectId)) {
       throw new UnauthorizedError("Access denied");
     }
@@ -6318,27 +6341,6 @@ export class DbMgr implements MigrationDbMgr {
       await this.entMgr.save(project);
     }
     return project.projectApiToken;
-  }
-
-  async getShopifySyncState(
-    projectId: ProjectId
-  ): Promise<ShopifySyncStateData> {
-    const project = await this.getProjectById(projectId);
-    return project.extraData?.shopifySyncState ?? { pages: {} };
-  }
-
-  async upsertShopifySyncState(
-    projectId: ProjectId,
-    state: ShopifySyncStateData
-  ) {
-    const project = await this.getProjectById(projectId);
-    await this.updateProject({
-      id: projectId,
-      extraData: {
-        ...(project.extraData ?? {}),
-        shopifySyncState: state,
-      },
-    });
   }
 
   async showHostingBadgeForProject(projectId: ProjectId): Promise<boolean> {
@@ -9580,6 +9582,41 @@ export class DbMgr implements MigrationDbMgr {
         ...excludeDeleted(),
       },
     });
+  }
+
+  async getCommentsForThread(threadId: CommentThreadId): Promise<Comment[]> {
+    return await this.comments().find({
+      where: {
+        threadId,
+        ...excludeDeleted(),
+      },
+      order: {
+        createdAt: "ASC", // Sort by createdAt in ascending order
+      },
+      relations: ["createdBy"],
+    });
+  }
+
+  async getUnnotifiedComments(): Promise<Comment[]> {
+    this.checkSuperUser();
+    return await this.comments().find({
+      where: {
+        isEmailNotificationSent: false,
+        ...excludeDeleted(),
+      },
+      order: {
+        createdAt: "ASC", // Sort by createdAt in ascending order
+      },
+      relations: ["createdBy"],
+    });
+  }
+
+  async markCommentsAsNotified(commentIds: string[]): Promise<void> {
+    this.checkSuperUser();
+    await this.comments().update(
+      { id: In(commentIds) }, // Match comments by their IDs
+      { isEmailNotificationSent: true } // Set the notification status to true
+    );
   }
 
   async postCommentInProject(

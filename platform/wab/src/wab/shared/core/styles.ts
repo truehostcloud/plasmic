@@ -36,7 +36,9 @@ import {
   hasScreenVariant,
   isBaseRuleVariant,
   isBaseVariant,
+  isCodeComponentVariant,
   isScreenVariant,
+  isStyleOrCodeComponentVariant,
   isStyleVariant,
   tryGetBaseVariantSetting,
   tryGetPrivateStyleVariant,
@@ -50,7 +52,7 @@ import {
 } from "@/wab/shared/cached-selectors";
 import { getTplCodeComponentVariantMeta } from "@/wab/shared/code-components/variants";
 import { ComponentGenHelper } from "@/wab/shared/codegen/codegen-helpers";
-import { makeCssClassNameForVariantCombo } from "@/wab/shared/codegen/react-p";
+import { makeCssClassNameForVariantCombo } from "@/wab/shared/codegen/react-p/class-names";
 import {
   makeRootResetClassName,
   makeWabFlexContainerClassName,
@@ -59,7 +61,7 @@ import {
   makeWabSlotClassName,
   makeWabSlotStringWrapperClassName,
   makeWabTextClassName,
-} from "@/wab/shared/codegen/react-p/utils";
+} from "@/wab/shared/codegen/react-p/serialize-utils";
 import { TargetEnv } from "@/wab/shared/codegen/types";
 import { toVarName } from "@/wab/shared/codegen/util";
 import {
@@ -731,7 +733,7 @@ function deriveCssRuleSetStyles(
   // Disable the outline when the element has a focused VariantSetting
   if (
     vs.variants.some(
-      (v) => isStyleVariant(v) && v.selectors?.some((s) => s.includes("Focus"))
+      (v) => isStyleVariant(v) && v.selectors?.some((s) => s.includes(":focus"))
     ) &&
     !hasOutlineStyle(m)
   ) {
@@ -1744,10 +1746,19 @@ function showPseudoClassSelector(
   // We don't need to deal with screen variants, as they are dealt with via
   // media query in the generated css
   const variants = vs.variants.filter((v) => !isScreenVariant(v));
-  const [privateStyleVariants, styleVariants, compVariants, globalVariants] =
-    partitionVariants(component, variants);
+  const [
+    privateStyleVariants,
+    styleVariants,
+    codeComponentVariants,
+    compVariants,
+    globalVariants,
+  ] = partitionVariants(component, variants);
 
-  if (privateStyleVariants.length === 0 && styleVariants.length === 0) {
+  if (
+    privateStyleVariants.length === 0 &&
+    styleVariants.length === 0 &&
+    codeComponentVariants.length === 0
+  ) {
     // No style variants are involved at all, the easy case!
     return ruleNamer(tpl, vs);
   }
@@ -1775,8 +1786,12 @@ function showPseudoClassSelector(
     return L(svs)
       .flatMap((sv) =>
         ensure(
-          sv.selectors,
-          () => `Expected variant ${sv.name} (${sv.uuid}) to have selectors`
+          isCodeComponentVariant(sv)
+            ? sv.codeComponentVariantKeys
+            : sv.selectors,
+          `Expected variant ${sv.name} (${sv.uuid}) to have ${
+            isCodeComponentVariant(sv) ? "variant keys" : "selectors"
+          }`
         )
       )
       .map((sel) => {
@@ -1816,7 +1831,9 @@ function showPseudoClassSelector(
   };
 
   if (isRoot) {
-    const selectorVariants = vs.variants.filter(isStyleVariant);
+    const styleOrCodeComponentVariants = vs.variants.filter(
+      isStyleOrCodeComponentVariant
+    );
     const baseRuleVariants = getBaseRuleVariants(vs.variants);
     const baseRuleVs = ensure(
       tryGetVariantSetting(root, baseRuleVariants),
@@ -1825,7 +1842,7 @@ function showPseudoClassSelector(
         baseRuleVariants.map((v) => `${v.name} (${v.uuid})`).join(", ")
     );
     return `${ruleNamer(root, baseRuleVs)}${makeSelectorString(
-      selectorVariants
+      styleOrCodeComponentVariants
     )}`;
   }
 
@@ -1838,12 +1855,16 @@ function showPseudoClassSelector(
       nonStyleVariants.map((v) => `${v.name} (${v.uuid})`).join(", ")
   );
   parts.push(
-    `${ruleNamer(root, baseRootRuleVs)}${makeSelectorString(styleVariants)}`
+    `${ruleNamer(root, baseRootRuleVs)}${makeSelectorString([
+      ...styleVariants,
+      ...codeComponentVariants,
+    ])}`
   );
 
   const baseRuleVariants = getBaseRuleVariants([
     ...nonStyleVariants,
     ...styleVariants,
+    ...codeComponentVariants,
     ...privateStyleVariants,
   ]);
   const baseRuleVs = ensure(

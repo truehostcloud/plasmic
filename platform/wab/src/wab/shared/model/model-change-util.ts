@@ -1,20 +1,5 @@
 import type { StudioCtx } from "@/wab/client/studio-ctx/StudioCtx";
-import {
-  ensure,
-  ensureArrayOfInstances,
-  tuple,
-  TypeStamped,
-  xDifference,
-} from "@/wab/shared/common";
 import { arrayReversed } from "@/wab/commons/collections";
-import { allComponentVariants } from "@/wab/shared/core/components";
-import { PLASMIC_DISPLAY_NONE } from "@/wab/shared/css";
-import {
-  ChangeNode,
-  mkArrayBeforeSplice,
-  ModelChange,
-  RecordedChanges,
-} from "@/wab/shared/core/observable-model";
 import {
   componentToTplComponents,
   deepComponentToReferencers,
@@ -22,10 +7,36 @@ import {
   extractImageAssetRefsByAttrs,
 } from "@/wab/shared/cached-selectors";
 import {
+  ensure,
+  ensureArrayOfInstances,
+  tuple,
+  TypeStamped,
+  xDifference,
+} from "@/wab/shared/common";
+import { allComponentVariants } from "@/wab/shared/core/components";
+import {
+  ChangeNode,
+  mkArrayBeforeSplice,
+  ModelChange,
+  RecordedChanges,
+} from "@/wab/shared/core/observable-model";
+import {
   ALWAYS_RESOLVE_MIXIN_PROPS,
   plasmicImgAttrStyles,
   SIZE_PROPS,
 } from "@/wab/shared/core/style-props";
+import { createRuleSetMerger } from "@/wab/shared/core/styles";
+import {
+  findVariantSettingsUnderTpl,
+  flattenTpls,
+  isComponentRoot,
+  isTplColumns,
+  isTplComponent,
+  isTplSlot,
+  isTplTag,
+  isTplVariantable,
+} from "@/wab/shared/core/tpls";
+import { PLASMIC_DISPLAY_NONE } from "@/wab/shared/css";
 import { getEffectiveVariantSetting } from "@/wab/shared/effective-variant-setting";
 import { makeExpFromValues } from "@/wab/shared/exprs";
 import { isFlexContainerWithGap } from "@/wab/shared/layoututils";
@@ -66,22 +77,12 @@ import { hasSpecialSizeVal } from "@/wab/shared/sizingutils";
 import { $$$ } from "@/wab/shared/TplQuery";
 import { isAncestorCombo } from "@/wab/shared/variant-sort";
 import {
+  getStyleOrCodeComponentVariantIdentifierName,
   isGlobalVariant,
   isGlobalVariantGroup,
-  isStyleVariant,
+  isStyleOrCodeComponentVariant,
   tryGetBaseVariantSetting,
 } from "@/wab/shared/Variants";
-import { createRuleSetMerger } from "@/wab/shared/core/styles";
-import {
-  findVariantSettingsUnderTpl,
-  flattenTpls,
-  isComponentRoot,
-  isTplColumns,
-  isTplComponent,
-  isTplSlot,
-  isTplTag,
-  isTplVariantable,
-} from "@/wab/shared/core/tpls";
 import L, { omit } from "lodash";
 
 export enum ChangesType {
@@ -740,11 +741,16 @@ function getChangedRuleSetsByVariantSelectors(
   change: ModelChange
 ): [VariantSetting, TplNode][] | undefined {
   const last = change.changeNode;
-  if (
-    isKnownVariant(last.inst) &&
-    isStyleVariant(last.inst) &&
-    last.field === "selectors"
+
+  if (!isKnownVariant(last.inst)) {
+    return undefined;
+  } else if (!isStyleOrCodeComponentVariant(last.inst)) {
+    return undefined;
+  } else if (
+    last.field !== getStyleOrCodeComponentVariantIdentifierName(last.inst)
   ) {
+    return undefined;
+  } else {
     const variant = last.inst;
     const component = getChangedComponent(change);
     if (component) {
@@ -754,8 +760,8 @@ function getChangedRuleSetsByVariantSelectors(
         false
       ).filter(([vs, _tpl]) => vs.variants.includes(variant));
     }
+    return undefined;
   }
-  return undefined;
 }
 
 /**

@@ -2,6 +2,7 @@ import { CodeComponentMeta } from "@plasmicapp/host";
 import React, { useMemo } from "react";
 import { Slider, SliderThumbProps, SliderTrack } from "react-aria-components";
 import flattenChildren from "react-keyed-flatten-children";
+import { COMMON_STYLES } from "./common";
 import { PlasmicSliderContext } from "./contexts";
 import { BaseSliderThumbProps } from "./registerSliderThumb";
 import {
@@ -26,32 +27,6 @@ export interface BaseSliderTrackProps
   children?: React.ReactElement<HTMLElement>;
 }
 
-/**
- * Finds the index of the minimum and maximum values in the slider
- * @param values
- * @returns
- */
-function findMinMaxIndices(values: number[]): {
-  minIndex: number;
-  maxIndex: number;
-} {
-  let minIndex = 0;
-  let maxIndex = 0;
-
-  if (Array.isArray(values)) {
-    for (let i = 1; i < values.length; i++) {
-      if (values[i] < values[minIndex]) {
-        minIndex = i;
-      }
-      if (values[i] > values[maxIndex]) {
-        maxIndex = i;
-      }
-    }
-  }
-
-  return { minIndex, maxIndex };
-}
-
 function isMultiValueGuard(value?: number | number[]): value is number[] {
   return Array.isArray(value) && value.length > 1;
 }
@@ -66,14 +41,10 @@ export function BaseSliderTrack(props: BaseSliderTrackProps) {
   const isMultiValue = thumbsLength > 1;
 
   const { minIndex, maxIndex } = useMemo(() => {
-    if (
-      !context ||
-      !Array.isArray(context.value) ||
-      context.value.length <= 1
-    ) {
+    if (thumbsLength <= 1) {
       return { minIndex: 0, maxIndex: 0 };
     }
-    return findMinMaxIndices(context.value);
+    return { minIndex: 0, maxIndex: thumbsLength - 1 };
   }, [thumbsLength]);
 
   /**
@@ -157,7 +128,11 @@ export function BaseSliderTrack(props: BaseSliderTrackProps) {
   );
 
   if (isStandalone) {
-    return <Slider style={{ height: "100%", width: "100%" }}>{track}</Slider>;
+    return (
+      <Slider style={{ height: "100%", width: "100%", ...COMMON_STYLES }}>
+        {track}
+      </Slider>
+    );
   }
 
   return track;

@@ -48,12 +48,13 @@ import {
   VariantCombo,
   getActiveVariantSettings,
   isBaseVariant,
+  isCodeComponentVariant,
   isDisabledPseudoSelectorVariantForTpl,
   isGlobalVariant,
-  isMaybeInteractiveStyleVariant,
+  isMaybeInteractiveCodeComponentVariant,
   isPseudoElementVariantForTpl,
   isScreenVariant,
-  isStyleVariant,
+  isStyleOrCodeComponentVariant,
   variantHasPrivatePseudoElementSelector,
 } from "@/wab/shared/Variants";
 import {
@@ -92,20 +93,15 @@ import {
   isPlainObjectPropType,
   tryGetStateHelpers,
 } from "@/wab/shared/code-components/code-components";
-import {
-  isTplRootWithCodeComponentVariants,
-  withoutCodeComponentVariantPrefix,
-} from "@/wab/shared/code-components/variants";
+import { isTplRootWithCodeComponentVariants } from "@/wab/shared/code-components/variants";
 import { toReactAttr } from "@/wab/shared/codegen/image-assets";
+import { makeCssClassNameForVariantCombo } from "@/wab/shared/codegen/react-p/class-names";
+import { nodeNameBackwardsCompatibility } from "@/wab/shared/codegen/react-p/constants";
 import {
-  deriveReactHookSpecs,
-  getNumberOfRepeatingAncestors,
   getRepetitionIndexInternalName,
   getRepetitionItemInternalName,
-  makeCssClassNameForVariantCombo,
-  nodeNameBackwardsCompatibility,
   serializeDataRepsIndexName,
-} from "@/wab/shared/codegen/react-p";
+} from "@/wab/shared/codegen/react-p/data-reps";
 import { ReactHookSpec } from "@/wab/shared/codegen/react-p/react-hook-spec";
 import {
   NodeNamer,
@@ -116,9 +112,13 @@ import {
   makeWabInstanceClassName,
   makeWabSlotClassName,
   makeWabTextClassName,
-  maybeMakePlasmicImgSrc,
-} from "@/wab/shared/codegen/react-p/utils";
-import { paramToVarName, toVarName } from "@/wab/shared/codegen/util";
+} from "@/wab/shared/codegen/react-p/serialize-utils";
+import { deriveReactHookSpecs } from "@/wab/shared/codegen/react-p/utils";
+import {
+  paramToVarName,
+  toJsIdentifier,
+  toVarName,
+} from "@/wab/shared/codegen/util";
 import {
   assert,
   cx,
@@ -161,6 +161,7 @@ import { makeSelectableKey } from "@/wab/shared/core/selection";
 import { isSlotSelection } from "@/wab/shared/core/slots";
 import {
   StateVariableType,
+  getComponentStateOnChangePropNames,
   getLastPartOfImplicitStateName,
   getStateDisplayName,
   getStateOnChangePropName,
@@ -187,6 +188,7 @@ import {
   RawTextLike,
   TplTextTag,
   ancestorsUp,
+  getNumberOfRepeatingAncestors,
   getOwnerSite,
   isExprText,
   isGridChild,
@@ -271,6 +273,7 @@ import {
 import { hashExpr } from "@/wab/shared/site-diffs";
 import { PageSizeType, deriveSizeStyleValue } from "@/wab/shared/sizingutils";
 import { placeholderImgUrl } from "@/wab/shared/urls";
+import { JsIdentifier } from "@/wab/shared/utils/regex-js-identifier";
 import {
   makeVariantComboSorter,
   sortedVariantSettings,
@@ -291,6 +294,7 @@ import {
 import { IObservableValue, comparer, computed, observable } from "mobx";
 import { computedFn } from "mobx-utils";
 import type React from "react";
+import { maybeMakePlasmicImgSrc } from "src/wab/shared/codegen/react-p/image";
 import defer = setTimeout;
 
 export const hasLoadingBoundaryKey = "plasmicInternalHasLoadingBoundary";
@@ -319,6 +323,10 @@ export interface RenderingCtx {
   wrappingEnv: CanvasEnv;
   viewCtx: ViewCtx;
   forceValComponentKeysWithDefaultSlotContents?: Set<string>;
+  visibilityOptions: {
+    showSlotPlaceholders: boolean;
+    showContainersPlaceholders: boolean;
+  };
 
   // $state is part of the tpl evaluation environment, which we use to
   // determine if we can cache a rendered tpl node. Since all elements
@@ -702,7 +710,7 @@ const mkTriggers = computedFn(
           activeVariants: new Set([
             ...ctx.activeVariants.keys(),
             ...component.variants.filter((variant) => {
-              if (!isStyleVariant(variant)) {
+              if (!isStyleOrCodeComponentVariant(variant)) {
                 return false;
               }
               // We include the style variants dynamically here to handle changes that require JS
@@ -712,7 +720,7 @@ const mkTriggers = computedFn(
               // while in design mode.
 
               // Style variants of built-in components (like vertical stack's hover)
-              if (!isTplRootWithCodeComponentVariants(component.tplTree)) {
+              if (!isCodeComponentVariant(variant)) {
                 const hook = ctx.reactHookSpecs.find(
                   (spec) => spec.sv === variant
                 );
@@ -720,15 +728,16 @@ const mkTriggers = computedFn(
               }
 
               // Interactive registered variants (like a Button CC's hover) can not be applied in non-interactive mode
-              if (isMaybeInteractiveStyleVariant(variant) && !isInteractive) {
+              if (
+                isMaybeInteractiveCodeComponentVariant(variant) &&
+                !isInteractive
+              ) {
                 return false;
               }
 
               // Non-interactive registered variants (like Button CC's disabled) do no harm to rich-text editing and can be applied in non-interactive mode
-              return variant.selectors.reduce(
-                (prev, key) =>
-                  prev &&
-                  ctx.$ccVariants[withoutCodeComponentVariantPrefix(key)],
+              return variant.codeComponentVariantKeys.reduce(
+                (prev, key) => prev && ctx.$ccVariants[key],
                 true
               );
             }),
@@ -1220,6 +1229,10 @@ function makeEmptyRenderingCtx(viewCtx: ViewCtx, valKey: string): RenderingCtx {
     sub: viewCtx.canvasCtx.Sub,
     valKey: valKey,
     viewCtx,
+    visibilityOptions: {
+      showSlotPlaceholders: viewCtx.studioCtx.showSlotPlaceholder(),
+      showContainersPlaceholders: viewCtx.studioCtx.showContainerPlaceholder(),
+    },
     $stateSnapshot: {},
     setDollarQueries: () => {},
     stateSpecs: [],
@@ -1610,7 +1623,13 @@ function renderTplComponent(
           ctx.sub.reactWeb.generateStateValueProp(ctx.env.$state, statePath);
       }
     });
-  mergeEventHandlers(props, builtinEventHandlers);
+  if (ctx.ownerComponent) {
+    mergeEventHandlers(
+      props,
+      builtinEventHandlers,
+      getComponentStateOnChangePropNames(ctx.ownerComponent, node)
+    );
+  }
 
   ctx.ownerComponent?.states.forEach((state) => {
     if (state.tplNode !== node) {
@@ -2221,22 +2240,38 @@ function canvasParamToVarName(
 
 function mergeEventHandlers(
   userAttrs: Record<string, any>,
-  builtinEventHandlers: Record<string, any[]>
+  builtinEventHandlers: Record<string, any[]>,
+  onChangeAttrs: Set<JsIdentifier> = new Set()
 ) {
-  const chained = (handlers: any[]) => {
-    if (handlers.length === 1) {
-      return handlers[0];
-    } else {
-      return async (...args: unknown[]) => {
-        for (const handler of handlers) {
-          await handler.apply(null, args);
-        }
-      };
-    }
+  const chained = (
+    attr: string,
+    attrBuiltinEventHandlers: any[],
+    userAttr: any[]
+  ) => {
+    return async (...args: unknown[]) => {
+      for (const handler of attrBuiltinEventHandlers) {
+        await handler.apply(null, args);
+      }
+
+      // Check if we should skip user attr handlers because of state initialization trigger
+      if (
+        onChangeAttrs.has(toJsIdentifier(attr)) &&
+        args.length > 1 &&
+        args[1]
+      ) {
+        return;
+      }
+
+      for (const handler of userAttr) {
+        await handler.apply(null, args);
+      }
+    };
   };
   Object.keys(builtinEventHandlers).forEach((key) => {
     userAttrs[key] = chained(
-      withoutNils([...builtinEventHandlers[key], userAttrs[key]])
+      toJsIdentifier(key),
+      withoutNils(builtinEventHandlers[key]),
+      withoutNils([userAttrs[key]])
     );
   });
 }

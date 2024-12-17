@@ -88,7 +88,6 @@ export interface Installable {
   sectionLabel?: string;
   isInstallOnly: true;
   isNew?: boolean;
-  groupName: string; // Used to prefix imported assets
   projectId: string;
   imageUrl?: string;
   entryPoint: {
@@ -106,7 +105,6 @@ export interface InsertableTemplatesItem {
   componentName: string; // Name of component to insert
   imageUrl?: string; // A preview image
   displayName?: string;
-  groupName?: string;
   onlyShownIn?: "old" | "new";
   tokenResolution?: InsertableTemplateTokenResolution;
   componentResolution?: InsertableTemplateComponentResolution;
@@ -120,7 +118,6 @@ export interface InsertableTemplatesComponent {
   type: "insertable-templates-component";
   projectId: string; // Where to find the template
   componentName: string; // Name of component to insert
-  groupName?: string;
   /**
    * Globally unique name of the template; should match up with
    * Component.templateInfo.name of the corresponding component.
@@ -156,6 +153,8 @@ export interface HostLessPackageInfo {
   syntheticPackage?: boolean;
   type: "hostless-package";
   name: string;
+  /** Don't render the `name` header above the items (mainly for single item groups). */
+  isHeaderLess?: boolean;
   sectionLabel: string;
   hiddenWhenInstalled?: boolean;
   codeName?: string;
@@ -258,111 +257,6 @@ export function flattenInsertableIconGroups(
   }
 }
 
-const INSERT_PANEL_CONTENT: InsertPanelConfig = {
-  aliases: {
-    accordion: "plasmic-antd5-collapse",
-    alert: "template:plasmic-alert",
-    appLayout: "hostless-rich-layout",
-    button: "default:button",
-    buttonGroup: "plasmic-antd5-radio-group/button",
-    calendar: "hostless-rich-calendar",
-    card: "template:plasmic-card",
-    carousel: "hostless-slider",
-    chart: "hostless-react-chartjs-2-simple-chart",
-    checkbox: "default:checkbox",
-    dataDetails: "hostless-rich-details",
-    dataFetcher: "builtincc:plasmic-data-source-fetcher",
-    dataList: "hostless-rich-list",
-    dataProvider: "hostless-data-provider",
-    dateTimePicker: "plasmic-antd5-date-picker",
-    dialog: "template:plasmic-dialog",
-    drawer: "template:plasmic-drawer",
-    embedCss: "global-embed-css",
-    embedHtml: "hostless-embed",
-    form: "plasmic-antd5-form",
-    iframe: "hostless-iframe",
-    input: "default:text-input",
-    loadingBoundary: "hostless-loading-boundary",
-    lottie: "hostless-lottie-react",
-    navbar: "hostless-plasmic-navigation-bar",
-    numberInput: "plasmic-antd5-input-number",
-    pageMeta: "builtincc:hostless-plasmic-head",
-    parallax: "hostless-scroll-parallax",
-    passwordInput: "plasmic-antd5-input-password",
-    popover: "hostless-radix-popover",
-    radioGroup: "plasmic-antd5-radio-group",
-    reveal: "hostless-reveal",
-    richText: "hostless-react-quill",
-    select: "default:select",
-    statistic: "template:plasmic-statistic",
-    switch: "default:switch",
-    table: "hostless-rich-table",
-    tilt3d: "hostless-parallax-tilt",
-    timer: "hostless-timer",
-    tooltip: "template:plasmic-tooltip",
-    upload: "plasmic-antd5-upload",
-    video: "hostless-html-video",
-    youtube: "hostless-youtube",
-  },
-  overrideSections: {
-    website: {
-      "Default components": {
-        Common: [
-          "text",
-          "section",
-          "columns",
-          "image",
-          "icon",
-          "button",
-          "form",
-        ],
-      },
-    },
-  } as Record<string, Record<string, Record<string, string[]>>>,
-  builtinSections: {
-    "Default components": {
-      Common: [
-        "table",
-        "text",
-        "button",
-        "input",
-        "select",
-        "image",
-        "form",
-        "section",
-        "columns",
-      ],
-      General: ["button", "text", "heading", "link"],
-      Display: [
-        "table",
-        "dataList",
-        "dataDetails",
-        "chart",
-        "carousel",
-        "card",
-        "statistic",
-      ],
-      "Data entry": [
-        "form",
-        "input",
-        "checkbox",
-        "select",
-        "dateTimePicker",
-        "radioGroup",
-        "numberInput",
-        "passwordInput",
-        "upload",
-      ],
-      Media: ["image", "icon", "video", "youtube"],
-      Layout: ["section", "columns", "vstack", "hstack", "grid", "box"],
-      Navigation: ["appLayout", "navbar", "link", "linkContainer"],
-      Interactions: ["reveal", "parallax", "tilt3d", "lottie"],
-      HTML: ["iframe", "embedHtml", "embedCss"],
-      Advanced: ["dataFetcher", "loadingBoundary", "dataProvider", "pageMeta"],
-    },
-  },
-};
-
 const production = process.env.NODE_ENV === "production";
 
 const DEFAULT_DEVFLAGS = {
@@ -446,7 +340,12 @@ const DEFAULT_DEVFLAGS = {
   createTeamPrompt: true,
   hideHelpForUsers: [".*@example.com"],
   hideStartersForUsers: [".*@example.com"],
-  insertPanelContent: INSERT_PANEL_CONTENT,
+  insertPanelContent: ensureType<InsertPanelConfig>({
+    componentsLabel: "Custom components",
+    aliases: {},
+    builtinSections: {},
+    overrideSections: {},
+  }),
   insertableTemplates: ensureType<InsertableTemplatesGroup | undefined>(
     undefined
   ),
@@ -478,8 +377,7 @@ const DEFAULT_DEVFLAGS = {
       syntheticPackage: true,
       sectionLabel: "Design systems",
       isInstallOnly: true,
-      imageUrl:
-        "https://plasmic-static1.s3.us-west-2.amazonaws.com/insertables/unstyled.png",
+      imageUrl: "https://static1.plasmic.app/insertables/unstyled.png",
       codeName: "unstyled",
       codeLink: "",
       onlyShownIn: "new",
@@ -488,8 +386,7 @@ const DEFAULT_DEVFLAGS = {
           type: "hostless-component",
           componentName: "Unstyled",
           displayName: "More HTML elements",
-          imageUrl:
-            "https://plasmic-static1.s3.us-west-2.amazonaws.com/insertables/unstyled.png",
+          imageUrl: "https://static1.plasmic.app/insertables/unstyled.png",
         },
       ],
       projectId: [],
@@ -502,7 +399,6 @@ const DEFAULT_DEVFLAGS = {
   imgOptimizerHost: "https://img.plasmic.app",
   introYoutubeId: "K_YzFBd7b2I",
   noFlipTags: true,
-  proxyDomainSuffixes: [".devtun.plasmic.app", ".prox1.plasmic.link"],
   revisionNum: undefined,
   richtext2: true,
   secretApiTokenTeams: ["teamId"],
@@ -690,7 +586,7 @@ Object.assign(DEFAULT_DEVFLAGS, DEFAULT_DEVFLAG_OVERRIDES);
 export type DevFlagsType = typeof DEFAULT_DEVFLAGS;
 export const DEVFLAGS = cloneDeep(DEFAULT_DEVFLAGS);
 
-export function normalizeDevFlags(flags: DevFlagsType) {
+function normalizeDevFlags(flags: DevFlagsType) {
   if (flags.variants) {
     flags.unconditionalEdits = true;
     flags.ephemeralRecording = true;
@@ -704,10 +600,27 @@ export function normalizeDevFlags(flags: DevFlagsType) {
   }
 }
 
-export function applyDevFlagOverrides(
+/** Applies overrides to DEVFLAGS. */
+export function applyDevFlagOverrides(overrides: Partial<DevFlagsType>): void {
+  // Apply overrides to default devflags to avoid mergeSane persisting keys that
+  // were present on an old override but removed in a new override (see tests).
+  Object.assign(DEVFLAGS, applyDevFlagOverridesToDefaults(overrides));
+}
+
+/** Applies overrides to a copy of the default devflags and returns it. */
+export function applyDevFlagOverridesToDefaults(
+  overrides: Partial<DevFlagsType>
+): DevFlagsType {
+  const devflags = cloneDeep(DEFAULT_DEVFLAGS);
+  applyDevFlagOverridesToTarget(devflags, overrides);
+  return devflags;
+}
+
+/** Applies overrides to a target. */
+export function applyDevFlagOverridesToTarget(
   target: DevFlagsType,
   overrides: Partial<DevFlagsType>
-) {
+): void {
   mergeSane(target, overrides);
   normalizeDevFlags(target);
 }

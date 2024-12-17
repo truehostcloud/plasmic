@@ -9,6 +9,7 @@ import { ProjectDependencyManager } from "@/wab/client/ProjectDependencyManager"
 import { zoomJump } from "@/wab/client/Zoom";
 import { apiKey, invalidationKey } from "@/wab/client/api";
 import { getProjectReleases } from "@/wab/client/api-hooks";
+import { storageViewAsKey } from "@/wab/client/app-auth/constants";
 import {
   UU,
   mkProjectLocation,
@@ -22,7 +23,6 @@ import {
   showReloadError,
   showSaveErrorRecoveredNotice,
 } from "@/wab/client/components/Messages";
-import { storageViewAsKey } from "@/wab/client/components/app-auth/ViewAsButton";
 import { CanvasCtx } from "@/wab/client/components/canvas/canvas-ctx";
 import { SiteOps } from "@/wab/client/components/canvas/site-ops";
 import {
@@ -795,6 +795,15 @@ export class StudioCtx extends WithDbCtx {
           );
         },
         { name: "StudioCtx.updateFocusPreference" }
+      ),
+      reaction(
+        () => [getSiteArenas(this.site)],
+        () => {
+          this.recentArenas = this.recentArenas.filter((arena) =>
+            isValidArena(this.site, arena)
+          );
+        },
+        { name: "StudioCtx.fixRecentArenas" }
       ),
       ...(this.appCtx.appConfig.incrementalObservables
         ? [
@@ -1677,9 +1686,8 @@ export class StudioCtx extends WithDbCtx {
       if (fixedRecentArenas.length > RECENT_ARENAS_LIMIT) {
         fixedRecentArenas.shift();
       }
-      this._recentArenas.set(fixedRecentArenas);
+      this.recentArenas = fixedRecentArenas;
     }
-
     this._currentArena.set(arena);
   }
 
@@ -1690,6 +1698,10 @@ export class StudioCtx extends WithDbCtx {
 
   get recentArenas() {
     return this._recentArenas.get();
+  }
+
+  set recentArenas(arenas: AnyArena[]) {
+    this._recentArenas.set(arenas);
   }
 
   get currentComponent() {
@@ -4301,7 +4313,7 @@ export class StudioCtx extends WithDbCtx {
   //
   // Inserting new tpl nodes
   //
-  async tryInsertTplItem(item: AddTplItem): Promise<void> {
+  async tryInsertTplItem(item: AddTplItem): Promise<TplNode | null> {
     const vc = this.focusedViewCtx();
     if (!vc) {
       if (item.type === "tpl") {
@@ -4314,7 +4326,7 @@ export class StudioCtx extends WithDbCtx {
           message: "First select an element you want to insert to.",
         });
       }
-      return;
+      return null;
     }
 
     // If inserting a template, then insert at innermost main-content-slot, or else root.
@@ -4383,17 +4395,17 @@ export class StudioCtx extends WithDbCtx {
       notification.error({
         message: "Cannot insert this at the current location.",
       });
-      return;
+      return null;
     }
     const extraInfo = item.asyncExtraInfo
       ? await item.asyncExtraInfo(vc.studioCtx)
       : undefined;
     if (extraInfo === false) {
-      return;
+      return null;
     }
-    await this.changeUnsafe(() => {
-      vc.getViewOps().tryInsertInsertableSpec(item, locs[0], extraInfo, target);
-    });
+    return await this.changeUnsafe(() =>
+      vc.getViewOps().tryInsertInsertableSpec(item, locs[0], extraInfo, target)
+    );
   }
 
   async runFakeItem(item: AddFakeItem): Promise<any> {

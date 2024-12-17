@@ -6,12 +6,12 @@ import {
   SelectStateContext,
   SelectValue,
 } from "react-aria-components";
-import { arrowDown, getCommonProps } from "./common";
+import { arrowDown, COMMON_STYLES, getCommonProps } from "./common";
 import {
   PlasmicListBoxContext,
   PlasmicPopoverTriggerContext,
 } from "./contexts";
-import { ListBoxItemIdManager } from "./ListBoxItemIdManager";
+import { OptionsItemIdManager } from "./OptionsItemIdManager";
 import { BUTTON_COMPONENT_NAME } from "./registerButton";
 import { LABEL_COMPONENT_NAME } from "./registerLabel";
 import { LIST_BOX_COMPONENT_NAME } from "./registerListBox";
@@ -68,7 +68,7 @@ export const BaseSelectValue = (props: BaseSelectValueProps) => {
   const { children, customize, className } = props;
   const placeholder = customize ? children : "Select an item";
   return (
-    <SelectValue className={className}>
+    <SelectValue className={className} style={COMMON_STYLES}>
       {({ isPlaceholder, selectedText }) => (
         <>{isPlaceholder ? placeholder : selectedText}</>
       )}
@@ -106,7 +106,6 @@ export function BaseSelect(props: BaseSelectProps) {
     onOpenChange,
     isDisabled,
     className,
-    style,
     children,
     disabledKeys,
     name,
@@ -115,7 +114,7 @@ export function BaseSelect(props: BaseSelectProps) {
     "aria-label": ariaLabel,
   } = props;
 
-  const idManager = useMemo(() => new ListBoxItemIdManager(), []);
+  const idManager = useMemo(() => new OptionsItemIdManager(), []);
 
   useEffect(() => {
     idManager.subscribe((ids: string[]) => {
@@ -148,7 +147,7 @@ export function BaseSelect(props: BaseSelectProps) {
       onOpenChange={onOpenChange}
       isDisabled={isDisabled}
       className={classNameProp}
-      style={style}
+      style={COMMON_STYLES}
       name={name}
       disabledKeys={disabledKeys}
       aria-label={ariaLabel}

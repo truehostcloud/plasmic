@@ -12,7 +12,7 @@ import {
 } from "@/wab/shared/data-sources-meta/data-sources";
 import { WebhookHeader } from "@/wab/shared/db-json-blobs";
 import {
-  DEVFLAGS,
+  DevFlagsType,
   InsertableTemplateComponentResolution,
   InsertableTemplateTokenResolution,
 } from "@/wab/shared/devflags";
@@ -72,18 +72,8 @@ export interface CustomHostConfig {
   headers?: Record<string, string>;
 }
 
-export interface ShopifySyncStateData {
-  /**
-   * Map from Plasmic ID to shop page ID.
-   */
-  pages: {
-    [pageUuid: string]: number;
-  };
-}
-
 export interface ProjectExtraData {
   commitGraph?: CommitGraph;
-  shopifySyncState?: ShopifySyncStateData;
   wasImported?: boolean;
   mainBranchProtection?: "enforce" | "encourage" | "none";
   customHostConfig?: CustomHostConfig;
@@ -907,7 +897,7 @@ export interface GetDevFlagOverridesVersionsResponse {
 export interface SetDevFlagOverridesResponse {}
 
 export interface AppConfigResponse {
-  config: typeof DEVFLAGS;
+  config: DevFlagsType;
 }
 
 export interface GetClipResponse {
@@ -1140,10 +1130,6 @@ export interface ExistingGithubRepoRequest {
   // We still support passing the `token` here so current sessions don't need
   // to be invalidated
   token?: string;
-}
-
-export interface PublishShopifyPage {
-  errors: [];
 }
 
 export interface ApiDataSource {
