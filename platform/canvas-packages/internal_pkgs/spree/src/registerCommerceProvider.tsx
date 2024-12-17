@@ -21,7 +21,7 @@ export const commerceProviderMeta: GlobalContextMeta<CommerceProviderProps> = {
   props: {
     apiHost: {
       type: "string",
-      defaultValue: "https://olitt.shop/api/v2/storefront/",
+      defaultValue: "https://olitt.shop",
     },
   },
   ...{ globalActions: globalActionsRegistrations },

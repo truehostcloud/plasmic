@@ -1,4 +1,4 @@
-import { Fetcher } from "@plasmicpkgs/commerce"
+import { FetcherOptions } from "@plasmicpkgs/commerce";
 import convertSpreeErrorToGraphQlError from './utils/convert-spree-error-to-graph-ql-error'
 import { makeClient, errors } from '@spree/storefront-api-v2-sdk'
 import type { ResultResponse } from '@spree/storefront-api-v2-sdk/types/interfaces/ResultResponse'
@@ -16,8 +16,13 @@ import ensureFreshUserAccessToken from './utils/tokens/ensure-fresh-user-access-
 import RefreshTokenError from './errors/RefreshTokenError'
 import type { GraphQLFetcherResult } from './types'
 
-const client = makeClient({
-  host: "https://olitt.shop",
+type Fetcher<T = any, B = any> = (
+  apiHost: string,
+  options: FetcherOptions<B>
+) => T | Promise<T>
+
+const client = (apiHost: string) => makeClient({
+  host: apiHost,
   createFetcher: (fetcherOptions) => {
     return createCustomizedFetchFetcher({
       fetch: globalThis.fetch,
@@ -40,7 +45,7 @@ const normalizeSpreeSuccessResponse = (
 }
 
 const fetcher: Fetcher<GraphQLFetcherResult<SpreeSdkResponse>> = async (
-  requestOptions
+  apiHost, requestOptions
 ) => {
   const { url, variables } = requestOptions
 
@@ -66,10 +71,10 @@ const fetcher: Fetcher<GraphQLFetcherResult<SpreeSdkResponse>> = async (
   } = variables as FetcherVariables
 
   if (refreshExpiredAccessToken) {
-    await ensureFreshUserAccessToken(client)
+    await ensureFreshUserAccessToken(client(apiHost))
   }
 
-  const spreeSdkMethod = getSpreeSdkMethodFromEndpointPath(client, methodPath)
+  const spreeSdkMethod = getSpreeSdkMethodFromEndpointPath(client(apiHost), methodPath)
 
   const storeResponse: ResultResponse<SpreeSdkResponseWithRawResponse> =
     await spreeSdkMethod(...args)
@@ -89,7 +94,7 @@ const fetcher: Fetcher<GraphQLFetcherResult<SpreeSdkResponse>> = async (
       'Request ended with 401. Replaying request after refreshing the user token.'
     )
 
-    await ensureFreshUserAccessToken(client)
+    await ensureFreshUserAccessToken(client(apiHost))
 
     const replayedStoreResponse: ResultResponse<SpreeSdkResponseWithRawResponse> =
       await spreeSdkMethod(...args)

@@ -13,7 +13,7 @@ export const getSpreeProvider = (apiHost: string) => {
   return {
     locale: requireConfigValue("defaultLocale") as string,
     cartCookie: requireConfigValue("cartCookieName") as string,
-    fetcher,
+    fetcher: (requestOptions) => fetcher(apiHost, requestOptions),
     cart: { useCart, useAddItem, useUpdateItem, useRemoveItem },
     products: { useSearch },
     site: { useCategories, useBrands }
