@@ -1,10 +1,9 @@
 import type { SWRHook } from '@plasmicpkgs/commerce'
-import useSearch from '@plasmicpkgs/commerce'
 import type {
   Product,
   SearchProductsHook,
 } from '../types/product'
-import type { UseSearch } from '@plasmicpkgs/commerce'
+import { UseSearch, useSearch } from '@plasmicpkgs/commerce'
 import normalizeProduct from '../utils/normalizations/normalize-product'
 import type { GraphQLFetcherResult } from '../types'
 import { IProducts } from '@spree/storefront-api-v2-sdk/types/interfaces/Product'
@@ -52,7 +51,7 @@ export const handler: SWRHook<any> = {
       GraphQLFetcherResult<IProducts>
     >({
       variables: {
-        methodPath: 'products.list',
+        methodPath: 'products',
         arguments: [
           {},
           {

@@ -3436,6 +3436,19 @@
     js-cookie "^3.0.5"
     swell-js "^3.13.0"
 
+"@plasmicpkgs/commerce@0.0.205":
+  version "0.0.205"
+  resolved "https://registry.yarnpkg.com/@plasmicpkgs/commerce/-/commerce-0.0.205.tgz#27afbbe837bd1127fe12da672d993fb7cc11845c"
+  integrity sha512-2CMZVpldqzjycxaf0MhoN+/tV2D8z50hyqQTgMEeb/otG1CKzbvdvAx8DrOHyI1PwCWQ+JsbVhvb4GnCPrYTgQ==
+  dependencies:
+    "@types/react" "^18.0.27"
+    "@vercel/fetch" "^6.2.0"
+    debounce "^1.2.1"
+    js-cookie "^3.0.1"
+    lodash.debounce "^4.0.8"
+    react-hook-form "^7.28.0"
+    swr "^1.2.2"
+
 "@plasmicpkgs/commerce@0.0.206", "@plasmicpkgs/commerce@^0.0.206":
   version "0.0.206"
   resolved "https://registry.yarnpkg.com/@plasmicpkgs/commerce/-/commerce-0.0.206.tgz#e872a85d79301cd1a7c88180a1ec2743a49b1e80"
@@ -7271,9 +7284,9 @@ commander@^7.2.0:
   resolved "https://registry.yarnpkg.com/commander/-/commander-7.2.0.tgz#a36cb57d0b501ce108e4d20559a150a391d97ab7"
   integrity sha512-QrWXB+ZQSVPmIWIhtEO9H+gwHaMGYiF5ChvoJ+K9ZGHG/sVsa6yiesAD1GC/x46sET00Xlwo1u49RVVVzvcSkw==
 
-"commerce-spree@file:./internal_pkgs/spree/commerce-spree-v0.0.2.tgz":
-  version "0.0.2"
-  resolved "file:./internal_pkgs/spree/commerce-spree-v0.0.2.tgz#5fbbc66fa1d36e43108c1dd83a82c98ede331a1c"
+"commerce-spree@file:./internal_pkgs/spree/commerce-spree-v0.0.3.tgz":
+  version "0.0.3"
+  resolved "file:./internal_pkgs/spree/commerce-spree-v0.0.3.tgz#499a8e3df4e680a90f3ef7010f7c0b2e088b509a"
   dependencies:
     "@plasmicpkgs/commerce" "0.0.205"
     "@spree/storefront-api-v2-sdk" "^5.1.1"
