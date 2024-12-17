@@ -18,11 +18,12 @@ import {
   getBaseVariant,
   getReferencedVariantGroups,
   isBaseVariant,
+  isCodeComponentVariant,
   isComponentStyleVariant,
   isGlobalVariant,
   isPrivateStyleVariant,
   isPseudoElementVariant,
-  isStyleVariant,
+  isStyleOrCodeComponentVariant,
   isVariantSettingEmpty,
   mkBaseVariant,
   mkComponentVariantGroup,
@@ -217,10 +218,20 @@ export function groupComponents(components: Component[]) {
 
 export const defaultComponentKinds = {
   button: "Button",
-  "text-input": "Text Input",
   checkbox: "Checkbox",
+  "checkbox-group": "Checkbox Group",
+  combobox: "Combobox",
+  drawer: "Drawer",
+  modal: "Modal",
+  popover: "Popover",
+  radio: "Radio",
+  "radio-group": "Radio Group",
+  "range-slider": "Range Slider",
   select: "Select",
+  slider: "Slider",
   switch: "Switch",
+  tooltip: "Tooltip",
+  "text-input": "Text Input",
   unauthorized: "Unauthorized",
 };
 
@@ -1209,7 +1220,7 @@ export function extractComponent({
   // Remove all the vsettings that referenced style variants, as they do not
   // get carried over as args we can pass onto the new component
   tplComponent.vsettings = tplComponent.vsettings.filter(
-    (vs) => !vs.variants.some(isStyleVariant)
+    (vs) => !vs.variants.some(isStyleOrCodeComponentVariant)
   );
 
   // Remove all width/height on the tplComponent; by default, we will defer
@@ -1247,7 +1258,9 @@ export function extractComponent({
   // specified in the old vsettings.
   const allUsedOldVariantCombo = L.uniqBy(
     [...findVariantSettingsUnderTpl(tpl)].map(([vs, _tpl]) =>
-      vs.variants.filter((v) => !isBaseVariant(v) && !isStyleVariant(v))
+      vs.variants.filter(
+        (v) => !isBaseVariant(v) && !isStyleOrCodeComponentVariant(v)
+      )
     ),
     (combo) =>
       combo
@@ -1291,7 +1304,7 @@ export function extractComponent({
   $$$(tpl).replaceWith(tplComponent);
 
   // Remove private style variants for the old nodes
-  allStyleVariants(containingComponent).forEach((v) => {
+  allStyleOrCodeComponentVariants(containingComponent).forEach((v) => {
     if (v.forTpl && oldFlattenedVariantablesSet.has(v.forTpl)) {
       tplMgr.tryRemoveVariant(v, containingComponent);
     }
@@ -1666,6 +1679,8 @@ export function cloneVariant(variant: Variant) {
     mediaQuery: variant.mediaQuery,
     description: variant.description,
     forTpl: variant.forTpl,
+    codeComponentName: variant.codeComponentName,
+    codeComponentVariantKeys: variant.codeComponentVariantKeys,
   });
   return newV;
 }
@@ -1756,12 +1771,16 @@ export function allComponentVariants(
   return variants;
 }
 
-export function allStyleVariants(component: Component) {
-  return component.variants.filter(isStyleVariant);
-}
-
 export function allComponentStyleVariants(component: Component) {
   return component.variants.filter(isComponentStyleVariant);
+}
+
+export function allCodeComponentVariants(component: Component) {
+  return component.variants.filter(isCodeComponentVariant);
+}
+
+export function allStyleOrCodeComponentVariants(component: Component) {
+  return component.variants.filter(isStyleOrCodeComponentVariant);
 }
 
 export function allPrivateStyleVariants(component: Component, tpl: TplNode) {
@@ -2407,16 +2426,7 @@ export function removeVariantGroup(
   removeVariantGroupFromSplits(site, group);
 }
 
-export function tryGetDefaultComponent(
-  site: Site,
-  kind:
-    | "button"
-    | "select"
-    | "text-input"
-    | "checkbox"
-    | "switch"
-    | "unauthorized"
-) {
+export function tryGetDefaultComponent(site: Site, kind: DefaultComponentKind) {
   return (
     site.defaultComponents[kind] ??
     site.components.find((c) => c.plumeInfo?.type === kind)

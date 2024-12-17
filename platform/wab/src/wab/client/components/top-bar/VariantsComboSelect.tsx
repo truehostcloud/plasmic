@@ -12,7 +12,7 @@ import {
   isPrivateStyleVariant,
   isScreenVariant,
   isStandaloneVariant,
-  isStyleVariant,
+  isStyleOrCodeComponentVariant,
 } from "@/wab/shared/Variants";
 import { Dropdown } from "antd";
 import { defer } from "lodash";
@@ -47,7 +47,7 @@ const VariantsComboSelect = observer(function VariantsComboSelect(
     site: studioCtx.site,
   }).filter(
     (v) =>
-      !isStyleVariant(v) &&
+      !isStyleOrCodeComponentVariant(v) &&
       !isScreenVariant(v) &&
       !isPrivateStyleVariant(v) &&
       !isBaseVariant(v)

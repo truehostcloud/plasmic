@@ -11,6 +11,7 @@ import {
   getBaseVariant,
   isActiveVariantSetting,
   isBaseVariant,
+  isCodeComponentVariant,
   isGlobalVariant,
   isStandaloneVariantGroup,
   isStyleVariant,
@@ -21,10 +22,7 @@ import {
   isBuiltinCodeComponent,
 } from "@/wab/shared/code-components/builtin-code-components";
 import { isCodeComponentWithHelpers } from "@/wab/shared/code-components/code-components";
-import {
-  isTplRootWithCodeComponentVariants,
-  withoutCodeComponentVariantPrefix,
-} from "@/wab/shared/code-components/variants";
+import { isTplRootWithCodeComponentVariants } from "@/wab/shared/code-components/variants";
 import { ComponentGenHelper } from "@/wab/shared/codegen/codegen-helpers";
 import {
   extractUsedFontsFromComponents,
@@ -225,6 +223,7 @@ import {
   allStyleTokens,
 } from "@/wab/shared/core/sites";
 import {
+  getComponentStateOnChangePropNames,
   getLastPartOfImplicitStateName,
   getStateDisplayName,
   getStateOnChangePropName,
@@ -316,6 +315,7 @@ import {
   deriveSizeStyleValue,
   getPageComponentSizeType,
 } from "@/wab/shared/sizingutils";
+import { JsIdentifier } from "@/wab/shared/utils/regex-js-identifier";
 import { makeVariantComboSorter } from "@/wab/shared/variant-sort";
 import L from "lodash";
 import { shouldUsePlasmicImg } from "src/wab/shared/codegen/react-p/image";
@@ -923,16 +923,6 @@ export function makeVariantComboChecker(
 
   const variantChecker = (variant: Variant) => {
     if (isStyleVariant(variant)) {
-      const tplRoot = component.tplTree;
-      if (isTplRootWithCodeComponentVariants(tplRoot)) {
-        return variant.selectors
-          .map((sel) => {
-            return `$ccVariants[${jsString(
-              withoutCodeComponentVariantPrefix(sel)
-            )}]`;
-          })
-          .join(" && ");
-      }
       // One should only call variantChecker on style variants for non-css
       // variantSettings.
       const hook = ensure(
@@ -940,8 +930,15 @@ export function makeVariantComboChecker(
         `Missing reactHookSpec for variant ${variant.name} (uuid: ${variant.uuid})`
       );
       return hook.serializeIsTriggeredCheck(triggersRef);
+    } else if (isCodeComponentVariant(variant)) {
+      return variant.codeComponentVariantKeys
+        .map((key) => {
+          return `$ccVariants[${jsString(key)}]`;
+        })
+        .join(" && ");
+    } else {
+      return nonStyleVariantChecker(variant);
     }
-    return nonStyleVariantChecker(variant);
   };
   return (variantCombo: VariantCombo, ignoreScreenVariant?: boolean) => {
     const res = variantCombo
@@ -1475,23 +1472,43 @@ export function serializeTplTagBase(
 
 function mergeEventHandlers(
   userAttrs: Record<string, string>,
-  builtinEventHandlers: Record<string, string[]>
+  builtinEventHandlers: Record<string, string[]>,
+  onChangeAttrs: Set<JsIdentifier> = new Set()
 ) {
-  const chained = (handlerCodes: string[]) => {
-    if (handlerCodes.length === 1) {
-      return handlerCodes[0];
-    } else {
-      return `async (...eventArgs: any) => {
-        ${handlerCodes
-          .map((code) => `(${code}).apply(null, eventArgs);`)
-          .join("\n")}
-      }`;
+  const chainedFunctionCall = (code: string) =>
+    `(${code}).apply(null, eventArgs);`;
+
+  // When dealing with event handlers for plasmic state updates, we won't call the user's event handler
+  // during the state initialization phase. This is provided by the second argument of the event handler
+  // which is a boolean indicating whether the onChange event is triggered during the state initialization phase.
+  const maybeHaltUserAttr = (attr: string) => {
+    if (onChangeAttrs.has(toJsIdentifier(attr))) {
+      return `if(eventArgs.length > 1 && eventArgs[1]) {
+  return;
+}`;
     }
+    return "";
+  };
+
+  const chained = (
+    attr: string,
+    attrBuiltinEventHandlers: string[],
+    userAttr: string[]
+  ) => {
+    return `async (...eventArgs: any) => {
+        ${attrBuiltinEventHandlers.map(chainedFunctionCall).join("\n")}
+
+        ${maybeHaltUserAttr(attr)}
+
+        ${userAttr.map(chainedFunctionCall).join("\n")}
+      }`;
   };
 
   for (const key of Object.keys(builtinEventHandlers)) {
     userAttrs[key] = chained(
-      withoutNils([...builtinEventHandlers[key], userAttrs[key]])
+      key,
+      withoutNils(builtinEventHandlers[key]),
+      withoutNils([userAttrs[key]])
     );
   }
 }
@@ -1912,7 +1929,12 @@ export function serializeTplComponentBase(
           }`;
         }
       });
-    mergeEventHandlers(attrs, builtinEventHandlers);
+
+    mergeEventHandlers(
+      attrs,
+      builtinEventHandlers,
+      getComponentStateOnChangePropNames(ctx.component, node)
+    );
   }
 
   if (

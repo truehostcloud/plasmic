@@ -3,7 +3,7 @@
 import { useContextMenu } from "@/wab/client/components/ContextMenu";
 import {
   SelectorTags,
-  styleVariantToSelectors,
+  styleOrCodeComponentVariantToSelectors,
 } from "@/wab/client/components/sidebar/RuleSetControls";
 import VariantRow from "@/wab/client/components/variants/VariantRow";
 import { VariantsController } from "@/wab/client/components/variants/VariantsController";
@@ -15,8 +15,9 @@ import {
 } from "@/wab/client/plasmic/plasmic_kit_variants/PlasmicVariantSection";
 import { StudioCtx } from "@/wab/client/studio-ctx/StudioCtx";
 import { ViewCtx } from "@/wab/client/studio-ctx/view-ctx";
-import { isStyleVariant } from "@/wab/shared/Variants";
+import { isStyleOrCodeComponentVariant } from "@/wab/shared/Variants";
 import { spawn } from "@/wab/shared/common";
+import { isTplCodeComponent } from "@/wab/shared/core/tpls";
 import { Component, Variant } from "@/wab/shared/model/classes";
 import { observer } from "mobx-react";
 import * as React from "react";
@@ -182,9 +183,13 @@ export function makeReadOnlySection(opts: {
               : undefined
           }
           label={
-            isStyleVariant(variant) ? (
+            isStyleOrCodeComponentVariant(variant) ? (
               <SelectorTags
-                selectors={styleVariantToSelectors(variant, studioCtx.site)}
+                isCodeComponent={isTplCodeComponent(component?.tplTree)}
+                selectors={styleOrCodeComponentVariantToSelectors(
+                  variant,
+                  studioCtx.site
+                )}
               />
             ) : (
               variant.name

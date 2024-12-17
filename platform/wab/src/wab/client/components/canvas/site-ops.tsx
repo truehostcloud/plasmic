@@ -48,7 +48,6 @@ import {
   isGlobalVariantGroup,
   isScreenVariantGroup,
   isStandaloneVariantGroup,
-  isStyleVariant,
   makeVariantName,
   removeTplVariantSettings,
   removeTplVariantSettingsContaining,
@@ -567,9 +566,7 @@ export class SiteOps {
   ) {
     const usingComps = !component
       ? findComponentsUsingGlobalVariant(this.site, variant)
-      : !isStyleVariant(variant)
-      ? findComponentsUsingComponentVariant(this.site, component, variant)
-      : new Set<Component>();
+      : findComponentsUsingComponentVariant(this.site, component, variant);
     if (opts.confirm === "always" || usingComps.size > 0) {
       return await reactConfirm({
         title: (
@@ -1399,9 +1396,7 @@ export class SiteOps {
     await this.studioCtx.changeObserved(
       () => {
         return Array.from(
-          !isStyleVariant(variant)
-            ? findComponentsUsingComponentVariant(this.site, component, variant)
-            : new Set<Component>()
+          findComponentsUsingComponentVariant(this.site, component, variant)
         );
       },
       ({ success }) => {
@@ -1494,8 +1489,14 @@ export class SiteOps {
     );
   }
 
-  removeStyleVariantIfEmptyAndUnused(component: Component, variant: Variant) {
-    this.tplMgr.removeStyleVariantIfEmptyAndUnused(component, variant);
+  removeStyleOrCodeComponentVariantIfEmptyAndUnused(
+    component: Component,
+    variant: Variant
+  ) {
+    this.tplMgr.removeStyleOrCodeComponentVariantIfEmptyAndUnused(
+      component,
+      variant
+    );
     this.studioCtx.ensureComponentStackFramesHasOnlyValidVariants(component);
     this.studioCtx.pruneInvalidViewCtxs();
   }
@@ -1604,6 +1605,19 @@ export class SiteOps {
 
   createStyleVariant(component: Component, selectors?: string[]) {
     const variant = this.tplMgr.createStyleVariant(component, selectors);
+    this.onVariantAdded(variant);
+  }
+
+  createCodeComponentVariant(
+    component: Component,
+    codeComponentName: string,
+    codeComponentVariantKeys: string[] = []
+  ) {
+    const variant = this.tplMgr.createCodeComponentVariant(
+      component,
+      codeComponentName,
+      codeComponentVariantKeys
+    );
     this.onVariantAdded(variant);
   }
 

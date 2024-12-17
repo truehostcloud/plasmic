@@ -45,16 +45,6 @@ interface Secrets {
       clientSecret: string;
     };
   };
-  shopify?: {
-    apiKey: string;
-    secretKey: string;
-    alts?: {
-      [key: string]: {
-        apiKey: string;
-        secretKey: string;
-      };
-    };
-  };
   stripe?: {
     secretKey: string;
   };
@@ -110,10 +100,6 @@ export function getIntercomToken() {
 
 export function getGithubSecrets() {
   return loadSecrets().github;
-}
-
-export function getShopifySecrets() {
-  return loadSecrets().shopify;
 }
 
 export function getStripeSecrets() {

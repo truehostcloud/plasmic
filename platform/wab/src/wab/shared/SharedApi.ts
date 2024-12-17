@@ -1079,6 +1079,15 @@ export abstract class SharedApi {
     return this.post(`/admin/projects`, { ownerId });
   }
 
+  async adminCreateWorkspace(data: {
+    id: WorkspaceId;
+    name: string;
+    description: string;
+    teamId: TeamId;
+  }) {
+    return this.post(`/admin/workspaces`, data);
+  }
+
   async listBranchesForProject(
     projectId: ProjectId
   ): Promise<ListBranchesResponse> {
@@ -1487,10 +1496,6 @@ export abstract class SharedApi {
 
   async deleteTrustedHost(id: string) {
     return this.delete(`/hosts/${id}`);
-  }
-
-  async setShopifyStorePassword(hostUrl: string, password: string) {
-    return this.put("/shopify/password", { hostUrl, password });
   }
 
   async listDataSources(

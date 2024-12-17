@@ -7,17 +7,6 @@ import {
 } from "@/wab/shared/common";
 import { getSuperComponents } from "@/wab/shared/core/components";
 import { parseScreenSpec } from "@/wab/shared/css-size";
-import {
-  VariantCombo,
-  getBaseVariant,
-  getOrderedScreenVariants,
-  isBaseVariant,
-  isGlobalVariant,
-  isPrivateStyleVariant,
-  isScreenVariant,
-  isScreenVariantGroup,
-  isStyleVariant,
-} from "@/wab/shared/Variants";
 import { maybeComputedFn } from "@/wab/shared/mobx-util";
 import {
   Component,
@@ -26,6 +15,18 @@ import {
   VariantGroup,
   VariantSetting,
 } from "@/wab/shared/model/classes";
+import {
+  VariantCombo,
+  getBaseVariant,
+  getOrderedScreenVariants,
+  isBaseVariant,
+  isCodeComponentVariant,
+  isGlobalVariant,
+  isPrivateStyleVariant,
+  isScreenVariant,
+  isScreenVariantGroup,
+  isStyleVariant,
+} from "@/wab/shared/Variants";
 import L from "lodash";
 
 // See https://coda.io/d/Plasmic-Wiki_dHQygjmQczq/Targeting-Multiple-Component-Variants_suH6g#_luNNY
@@ -65,6 +66,7 @@ export function sortedVariantSettings(
  * - [primary] is an ancestor combo of [primary, small]
  * - [primary, :hover] is an ancestor combo of [primary, small, :hover:active]
  */
+// TODO: Test this in variant-sort.spec.ts. Also update it to registered variants
 export function isAncestorCombo(
   combo: VariantCombo,
   maybeAncestorCombo: VariantCombo
@@ -233,6 +235,7 @@ export const makeVariantComboSorter = maybeComputedFn(
       const [
         privateStyleVariants,
         compStyleVariants,
+        codeComponentVariants,
         compVariants,
         globalVariants,
       ] = partitionVariants(component, combo, true);
@@ -263,11 +266,13 @@ export function partitionVariants(
   const [
     privateStyleVariants,
     compStyleVariants,
+    codeComponentVariants,
     compVariants,
     globalVariants,
   ] = partitions(variants, [
     isPrivateStyleVariant,
     isStyleVariant,
+    isCodeComponentVariant,
     (v) => !isGlobalVariant(v),
   ]);
 
@@ -281,6 +286,7 @@ export function partitionVariants(
   return [
     privateStyleVariants,
     compStyleVariants,
+    codeComponentVariants,
     compVariants,
     globalVariants,
   ];

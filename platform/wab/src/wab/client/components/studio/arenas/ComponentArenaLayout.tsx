@@ -29,6 +29,7 @@ import {
   getSuperComponentVariantGroupToComponent,
 } from "@/wab/shared/core/components";
 import { allGlobalVariantGroups } from "@/wab/shared/core/sites";
+import { isTplCodeComponent } from "@/wab/shared/core/tpls";
 import {
   COMBINATIONS_CAP,
   FRAME_LOWER,
@@ -49,7 +50,7 @@ import {
 } from "@/wab/shared/model/classes";
 import { VariantOptionsType } from "@/wab/shared/TplMgr";
 import {
-  canHaveRegisteredVariant,
+  canHaveStyleOrCodeComponentVariant,
   isGlobalVariantGroup,
   isScreenVariantGroup,
   isStandaloneVariantGroup,
@@ -161,7 +162,7 @@ export const ComponentArenaLayout = observer(
     );
 
     const vController = makeVariantsController(studioCtx);
-
+    const tplRoot = component.tplTree;
     return (
       <div>
         <GridFramesLayout
@@ -228,7 +229,7 @@ export const ComponentArenaLayout = observer(
           rowEndControls={(row) => {
             const group = ensureMaybeKnownVariantGroup(row.rowKey);
             if (!group) {
-              if (!canHaveRegisteredVariant(component)) {
+              if (!canHaveStyleOrCodeComponentVariant(component)) {
                 return null;
               }
               return (
@@ -242,7 +243,14 @@ export const ComponentArenaLayout = observer(
                   height={framesHeight}
                   onClick={() =>
                     studioCtx.changeUnsafe(() =>
-                      studioCtx.siteOps().createStyleVariant(component)
+                      isTplCodeComponent(tplRoot)
+                        ? studioCtx
+                            .siteOps()
+                            .createCodeComponentVariant(
+                              component,
+                              tplRoot.component.name
+                            )
+                        : studioCtx.siteOps().createStyleVariant(component)
                     )
                   }
                   data-event="component-arena-add-interaction-variant"

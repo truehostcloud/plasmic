@@ -13,7 +13,7 @@ import MinusIcon from "@/wab/client/plasmic/plasmic_kit/PlasmicIcon__Minus";
 import PlusIcon from "@/wab/client/plasmic/plasmic_kit/PlasmicIcon__Plus";
 import { StandardMarkdown } from "@/wab/client/utils/StandardMarkdown";
 import { TokenType } from "@/wab/commons/StyleToken";
-import { hasStyleVariant } from "@/wab/shared/Variants";
+import { isStyleOrCodeComponentVariant } from "@/wab/shared/Variants";
 import { ensure } from "@/wab/shared/common";
 import { Alert } from "antd";
 import { observer } from "mobx-react";
@@ -48,9 +48,10 @@ export const OutlinePanelSection = observer(function OutlinePanelSection() {
     studioCtx.focusedViewCtx(),
     "Expected view ctx to exist"
   );
-  const isStyleVariantTargeted = hasStyleVariant(
-    viewCtx.variantTplMgr().getCurrentVariantCombo()
-  );
+  const isStyleOrCodeComponentVariantTargeted = viewCtx
+    .variantTplMgr()
+    .getCurrentVariantCombo()
+    .some(isStyleOrCodeComponentVariant);
 
   const onClick = async () => {
     if (isVisible) {
@@ -83,7 +84,7 @@ export const OutlinePanelSection = observer(function OutlinePanelSection() {
     >
       {isVisible && (
         <>
-          {!isStyleVariantTargeted && (
+          {!isStyleOrCodeComponentVariantTargeted && (
             <Alert
               className="mb-lg"
               message={
