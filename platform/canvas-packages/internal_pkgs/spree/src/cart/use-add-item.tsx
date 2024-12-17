@@ -1,5 +1,4 @@
-import useAddItem from '@plasmicpkgs/commerce'
-import type { UseAddItem } from '@plasmicpkgs/commerce'
+import { UseAddItem, useAddItem } from '@plasmicpkgs/commerce'
 import type { MutationHook } from '@plasmicpkgs/commerce'
 import { useCallback } from 'react'
 import useCart from './use-cart'
