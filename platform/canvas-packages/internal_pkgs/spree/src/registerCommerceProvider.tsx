@@ -21,7 +21,7 @@ export const commerceProviderMeta: GlobalContextMeta<CommerceProviderProps> = {
   props: {
     apiHost: {
       type: "string",
-      defaultValue: "https://demo.spreecommerce.org/api/v2/storefront/",
+      defaultValue: "https://olitt.shop/api/v2/storefront/",
     },
   },
   ...{ globalActions: globalActionsRegistrations },

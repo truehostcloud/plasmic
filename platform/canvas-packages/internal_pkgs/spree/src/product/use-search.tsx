@@ -51,7 +51,7 @@ export const handler: SWRHook<any> = {
       GraphQLFetcherResult<IProducts>
     >({
       variables: {
-        methodPath: 'products',
+        methodPath: 'products.list',
         arguments: [
           {},
           {
