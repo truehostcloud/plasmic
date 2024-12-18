@@ -124,6 +124,17 @@ const clientConfigs = ["index", ...hostlessPkgNames].map((pkg) => ({
         });
       },
     },
+    {
+      name: "replace-global",
+      setup(build) {
+        build.onLoad({ filter: /\.js$/ }, async (args) => {
+          let text = await fs.promises.readFile(args.path, "utf8");
+          return {
+            contents: text.replace(/\bglobal\b/g, "globalThis"),
+          };
+        });
+      },
+    },
     externalGlobalPlugin({
       react: "__Sub.React",
       "react-dom": "__Sub.ReactDOM",

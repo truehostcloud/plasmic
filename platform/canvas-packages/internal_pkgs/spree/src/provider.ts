@@ -7,18 +7,19 @@ import { handler as useSearch } from './product/use-search'
 import { handler as useCategories } from './site/use-categories'
 import { handler as useBrands } from './site/use-brands'
 import { requireConfigValue } from './isomorphic-config'
-import type { Fetcher } from '@plasmicpkgs/commerce'
+import type { Fetcher, FetcherOptions } from '@plasmicpkgs/commerce'
 
-export const getSpreeProvider = (apiHost: string) => (
-  {
+export const getSpreeProvider = (apiHost: string) => {
+  return {
     locale: requireConfigValue('defaultLocale') as string,
     cartCookie: requireConfigValue('cartCookieName') as string,
-    fetcher: (requestOptions: object) => fetcher(apiHost, requestOptions),
+    fetcher: (requestOptions: FetcherOptions<any>) =>
+      fetcher(apiHost, requestOptions),
     cart: { useCart, useAddItem, useUpdateItem, useRemoveItem },
     products: { useSearch },
-    site: { useCategories, useBrands }
+    site: { useCategories, useBrands },
   }
-)
+}
 
 export type SpreeProvider = {
   locale: string,

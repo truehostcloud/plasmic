@@ -1,4 +1,4 @@
-import { Fetcher, FetcherOptions } from "@plasmicpkgs/commerce"
+import { FetcherOptions } from "@plasmicpkgs/commerce";
 import convertSpreeErrorToGraphQlError from './utils/convert-spree-error-to-graph-ql-error'
 import { makeClient, errors } from '@spree/storefront-api-v2-sdk'
 import type { ResultResponse } from '@spree/storefront-api-v2-sdk/types/interfaces/ResultResponse'
@@ -14,8 +14,12 @@ import createCustomizedFetchFetcher, {
 } from './utils/create-customized-fetch-fetcher'
 import ensureFreshUserAccessToken from './utils/tokens/ensure-fresh-user-access-token'
 import RefreshTokenError from './errors/RefreshTokenError'
-import prettyPrintSpreeSdkErrors from './utils/pretty-print-spree-sdk-errors'
 import type { GraphQLFetcherResult } from './types'
+
+type Fetcher<T = any, B = any> = (
+  apiHost: string,
+  options: FetcherOptions<B>
+) => T | Promise<T>
 
 const client = (apiHost: string) => makeClient({
   host: apiHost,
@@ -40,10 +44,8 @@ const normalizeSpreeSuccessResponse = (
   }
 }
 
-const fetcher:
-  (apiHost: string,  requestOptions: FetcherOptions) => Fetcher =
-  (apiHost) => async (
-  requestOptions: FetcherOptions
+const fetcher: Fetcher<GraphQLFetcherResult<SpreeSdkResponse>> = async (
+  apiHost, requestOptions
 ) => {
   const { url, variables } = requestOptions
 
@@ -109,12 +111,6 @@ const fetcher:
   }
 
   if (storeResponseError instanceof errors.SpreeError) {
-    console.error(
-      `Request to spree resulted in an error:\n\n${prettyPrintSpreeSdkErrors(
-        storeResponse.fail()
-      )}`
-    )
-
     throw convertSpreeErrorToGraphQlError(storeResponseError)
   }
 

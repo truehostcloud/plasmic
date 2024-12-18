@@ -1,14 +1,24 @@
 import type { SWRHook } from '@plasmicpkgs/commerce'
-import useSearch from '@plasmicpkgs/commerce'
 import type {
   Product,
   SearchProductsHook,
 } from '../types/product'
-import type { UseSearch } from '@plasmicpkgs/commerce'
+import { UseSearch, useSearch } from '@plasmicpkgs/commerce'
 import normalizeProduct from '../utils/normalizations/normalize-product'
 import type { GraphQLFetcherResult } from '../types'
-import { IProducts } from '@spree/storefront-api-v2-sdk/types/interfaces/Product'
+import { IProducts as BaseIProducts, ProductAttr } from '@spree/storefront-api-v2-sdk/types/interfaces/Product'
 import { requireConfigValue } from '../isomorphic-config'
+
+export interface IProducts extends BaseIProducts {
+  data: ProductAttr[],
+  links: {
+    self: string,
+    first: string,
+    last: string,
+    next: string,
+    prev: string
+  }
+}
 
 const imagesSize = requireConfigValue('imagesSize') as string
 const imagesQuality = requireConfigValue('imagesQuality') as number
@@ -34,7 +44,9 @@ export const handler: SWRHook<any> = {
       'input: ',
       input,
       'options: ',
-      options
+      options,
+      'fetch: ',
+      fetch
     )
 
     const taxons = [input.categoryId, input.brandId].filter(Boolean)
@@ -70,8 +82,10 @@ export const handler: SWRHook<any> = {
       },
     })
 
+    const baseUrl = new URL(spreeSuccessResponse.links.self).origin;
+
     const normalizedProducts: Product[] = spreeSuccessResponse.data.map(
-      (spreeProduct) => normalizeProduct(spreeSuccessResponse, spreeProduct)
+      (spreeProduct) => normalizeProduct(spreeSuccessResponse, spreeProduct, baseUrl)
     )
 
     const found = spreeSuccessResponse.data.length > 0

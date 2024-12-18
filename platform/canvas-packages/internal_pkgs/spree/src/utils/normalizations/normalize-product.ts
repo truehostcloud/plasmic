@@ -27,7 +27,8 @@ const imagesOptionFilter = requireConfigValue('imagesOptionFilter') as
 
 const normalizeProduct = (
   spreeSuccessResponse: SpreeSdkResponse,
-  spreeProduct: ProductAttr
+  spreeProduct: ProductAttr,
+  baseUrl: string,
 ): Product => {
   const spreePrimaryVariant =
     jsonApi.findSingleRelationshipDocument<VariantAttr>(
@@ -207,7 +208,7 @@ const normalizeProduct = (
 
   const productImages = getMediaGallery(
     spreeImageRecords,
-    createGetAbsoluteImageUrl(requireConfigValue('imageHost') as string)
+    createGetAbsoluteImageUrl(baseUrl as string)
   )
 
   const images: Image[] =
