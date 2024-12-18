@@ -58,7 +58,11 @@ jobs:
           df -h
       - name: "Remove docker images"
         run: |
-          docker rmi $(docker image ls -aq)
+          if [ "$(docker image ls -q)" ]; then
+            docker rmi $(docker image ls -aq)
+          else
+            echo "No docker images to remove"
+          fi
           df -h
 
       - name: Checkout code
