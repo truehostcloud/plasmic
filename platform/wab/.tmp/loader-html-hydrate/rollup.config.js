@@ -46,6 +46,13 @@ export default {
           isProd ? "production" : "development"
         ),
       },
+      delimiters: ['', ''], // Ensures we match exact tokens
+      replacements: [
+        {
+          pattern: /\bglobal\b/g, // Matches only the word "global" as a whole word
+          replacement: 'globalThis',
+        },
+      ],
     }),
     sourcemaps(),
     ...(isProd ? [terser()] : []),
