@@ -247,6 +247,7 @@
     "@plasmicapp/react-web": "^0.2.359",
     "@plasmicpkgs/antd5": "^0.0.259",
     "@plasmicpkgs/commerce-local": "^0.0.206",
+    "commerce-spree": "file:../canvas-packages/internal_pkgs/spree/commerce-spree-v0.0.14.tgz",
     "@plasmicpkgs/plasmic-basic-components": "^0.0.231",
     "@plasmicpkgs/plasmic-embed-css": "^0.1.193",
     "@popperjs/core": "2.11.6",
