@@ -21,10 +21,10 @@ const isomorphicConfig = {
   showSingleVariantOptions: false,
   lastUpdatedProductsPrerenderCount: validateProductsPrerenderCount(10),
   productPlaceholderImageUrl: validatePlaceholderImageUrl(
-    '/product-img-placeholder.svg'
+    'https://s3.olitt.com/plasmic/images/product.png'
   ),
   lineItemPlaceholderImageUrl: validatePlaceholderImageUrl(
-    '/product-img-placeholder.svg'
+    'https://s3.olitt.com/plasmic/images/product.png'
   ),
   imagesOptionFilter: validateImagesOptionFilter(false),
   imagesSize: validateImagesSize('1000x1000'),
