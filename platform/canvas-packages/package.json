@@ -70,7 +70,7 @@
     "axios": "^1.5.1",
     "chart.js": "^4.2.1",
     "classnames": "^2.3.2",
-    "commerce-spree": "^0.0.17",
+    "commerce-spree": "^0.0.18",
     "copy-to-clipboard": "^3.3.3",
     "date-fns": "^2.30.0",
     "dayjs": "^1.11.10",

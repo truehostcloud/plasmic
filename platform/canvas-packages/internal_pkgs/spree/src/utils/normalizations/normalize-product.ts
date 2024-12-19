@@ -102,8 +102,11 @@ const normalizeProduct = (
 
       return {
         id: spreeVariantRecord.id,
-        sku: spreeVariantRecord.attributes.sku || spreeVariantRecord.id,
+        sku: spreeVariantRecord.attributes.sku ?? spreeVariantRecord.id,
+        name: spreeVariantRecord.attributes.name,
         options: variantOptions,
+        price: spreeVariantRecord.attributes.price,
+        availableForSale: spreeVariantRecord.attributes.purchasable,
       }
     }
   )
