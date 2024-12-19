@@ -1,12 +1,13 @@
 {
   "name": "commerce-spree",
-  "version": "0.0.14",
+  "version": "0.0.17",
   "description": "Plasmic registration calls for spree commerce provider",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "module": "dist/commerce-spree.esm.js",
   "files": [
-    "dist"
+    "dist",
+    "scripts"
   ],
   "scripts": {
     "build": "tsdx build",
@@ -15,7 +16,8 @@
     "lint": "tsdx lint",
     "prepublishOnly": "npm run build",
     "size": "size-limit",
-    "analyze": "size-limit --why"
+    "analyze": "size-limit --why",
+    "postinstall": "node scripts/fix-global.js"
   },
   "dependencies": {
     "@plasmicpkgs/commerce": "0.0.205",

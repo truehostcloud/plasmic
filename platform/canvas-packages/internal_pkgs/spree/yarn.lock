@@ -1330,7 +1330,7 @@
 
 "@spree/storefront-api-v2-sdk@^5.1.1":
   version "5.1.8"
-  resolved "https://registry.npmjs.org/@spree/storefront-api-v2-sdk/-/storefront-api-v2-sdk-5.1.8.tgz"
+  resolved "https://registry.yarnpkg.com/@spree/storefront-api-v2-sdk/-/storefront-api-v2-sdk-5.1.8.tgz#e9a6d3dd9d5d744f233f8075816963350408607d"
   integrity sha512-Pyhjm6HaGzb1JsIJt48vN1CmaDDeYgtF+DS8i4AJ9CCrI0cjYdqifqDBgQlOkv/2EkKSPrkug/59GijSoKkDMw==
 
 "@swc/helpers@0.4.11":

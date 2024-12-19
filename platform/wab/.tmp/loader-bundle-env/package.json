@@ -5,7 +5,7 @@
     "@ant-design/pro-components": "Must be 2.6.4. Earlier doesn't support newer antd, later incurs a disallowed dynamic require of antd/es/layout/Sider. https://app.shortcut.com/plasmic/story/37043/richlayout-always-initially-loads-with-dark-background"
   },
   "scripts": {
-    "postinstall": "patch-package"
+    "postinstall": "patch-package && node scripts/fix-global.js"
   },
   "dependencies": {
     "@ant-design/icons": "^5.1.4",
@@ -26,7 +26,7 @@
     "@plasmicpkgs/commerce-saleor": "^0.0.169",
     "@plasmicpkgs/commerce-shopify": "^0.0.212",
     "@plasmicpkgs/commerce-swell": "^0.0.214",
-    "commerce-spree": "^0.0.14",
+    "commerce-spree": "^0.0.17",
     "@plasmicpkgs/framer-motion": "^0.0.205",
     "@plasmicpkgs/lottie-react": "^0.0.197",
     "@plasmicpkgs/plasmic-basic-components": "^0.0.230",
