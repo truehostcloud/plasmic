@@ -1,6 +1,12 @@
+import { toVarName } from "@/wab/shared/codegen/util";
 import { assert, isPrefixArray, uniqueName } from "@/wab/shared/common";
 import * as Exprs from "@/wab/shared/core/exprs";
-import { toVarName } from "@/wab/shared/codegen/util";
+import {
+  findRecursiveImplicitStates,
+  getStateVarName,
+  isStateUsedInExpr,
+} from "@/wab/shared/core/states";
+import * as Tpls from "@/wab/shared/core/tpls";
 import {
   parseExpr,
   renameObjectKey,
@@ -9,6 +15,7 @@ import {
 import {
   Component,
   ComponentDataQuery,
+  ComponentServerQuery,
   Expr,
   Interaction,
   isKnownCustomCode,
@@ -20,17 +27,11 @@ import {
   Site,
   TplNode,
 } from "@/wab/shared/model/classes";
-import {
-  findRecursiveImplicitStates,
-  getStateVarName,
-  isStateUsedInExpr,
-} from "@/wab/shared/core/states";
-import * as Tpls from "@/wab/shared/core/tpls";
 
 /**
  * Returns boolean indicating whether `expr` is referencing `param`.
  */
-function isParamUsedInExpr(
+export function isParamUsedInExpr(
   param: Param,
   expr: Expr | null | undefined
 ): boolean {
@@ -55,7 +56,7 @@ function isParamUsedInExpr(
  * Returns boolean indicating whether `expr` is referencing `query`.
  */
 export function isQueryUsedInExpr(
-  query: ComponentDataQuery,
+  queryName: string,
   expr: Expr | null | undefined
 ) {
   if (Exprs.isRealCodeExpr(expr)) {
@@ -64,7 +65,7 @@ export function isQueryUsedInExpr(
       "Real code expression must be CustomCode or ObjectPath"
     );
     const info = parseExpr(expr);
-    const varName = toVarName(query.name);
+    const varName = toVarName(queryName);
     return info.usedDollarVarKeys.$queries.has(varName);
   }
   return false;
@@ -318,6 +319,26 @@ export function renameQueryAndFixExprs(
   const oldVarName = toVarName(query.name);
   query.name = uniqueName(
     component.dataQueries.filter((q) => q !== query).map((q) => q.name),
+    wantedNewName,
+    {
+      normalize: toVarName,
+    }
+  );
+  const newVarName = toVarName(query.name);
+  const refs = Tpls.findExprsInComponent(component);
+  for (const { expr } of refs) {
+    renameObjectInExpr(expr, "$queries", "$queries", oldVarName, newVarName);
+  }
+}
+
+export function renameServerQueryAndFixExprs(
+  component: Component,
+  query: ComponentServerQuery,
+  wantedNewName: string
+) {
+  const oldVarName = toVarName(query.name);
+  query.name = uniqueName(
+    component.serverQueries.filter((q) => q !== query).map((q) => q.name),
     wantedNewName,
     {
       normalize: toVarName,

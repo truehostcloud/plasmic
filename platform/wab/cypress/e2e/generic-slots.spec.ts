@@ -18,6 +18,7 @@ describe("generic-slots", function () {
   it("can create, override content, edit default content", function () {
     cy.withinStudioIframe(() => {
       cy.createNewComponent("Widget").then((framed) => {
+        cy.focusFrameRoot(framed);
         cy.justLog("Draw a rect slot.");
         cy.justType("r");
         cy.drawRectRelativeToElt(framed.getFrame(), 10, 10, 50, 50);
@@ -27,13 +28,18 @@ describe("generic-slots", function () {
           cy.justType("{shift}1");
 
           cy.justLog("Insert two Widgets.");
+          cy.focusFrameRoot(framed2);
+          cy.wait(500);
           cy.dragGalleryItemRelativeToElt("Widget", framed2.getFrame(), 10, 10);
+          cy.renameTreeNode("widget1");
+          cy.wait(500);
           cy.dragGalleryItemRelativeToElt(
             "Widget",
             framed2.getFrame(),
             10,
             100
           );
+          cy.renameTreeNode("widget2");
 
           cy.justLog("Back to frame 1, convert to slot.");
           cy.focusFrameRoot(framed);

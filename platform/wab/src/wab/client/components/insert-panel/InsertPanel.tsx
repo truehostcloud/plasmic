@@ -5,6 +5,7 @@ import {
   getValidInsertLocs,
   InsertRelLoc,
 } from "@/wab/client/components/canvas/view-ops";
+import { WithContextMenu } from "@/wab/client/components/ContextMenu";
 import S from "@/wab/client/components/insert-panel/InsertPanel.module.scss";
 import InsertPanelTabGroup from "@/wab/client/components/insert-panel/InsertPanelTabGroup";
 import InsertPanelTabItem from "@/wab/client/components/insert-panel/InsertPanelTabItem";
@@ -36,12 +37,15 @@ import {
   DraggableInsertableProps,
 } from "@/wab/client/components/studio/add-drawer/DraggableInsertable";
 import { Matcher } from "@/wab/client/components/view-common";
+import Button from "@/wab/client/components/widgets/Button";
 import { TextboxRef } from "@/wab/client/components/widgets/Textbox";
 import {
+  AddInstallableItem,
   AddItem,
   AddItemType,
   AddTplItem,
   INSERTABLES_MAP,
+  isTemplateComponent,
   isTplAddItem,
 } from "@/wab/client/definitions/insertables";
 import { DragInsertManager } from "@/wab/client/Dnd";
@@ -70,7 +74,6 @@ import {
   groupConsecBy,
   maybe,
   mergeSane,
-  notNil,
   only,
   sliding,
   spawnWrapper,
@@ -123,9 +126,9 @@ import { naturalSort } from "@/wab/shared/sort";
 import {
   canInsertAlias,
   canInsertHostlessPackage,
-  InsertPanelConfig,
 } from "@/wab/shared/ui-config-utils";
 import { placeholderImgUrl } from "@/wab/shared/urls";
+import { Menu } from "antd";
 import cn from "classnames";
 import { UseComboboxGetItemPropsOptions } from "downshift";
 import L, { groupBy, last, uniq } from "lodash";
@@ -158,22 +161,22 @@ export const InsertPanel = observer(function InsertPanel_({
 }: InsertPanelProps) {
   const studioCtx = useStudioCtx();
   const [isDragging, setDragging] = React.useState(false);
-  const recentItemsRef = React.useRef<[AddTplItem, Component | null][]>([]);
+  const recentItemsRef = React.useRef<AddTplItem[]>([]);
 
   // Only save insertable items like elements and components.
   const saveRecentItem = (item: AddTplItem, tplNode: TplNode | null) => {
     const component =
       tplNode && isTplComponent(tplNode) ? tplNode.component : null;
-    recentItemsRef.current.unshift([item, component]);
+    if (component) {
+      // If the item resulted in inserting a component, create a fresh item,
+      // since the original item could have been the "pre-install" item,
+      // which has a different key than an "installed" item.
+      recentItemsRef.current.unshift(createAddTplComponent(component));
+    } else {
+      recentItemsRef.current.unshift(item);
+    }
 
-    // Remove duplicates by checking the inserted component first, otherwise the unique key.
-    // We need to check the component because an insertable template AddItem will create a
-    // new component on insertion. Then the next InsertPanel will have a different AddItem
-    // representing the existing component.
-    recentItemsRef.current = L.uniqBy(
-      recentItemsRef.current,
-      ([i, comp]) => comp ?? i.key
-    );
+    recentItemsRef.current = L.uniqBy(recentItemsRef.current, (i) => i.key);
     if (recentItemsRef.current.length > 3) {
       recentItemsRef.current.length = 3;
     }
@@ -242,10 +245,10 @@ const shouldShowPreview = (group: AddItemGroup): boolean => {
   );
 };
 // Compact only works when we should preview
-function shouldShowCompact(virtualItem: VirtualItem) {
+function shouldShowCompact(virtualItem: VirtualItem): boolean {
   return (
     virtualItem.type === "item" &&
-    virtualItem.item.isCompact &&
+    !!virtualItem.item.isCompact &&
     shouldShowPreview(virtualItem.group)
   );
 }
@@ -255,7 +258,7 @@ const AddDrawerContent = observer(function AddDrawerContent(props: {
   onDragStart: DraggableInsertableProps["onDragStart"];
   onDragEnd: DraggableInsertableProps["onDragEnd"];
   onInserted: (item: AddItem, comp: TplNode | null) => void;
-  recentItems: [AddTplItem, Component | null][];
+  recentItems: AddTplItem[];
 }) {
   const { studioCtx, onDragStart, onDragEnd, onInserted, recentItems } = props;
   const inputRef = React.useRef<TextboxRef>(null);
@@ -335,7 +338,7 @@ const AddDrawerContent = observer(function AddDrawerContent(props: {
           ),
 
           ...(index < groupedItems.length - 1
-            ? [{ type: "separator" } as const]
+            ? [{ type: "separator", group } as const]
             : []),
         ]);
 
@@ -402,7 +405,7 @@ const AddDrawerContent = observer(function AddDrawerContent(props: {
     return false;
   };
 
-  const onInsert = async (item: AddItem) => {
+  const onInsert = spawnWrapper(async (item: AddItem) => {
     if (shouldInterceptOnInsert(item)) {
       return;
     }
@@ -464,7 +467,7 @@ const AddDrawerContent = observer(function AddDrawerContent(props: {
         break;
       }
     }
-  };
+  });
 
   function cycleSection(step: 1 | -1) {
     const index = allSectionKeysFlattened.findIndex((sec) => sec === section);
@@ -486,6 +489,7 @@ const AddDrawerContent = observer(function AddDrawerContent(props: {
         onDragStart,
         onDragEnd,
         matcher,
+        onInsert,
         onInserted,
         getItemProps,
         highlightedItemIndex,
@@ -678,6 +682,7 @@ interface AddDrawerContextValue {
   onDragStart: DraggableInsertableProps["onDragStart"];
   onDragEnd: DraggableInsertableProps["onDragEnd"];
   matcher: Matcher;
+  onInsert: (item: AddItem) => void;
   onInserted: (item: AddItem, tplNode: TplNode | null) => void;
   getItemProps: (options: UseComboboxGetItemPropsOptions<AddItem>) => any;
   highlightedItemIndex: number;
@@ -703,6 +708,7 @@ type VirtualItem =
     }
   | {
       type: "separator";
+      group: AddItemGroup;
       item?: never;
     };
 
@@ -718,25 +724,45 @@ const Row = React.memo(function Row(props: {
     "AddDrawerContext should exist"
   );
 
+  const firstItem = virtualRow[0];
+  const showPreview =
+    firstItem?.type === "item" ? shouldShowPreview(firstItem.group) : false;
+  const itemWidth = shouldShowCompact(firstItem) ? compactItemWidth : "100%";
+
   return (
     <li
       style={{
         ...style,
         display: "flex",
         gap: sameRowGap,
-        padding: virtualRow[0].type === "item" ? 8 : undefined,
+
+        // Preview items don't render their own padding, so add it here
+        padding: showPreview ? 8 : undefined,
       }}
     >
       {virtualRow.map((virtualItem) => {
         if (virtualItem.type === "header") {
+          const installableItem = virtualItem.group.sectionInstallableItem;
           return (
             <ListSectionHeader
+              key={`"header-${virtualItem.group.key}`}
               style={{
                 paddingTop: 8,
                 paddingLeft: 8,
                 paddingRight: 8,
                 paddingBottom: 0,
               }}
+              showActions={!!installableItem}
+              actions={
+                installableItem && (
+                  <Button
+                    size={"small"}
+                    onClick={() => context.onInsert(installableItem)}
+                  >
+                    Install all
+                  </Button>
+                )
+              }
             >
               <span
                 style={{
@@ -746,7 +772,7 @@ const Row = React.memo(function Row(props: {
                   // padding: "24px 16px",
                 }}
               >
-                {virtualItem.group.label}
+                {context.matcher.boldSnippets(virtualItem.group.label)}
               </span>
             </ListSectionHeader>
           );
@@ -769,78 +795,102 @@ const Row = React.memo(function Row(props: {
               ? getSuperComponents(item.component).length
               : 0;
 
-          const showPreview = shouldShowPreview(virtualItem.group);
-          const showCompact = shouldShowCompact(virtualItem);
-          const width = showCompact ? compactItemWidth : "100%";
           return (
-            <li
-              {...getItemProps({ item, index: itemIndex })}
-              aria-label={item.label}
-              data-plasmic-add-item-name={item.systemName ?? item.label}
-              role="option"
-              className={item.type === "tpl" ? "grabbable" : ""}
-              style={{
-                width,
-                minWidth: width,
-                maxWidth: width,
-              }}
+            <MaybeWrap
+              cond={isTemplateComponent(item)}
+              wrapper={(children) => (
+                <WithContextMenu
+                  className="pass-through"
+                  overlay={() => (
+                    <Menu>
+                      <Menu.Item
+                        onClick={async () => {
+                          // safe because of `cond={isTemplateComponent(item)}` check
+                          const addTplItem = item as AddTplItem;
+                          const tplNode = await studioCtx.tryInsertTplItem(
+                            addTplItem,
+                            {
+                              skipDuplicateCheck: true,
+                            }
+                          );
+                          onInserted(addTplItem, tplNode);
+                        }}
+                      >
+                        Create a new copy of this component
+                      </Menu.Item>
+                    </Menu>
+                  )}
+                >
+                  {children}
+                </WithContextMenu>
+              )}
             >
-              <MaybeWrap
-                cond={isTplAddItem(item)}
-                wrapper={(children) => (
-                  <DraggableInsertable
-                    key={item.key}
-                    shouldInterceptInsert={shouldInterceptOnInsert}
-                    sc={studioCtx}
-                    spec={item as AddTplItem}
-                    onDragStart={onDragStart}
-                    onDragEnd={onDragEnd}
-                  >
-                    {children}
-                  </DraggableInsertable>
-                )}
+              <li
+                {...getItemProps({ item, index: itemIndex })}
+                aria-label={item.label}
+                data-plasmic-add-item-name={item.systemName ?? item.label}
+                role="option"
+                className={item.type === "tpl" ? "grabbable" : ""}
+                style={{ width: itemWidth }}
               >
-                {showPreview ? (
-                  <OmnibarAddItem
-                    title={item.label}
-                    hoverText={
-                      item["hostLessPackageInfo"]?.syntheticPackage
-                        ? "Show package"
-                        : "Install package"
-                    }
-                    _new={item.isNew}
-                    installOnly={item["isPackage"]}
-                    preview={
-                      item.previewImageUrl
-                        ? "image"
-                        : item.previewVideoUrl
-                        ? "video"
-                        : undefined
-                    }
-                    previewImageUrl={item.previewImageUrl}
-                    previewVideoUrl={item.previewVideoUrl}
-                    focused={highlightedItemIndex === itemIndex}
-                  />
-                ) : (
-                  <AddDrawerItem
-                    key={item.key}
-                    studioCtx={studioCtx}
-                    item={item}
-                    matcher={matcher}
-                    isHighlighted={highlightedItemIndex === itemIndex}
-                    validTplLocs={validTplLocs}
-                    onInserted={(tplNode) => {
-                      onInserted(item, tplNode);
-                    }}
-                    indent={indent}
-                  />
-                )}
-              </MaybeWrap>
-            </li>
+                <MaybeWrap
+                  cond={isTplAddItem(item)}
+                  wrapper={(children) => (
+                    <DraggableInsertable
+                      key={item.key}
+                      shouldInterceptInsert={shouldInterceptOnInsert}
+                      sc={studioCtx}
+                      spec={item as AddTplItem}
+                      onDragStart={onDragStart}
+                      onDragEnd={onDragEnd}
+                    >
+                      {children}
+                    </DraggableInsertable>
+                  )}
+                >
+                  {showPreview ? (
+                    <OmnibarAddItem
+                      title={matcher.boldSnippets(item.label)}
+                      hoverText={
+                        item["hostLessPackageInfo"]?.syntheticPackage
+                          ? "Show package"
+                          : "Install package"
+                      }
+                      _new={item.isNew}
+                      installOnly={item["isPackage"]}
+                      preview={
+                        item.previewImageUrl
+                          ? "image"
+                          : item.previewVideoUrl
+                          ? "video"
+                          : undefined
+                      }
+                      previewImageUrl={item.previewImageUrl}
+                      previewVideoUrl={item.previewVideoUrl}
+                      focused={highlightedItemIndex === itemIndex}
+                    />
+                  ) : (
+                    <AddDrawerItem
+                      key={item.key}
+                      studioCtx={studioCtx}
+                      item={item}
+                      matcher={matcher}
+                      isHighlighted={highlightedItemIndex === itemIndex}
+                      validTplLocs={validTplLocs}
+                      onInserted={(tplNode) => {
+                        onInserted(item, tplNode);
+                      }}
+                      indent={indent}
+                    />
+                  )}
+                </MaybeWrap>
+              </li>
+            </MaybeWrap>
           );
         } else if (virtualItem.type === "separator") {
           return (
             <ListSectionSeparator
+              key={`separator-${virtualItem.group.key}`}
               style={{
                 paddingTop: 4,
                 padding: 0,
@@ -998,6 +1048,7 @@ interface AddItemGroup {
   familyKey?: keyof typeof familyKeyToLabel;
   sectionKey?: string;
   sectionLabel?: string;
+  sectionInstallableItem?: AddInstallableItem;
   label: string;
   items: AddItem[];
   codeName?: string;
@@ -1018,7 +1069,7 @@ export function buildAddItemGroups({
   includeFrames?: boolean;
   studioCtx: StudioCtx;
   matcher: Matcher;
-  recentItems: [AddTplItem, Component | null][];
+  recentItems: AddTplItem[];
   filterToTarget?: boolean;
   insertLoc?: InsertRelLoc;
   projectDependencies: Array<ProjectDependency>;
@@ -1056,14 +1107,10 @@ export function buildAddItemGroups({
     DEVFLAGS.insertPanelContent.builtinSections,
     DEVFLAGS.insertPanelContent.overrideSections[isApp ? "app" : "website"]
   );
-  const insertPanelConfig: InsertPanelConfig = {
-    ...studioCtx.appCtx.appConfig.insertPanelContent,
-    builtinSections,
-  };
+  const builtinSectionsInstallables =
+    DEVFLAGS.insertPanelContent.builtinSectionsInstallables;
 
   const canInsertContext = {
-    insertPanel: insertPanelConfig,
-    hostlessPackages: studioCtx.appCtx.appConfig.hostLessComponents ?? [],
     isContentCreator: contentEditorMode,
   };
 
@@ -1102,131 +1149,152 @@ export function buildAddItemGroups({
     // We don't want to just call it "built-in" since you may swap in your own custom components using the default-components system (for a few specific kinds).
     // But generally later we may allow users to more fully customize this menu? TBD.
     ...Object.entries(builtinSections).flatMap(([section, groups]) =>
-      Object.entries(groups).map(
-        ([group, aliases]) =>
-          !group.startsWith("__") && {
-            sectionKey: section,
-            sectionLabel: section,
-            key: group,
-            label: group,
-            items: filterFalsy(
-              aliases.map((alias) => {
-                if (!canInsertAlias(uiConfig, alias, canInsertContext)) {
+      Object.entries(groups).map<AddItemGroup>(([group, aliases]) => {
+        // Maybe show the install all button
+        const installableProjectId = builtinSectionsInstallables[group];
+        let sectionInstallableItem: AddInstallableItem | undefined;
+        if (installableProjectId) {
+          // Don't want to download the project, so we use a heuristic
+          // to guess whether the project is fully installed or not.
+          // installedCount is not perfect since the project may have
+          // more components than shown in the section as aliases.
+          const installedCount = studioCtx.site.components.filter(
+            (c) => c.templateInfo?.projectId === installableProjectId
+          ).length;
+          if (installedCount < aliases.length) {
+            const installable = installableProjectId
+              ? studioCtx.appCtx.appConfig.installables.find(
+                  (meta) =>
+                    meta.type === "ui-kit" &&
+                    meta.projectId === installableProjectId
+                )
+              : undefined;
+            if (installable) {
+              sectionInstallableItem = createAddInstallable(installable);
+            }
+          }
+        }
+
+        return {
+          sectionKey: section,
+          sectionLabel: section,
+          sectionInstallableItem,
+          key: group,
+          label: group,
+          items: filterFalsy(
+            aliases.map((alias) => {
+              if (!canInsertAlias(uiConfig, alias, canInsertContext)) {
+                return undefined;
+              }
+              const resolved = insertPanelAliases.get(alias as any);
+              const aliasImageUrl = `https://static1.plasmic.app/insertables/${alias}.svg`;
+
+              // Is this a built-in insertable?
+              if (!resolved) {
+                const insertable = INSERTABLES_MAP[alias];
+                if (!insertable) {
                   return undefined;
                 }
-                const resolved = insertPanelAliases.get(alias as any);
-                const aliasImageUrl = `https://static1.plasmic.app/insertables/${alias}.svg`;
+                return { ...insertable, isCompact: true };
+              }
 
-                // Is this a built-in insertable?
-                if (!resolved) {
-                  const insertable = INSERTABLES_MAP[alias];
-                  if (!insertable) {
-                    return undefined;
-                  }
-                  return { ...insertable, isCompact: true };
+              // Is this a built-in code component?
+              if (resolved.startsWith("builtincc:")) {
+                const componentName = resolved.split(":")[1];
+                const component = studioCtx.site.components
+                  .filter((c) => isBuiltinCodeComponent(c))
+                  .find((c) => c.name === componentName);
+                if (!component) {
+                  return undefined;
                 }
+                return {
+                  ...createAddTplComponent(component),
+                  previewImageUrl: aliasImageUrl,
+                  isCompact: true,
+                };
+              }
 
-                // Is this a built-in code component?
-                if (resolved.startsWith("builtincc:")) {
-                  const componentName = resolved.split(":")[1];
-                  const component = studioCtx.site.components
-                    .filter((c) => isBuiltinCodeComponent(c))
-                    .find((c) => c.name === componentName);
-                  if (!component) {
-                    return undefined;
-                  }
+              // Is this a default component entry?
+              if (resolved.startsWith("default:")) {
+                const kind = resolved.split(":")[1];
+                if (!isDefaultComponentKind(kind)) {
+                  return undefined;
+                }
+                const existingComponent = tryGetDefaultComponent(
+                  studioCtx.site,
+                  kind
+                );
+                if (existingComponent) {
                   return {
-                    ...createAddTplComponent(component),
-                    previewImageUrl: aliasImageUrl,
+                    ...createAddTplComponent(existingComponent),
+                    previewImageUrl: getPlumeImage(kind),
                     isCompact: true,
                   };
-                }
-
-                // Is this a default component entry?
-                if (resolved.startsWith("default:")) {
-                  const kind = resolved.split(":")[1];
-                  if (!isDefaultComponentKind(kind)) {
-                    return undefined;
-                  }
-                  const existingComponent = tryGetDefaultComponent(
-                    studioCtx.site,
-                    kind
-                  );
-                  if (existingComponent) {
-                    return {
-                      ...createAddTplComponent(existingComponent),
-                      previewImageUrl: getPlumeImage(kind),
-                      isCompact: true,
-                    };
-                  } else if (
-                    canInsertHostlessPackage(
-                      uiConfig,
-                      "plume",
-                      canInsertContext
-                    )
-                  ) {
-                    if (!hasPlexus || DEVFLAGS.runningInCypress) {
-                      const plumeItem = makePlumeInsertables(studioCtx, kind);
-                      if (plumeItem.length > 0) {
-                        return {
-                          ...only(plumeItem),
-                          isCompact: true,
-                        };
-                      } else {
-                        return undefined;
-                      }
-                    }
-
-                    // The template name needs to be of format "<PLEXUS_INSERTABLE_ID>/<kind>". E.g. For Plexus button, it will be "plexus/button".
-                    // The template name will be fetched from devflags.insertableTemplates.
-                    const plexusItem = handleTemplateAlias(
-                      `${PLEXUS_INSERTABLE_ID}/${kind}`,
-                      kind
-                    );
-                    if (plexusItem) {
+                } else if (
+                  canInsertHostlessPackage(uiConfig, "plume", canInsertContext)
+                ) {
+                  if (!hasPlexus || DEVFLAGS.runningInCypress) {
+                    const plumeItem = makePlumeInsertables(studioCtx, kind);
+                    if (plumeItem.length > 0) {
                       return {
-                        previewImageUrl: aliasImageUrl,
-                        ...plexusItem,
+                        ...only(plumeItem),
+                        isCompact: true,
                       };
                     } else {
                       return undefined;
                     }
+                  }
+
+                  // The template name needs to be of format "<PLEXUS_INSERTABLE_ID>/<kind>". E.g. For Plexus button, it will be "plexus/button".
+                  // The template name will be fetched from devflags.insertableTemplates.
+                  const plexusItem = handleTemplateAlias(
+                    `${PLEXUS_INSERTABLE_ID}/${kind}`,
+                    kind
+                  );
+                  if (plexusItem) {
+                    return {
+                      previewImageUrl: aliasImageUrl,
+                      ...plexusItem,
+                    };
                   } else {
                     return undefined;
                   }
+                } else {
+                  return undefined;
                 }
+              }
 
-                if (resolved.startsWith("template:")) {
-                  const templateName = resolved.split(":")[1];
-                  // ASK: Previously, it only returned if a template was found. Is it OK to return undefined if the template isn't found?
-                  return handleTemplateAlias(templateName);
-                }
+              if (resolved.startsWith("template:")) {
+                const templateName = resolved.split(":")[1];
+                // ASK: Previously, it only returned if a template was found. Is it OK to return undefined if the template isn't found?
+                return handleTemplateAlias(templateName);
+              }
 
-                // Is this a hostless component entry?
-                for (const hostlessGroup of getHostLess(studioCtx)) {
-                  if (
-                    canInsertHostlessPackage(
-                      uiConfig,
-                      hostlessGroup.codeName ?? "",
-                      canInsertContext
-                    )
-                  ) {
-                    for (const item of hostlessGroup.items) {
-                      if (item.key === "hostless-component-" + resolved) {
-                        if (isTplAddItem(item) && item.systemName) {
-                          installedHostlessComponents.add(item.systemName);
-                        }
-                        return { ...item, isCompact: true };
+              // Is this a hostless component entry?
+              for (const hostlessGroup of getHostLess(studioCtx)) {
+                if (
+                  canInsertHostlessPackage(
+                    uiConfig,
+                    hostlessGroup.codeName ?? "",
+                    canInsertContext
+                  )
+                ) {
+                  for (const item of hostlessGroup.items) {
+                    if (item.key === "hostless-component-" + resolved) {
+                      if (isTplAddItem(item) && item.systemName) {
+                        installedHostlessComponents.add(item.systemName);
                       }
+                      return { ...item, isCompact: true };
                     }
                   }
                 }
+              }
 
-                return undefined;
-              })
-            ),
-          }
-      )
+              return undefined;
+            })
+          ),
+        };
+      })
     ),
 
     // Custom components includes all the components from the project
@@ -1485,6 +1553,11 @@ export function buildAddItemGroups({
 
   if (matcher.hasQuery()) {
     groupedItems.forEach((group) => {
+      if (matcher.matches(group.label)) {
+        return; // don't filter items if group label matches
+      }
+
+      // Add items that don't match
       const unmatchedItems = new Set(
         group.items.filter(
           (item) =>
@@ -1492,6 +1565,8 @@ export function buildAddItemGroups({
             (!item.systemName || !matcher.matches(item.systemName))
         )
       );
+
+      // Remove items whose super or sub components match
       const superAndSubCompsOfMatchedComponents = new Set<Component>();
       group.items.forEach((item) => {
         if (
@@ -1514,11 +1589,9 @@ export function buildAddItemGroups({
           unmatchedItems.delete(item);
         }
       });
-      group.items = group.items.filter(
-        (item) =>
-          !(group.key === "Common" && group.familyKey === undefined) &&
-          !unmatchedItems.has(item)
-      );
+
+      // Filter items based on final unmatched items
+      group.items = group.items.filter((item) => !unmatchedItems.has(item));
     });
   }
 
@@ -1534,7 +1607,7 @@ export function buildAddItemGroups({
             isInsertable(item, vc, target, insertLoc)
           );
         }
-        recentItems = recentItems.filter(([item]) =>
+        recentItems = recentItems.filter((item) =>
           isInsertable(item, vc, target, insertLoc)
         );
       }
@@ -1544,17 +1617,8 @@ export function buildAddItemGroups({
   if (recentItems.length > 0) {
     const allItems = groupedItems.flatMap((group) => group.items);
     const allItemKeys = new Set(allItems.map((item) => item.key));
-    const allItemComponents = new Set(
-      allItems
-        .map((item) =>
-          item.type === "tpl" || item.type === "plume" ? item.component : null
-        )
-        .filter(notNil)
-    );
-    recentItems = recentItems.filter(
-      ([item, comp]) =>
-        allItemKeys.has(item.key) || (comp && allItemComponents.has(comp))
-    );
+
+    recentItems = recentItems.filter((item) => allItemKeys.has(item.key));
     if (recentItems.length > 0) {
       // Put recently used in the first section
       const firstGroup = groupedItems[0];
@@ -1567,7 +1631,7 @@ export function buildAddItemGroups({
         // For example, highlightedIndex will be set to the first occurrence, leading to a lot of jumping around
         // By just cloning this, we can keep the items distinct
         items: [
-          ...recentItems.map(([item]) => ({
+          ...recentItems.map((item) => ({
             ...L.clone(item),
             // Since not all items have images, remove previewImageUrl to force recents to always show as rows.
             previewImageUrl: undefined,

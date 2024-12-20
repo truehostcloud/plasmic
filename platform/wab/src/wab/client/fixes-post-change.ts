@@ -17,7 +17,7 @@ import { $$$ } from "@/wab/shared/TplQuery";
 import { isBaseVariant } from "@/wab/shared/Variants";
 import { getActiveVariantsForFrame } from "@/wab/shared/cached-selectors";
 import { notNil, tuple } from "@/wab/shared/common";
-import { isPageComponent } from "@/wab/shared/core/components";
+import { isCodeComponent, isPageComponent } from "@/wab/shared/core/components";
 import {
   RecordedChanges,
   mergeRecordedChanges,
@@ -35,6 +35,7 @@ import {
   isGrid,
   isTplComponent,
   isTplContainer,
+  isTplSlot,
   isTplTag,
   isTplTagOrComponent,
   isTplVariantable,
@@ -47,6 +48,7 @@ import {
   TplComponent,
   TplNode,
   TplSlot,
+  isKnownSlotParam,
   isKnownTplComponent,
   isKnownTplSlot,
   isKnownVirtualRenderExpr,
@@ -101,6 +103,10 @@ export function fixupForChanges(
     [changes, summary] = applyFix(() => {
       fixupIncorrectlyNamedNodes(summary, studioCtx);
       fixupImplicitStates(summary);
+    });
+
+    [changes, summary] = applyFix(() => {
+      fixupSlotParamsOrder(summary);
     });
   }
 
@@ -263,7 +269,9 @@ function fixupImplicitStates(summary: ChangeSummary) {
   for (const component of summary.deepUpdatedComponents) {
     const site = tryGetOwnerSite(component);
     if (site) {
-      component.states.forEach((state) => {
+      // We iterate backwards since we expect to remove states from the array
+      for (let i = component.states.length - 1; i >= 0; i--) {
+        const state = component.states[i];
         if (state.tplNode && !isTplAttachedToSite(site, state.tplNode)) {
           removeImplicitStatesAfterRemovingTplNode(
             site,
@@ -271,7 +279,7 @@ function fixupImplicitStates(summary: ChangeSummary) {
             state.tplNode
           );
         }
-      });
+      }
     }
   }
   for (const tree of summary.newTrees) {
@@ -415,5 +423,25 @@ export function fixupVirtualSlotArgs(
       );
       fillVirtualSlotContents(tplMgr, tplc, slots);
     }
+  }
+}
+
+function fixupSlotParamsOrder(summary: ChangeSummary) {
+  for (const component of summary.updatedComponents) {
+    const slotParams = component.params.filter((param) =>
+      isKnownSlotParam(param)
+    );
+
+    // Skip code components, since they don't have tpl trees
+    // and ignore components with at most one slot param to avoid unnecessary work
+    if (isCodeComponent(component) || slotParams.length <= 1) {
+      return;
+    }
+
+    const slots = flattenTpls(component.tplTree).filter(isTplSlot);
+    component.params = [
+      ...component.params.filter((param) => !isKnownSlotParam(param)),
+      ...slots.map((slot) => slot.param),
+    ];
   }
 }

@@ -1,7 +1,7 @@
 import { usePlasmicCanvasContext } from "@plasmicapp/host";
 import { mergeProps } from "@react-aria/utils";
 import React, { useEffect } from "react";
-import { Dialog, Popover, PopoverContext } from "react-aria-components";
+import { Popover, PopoverContext } from "react-aria-components";
 import { COMMON_STYLES, getCommonOverlayProps } from "./common";
 import { PlasmicPopoverTriggerContext } from "./contexts";
 import {
@@ -56,6 +56,12 @@ export function BasePopover(props: BasePopoverProps) {
   const triggerRef = React.useRef<any>(null);
   const canvasContext = usePlasmicCanvasContext();
   const matchTriggerWidthProp = hasTrigger && matchTriggerWidth;
+
+  /*
+    We only want to trap focus if:
+   1. The popover is NOT in canvas (because while the dialog is open on the canvas, the focus is trapped inside it, so any Studio modals like the Color Picker modal would glitch due to focus jumping back and forth)
+   2. The popover is NOT standalone or inside a Select/Combobox (focus trapping is already handled in Select/Combobox). A way to identify this is by the presence of a DialogTrigger context.
+ */
   const { children, ...mergedProps } = mergeProps(
     {
       // isNonModal: Whether the popover is non-modal, i.e. elements outside the popover may be interacted with by assistive technologies.
@@ -82,11 +88,6 @@ export function BasePopover(props: BasePopoverProps) {
     });
   }, [hasTrigger, setControlContextData]);
 
-  /* <Dialog> cannot be used in canvas, because while the dialog is open on the canvas, the focus is trapped inside it, so any Studio modals like the Color Picker modal would glitch due to focus jumping back and forth */
-  const dialogInCanvas = <div>{children}</div>;
-
-  const dialog = <Dialog>{children}</Dialog>;
-
   return (
     <>
       {isStandalone && <div ref={triggerRef} />}
@@ -100,7 +101,7 @@ export function BasePopover(props: BasePopoverProps) {
       >
         {({ placement }) =>
           withObservedValues(
-            canvasContext || isStandalone ? dialogInCanvas : dialog,
+            children,
             {
               placementTop: placement === "top",
               placementBottom: placement === "bottom",

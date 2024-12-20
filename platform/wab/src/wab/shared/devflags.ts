@@ -344,6 +344,7 @@ const DEFAULT_DEVFLAGS = {
     componentsLabel: "Custom components",
     aliases: {},
     builtinSections: {},
+    builtinSectionsInstallables: {},
     overrideSections: {},
   }),
   insertableTemplates: ensureType<InsertableTemplatesGroup | undefined>(
@@ -535,6 +536,7 @@ const DEFAULT_DEVFLAGS = {
   debugCmsForms: false,
 
   hiddenDataSources: [] as string[],
+  serverQueries: false,
 
   // Custom top frame URLs; if Studio is loaded from a custom
   // domain, then this allows us to recognize it as the top frame
@@ -643,6 +645,7 @@ export function applyPlasmicUserDevFlagOverrides(target: DevFlagsType) {
     envPanel: true,
     interactiveCanvas: true,
     hiddenDataSources: [] as string[],
+    serverQueries: true,
     mainContentSlots: true,
     insertTemplatesIntoMainContentSlots: true,
     simplifiedScreenVariants: true,
