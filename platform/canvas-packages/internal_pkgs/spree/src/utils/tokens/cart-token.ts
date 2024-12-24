@@ -7,6 +7,8 @@ export const getCartToken = () =>
 export const setCartToken = (cartToken: string) => {
   const cookieOptions = {
     expires: requireConfigValue('cartCookieExpire') as number,
+    sameSite: 'None' as const,
+    secure: true,
   }
 
   Cookies.set(
