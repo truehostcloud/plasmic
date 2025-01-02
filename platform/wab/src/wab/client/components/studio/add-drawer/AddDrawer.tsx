@@ -290,7 +290,11 @@ export function createAddInstallable(meta: Installable): AddInstallableItem {
 
 function cloneTemplateComponent(
   vc: ViewCtx,
-  { skipDuplicateCheck, ...extraInfo }: CreateAddTemplateComponentExtraInfo,
+  {
+    skipDuplicateCheck,
+    isDragging,
+    ...extraInfo
+  }: CreateAddTemplateComponentExtraInfo,
   defaultKind?: string
 ) {
   trackEvent("Insertable template component", {
@@ -300,19 +304,11 @@ function cloneTemplateComponent(
     vc.site,
     extraInfo,
     vc.studioCtx.projectDependencyManager.plumeSite,
-    { skipDuplicateCheck }
+    { skipDuplicateCheck, isDragging }
   );
-  if (defaultKind) {
-    setTimeout(() => {
-      void vc.studioCtx.change(({ success }) => {
-        // ASK: If I try to do this, the Studio hangs (no longer responds to click events) and needs to be restarted. Why?
-        // I had to put it inside a settimeout and then wrap it in a .change to make it work.
-        vc.studioCtx
-          .tplMgr()
-          .addComponentToDefaultComponents(comp, defaultKind);
-        return success();
-      });
-    }, 1000);
+  const isComponentInserted = !isDragging;
+  if (isComponentInserted && defaultKind) {
+    vc.studioCtx.tplMgr().addComponentToDefaultComponents(comp, defaultKind);
   }
   postInsertableTemplate(vc.studioCtx, seenFonts);
   return addTplComponent(vc, comp);
@@ -328,7 +324,7 @@ function addTplComponent(vc: ViewCtx, component: Component) {
 }
 
 export function createAddTplComponent(
-  component: Component,
+  component: Component
 ): AddTplItem<CreateAddTplComponentExtraInfo> {
   return {
     type: AddItemType.tpl as const,
@@ -382,7 +378,7 @@ export function createAddTplComponent(
           );
           return {
             type: "clone",
-            skipDuplicateCheck,
+            ...opts,
             ...info,
           };
         })()
@@ -526,7 +522,6 @@ export function createAddTemplateComponent(
       sc,
       opts = {}
     ): Promise<CreateAddTemplateComponentExtraInfo> => {
-      const { skipDuplicateCheck } = opts;
       const { screenVariant } = await getScreenVariantToInsertableTemplate(sc);
       return sc.app.withSpinner(
         (async () => {
@@ -537,7 +532,7 @@ export function createAddTemplateComponent(
           );
           return {
             type: "clone",
-            skipDuplicateCheck,
+            ...opts,
             ...info,
           };
         })()
