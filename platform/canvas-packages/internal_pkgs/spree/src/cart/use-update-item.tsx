@@ -111,12 +111,10 @@ export const handler: MutationHook<UpdateItemHook> = {
       return useMemo(
         () =>
           debounce(async (input: UpdateItemHook['actionInput']) => {
-            const itemId = context?.item?.id
-            const productId = input.productId ?? context?.item?.productId
-            const variantId = input.variantId ?? context?.item?.variantId
+            const itemId = input.id ?? context?.item?.id
             const quantity = input.quantity
 
-            if (!itemId || !productId || !variantId) {
+            if (!itemId) {
               throw new ValidationError({
                 message: 'Invalid input used for this operation',
               })
@@ -125,8 +123,6 @@ export const handler: MutationHook<UpdateItemHook> = {
             const data = await fetch({
               input: {
                 item: {
-                  productId,
-                  variantId,
                   quantity,
                 },
                 itemId,
