@@ -1,10 +1,10 @@
-import { SpreeProductImage } from '../types'
+import { SpreeProductImage, SpreeTaxonImage } from "../types";
 import getImageUrl from './get-image-url'
 
 const createGetAbsoluteImageUrl =
   (host: string, useOriginalImageSize: boolean = true) =>
   (
-    image: SpreeProductImage,
+    image: SpreeProductImage | SpreeTaxonImage,
     minWidth: number,
     minHeight: number
   ): string | null => {

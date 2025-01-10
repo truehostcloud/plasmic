@@ -3,13 +3,11 @@ import { UseSearch, useSearch } from '@plasmicpkgs/commerce'
 import type { SearchProductsHook } from '../types/product'
 import type { GraphQLFetcherResult } from '../types'
 import { ITaxons } from '@spree/storefront-api-v2-sdk/types/interfaces/Taxon'
+import { requireConfigValue } from "../isomorphic-config";
+import normalizeTaxon from "../utils/normalizations/normalize-taxon";
 
-const nextToSpreeSortMap: { [key: string]: string } = {
-  'trending-desc': 'available_on',
-  'latest-desc': 'updated_at',
-  'price-asc': 'price',
-  'price-desc': '-price',
-}
+const imagesSize = requireConfigValue('imagesSize') as string
+const imagesQuality = requireConfigValue('imagesQuality') as number
 
 export const handler: SWRHook<any> = {
   // Provide fetchOptions for SWR cache key
@@ -30,22 +28,28 @@ export const handler: SWRHook<any> = {
       fetch
     )
 
-    const sort = input.sort ? { sort: nextToSpreeSortMap[input.sort] } : {}
-
     const { data: spreeSuccessResponse } = await fetch<
       GraphQLFetcherResult<ITaxons>
     >({
       variables: {
         methodPath: 'taxons.list',
-        arguments: [],
+        arguments: [
+          {},
+          {
+            include:
+              'image',
+            per_page: 50,
+            image_transformation: {
+              quality: imagesQuality,
+              size: imagesSize,
+            },
+          },
+        ],
       },
     })
 
-    return spreeSuccessResponse.data.map((category) => {
-      return {
-        id: category.id,
-        ...category.attributes,
-      }
+    const categories = spreeSuccessResponse.data.map((taxon) => {
+      return normalizeTaxon(spreeSuccessResponse, taxon)
     })
   },
   useHook: ({ useData }) => {
@@ -53,12 +57,6 @@ export const handler: SWRHook<any> = {
       input = {}
     ) => {
       return useData({
-        input: [
-          ['search', input.search],
-          ['categoryId', input.categoryId],
-          ['brandId', input.brandId],
-          ['sort', input.sort],
-        ],
         swrOptions: {
           revalidateOnFocus: false,
           // revalidateOnFocus: false means do not fetch products again when website is refocused in the web browser.

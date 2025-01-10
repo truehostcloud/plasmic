@@ -57,6 +57,16 @@ export interface SpreeProductImage extends JsonApiDocument {
   }
 }
 
+export interface SpreeTaxonImage extends JsonApiDocument {
+  attributes: {
+    position: number
+    alt: string
+    original_url: string
+    transformed_url: string | null
+    styles: ImageStyle[]
+  }
+}
+
 export interface OptionTypeAttr extends JsonApiDocument {
   attributes: {
     name: string
