@@ -7,12 +7,16 @@ const normalizeTaxon = (
   spreeSuccessResponse: SpreeSdkResponse,
   taxon: TaxonAttr
 ): Taxon => {
-  const spreeTaxonImageReport = jsonApi.findRelationshipDocuments(
+  const spreeTaxonImage = taxon.relationships.image.data
+    ? jsonApi.findRelationshipDocuments(spreeSuccessResponse, taxon, 'image')
+    : null
+  const spreeTaxonChildren = jsonApi.findRelationshipDocuments(
     spreeSuccessResponse,
     taxon,
-    'image'
+    'children'
   )
-  console.log('spreeTaxonImageReport', spreeTaxonImageReport)
+  console.log('spreeTaxonImage', spreeTaxonImage)
+  console.log('spreeTaxonChildren', spreeTaxonChildren)
 
   return {
     id: taxon.id,

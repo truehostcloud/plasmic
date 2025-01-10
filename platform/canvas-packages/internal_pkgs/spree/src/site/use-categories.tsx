@@ -34,7 +34,6 @@ export const handler: SWRHook<any> = {
       variables: {
         methodPath: 'taxons.list',
         arguments: [
-          {},
           {
             include: 'image',
             per_page: 50,
