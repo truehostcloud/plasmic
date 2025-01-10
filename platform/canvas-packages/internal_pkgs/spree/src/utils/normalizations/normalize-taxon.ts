@@ -22,15 +22,15 @@ const normalizeTaxon = (
     spreeTaxonImages,
     createGetAbsoluteImageUrl(baseUrl as string)
   )
-  console.log('spreeTaxonImage', spreeTaxonImages)
-  console.log('taxonImages', taxonImages)
-  console.log('spreeTaxonChildren', spreeTaxonChildren)
+  const children: Taxon[] = spreeTaxonChildren.map((child) =>
+    normalizeTaxon(spreeSuccessResponse, child, baseUrl)
+  )
 
   return {
     id: taxon.id,
     ...taxon.attributes,
-    image: null,
-    children: null,
+    image: taxonImages[0] || null,
+    children,
   }
 }
 
