@@ -157,6 +157,10 @@ export interface SearchProductsBody {
    * The locale code, used to localize the product data (if the provider supports it).
    */
   locale?: string
+  /**
+   * The number of products to return.
+   */
+  count?: string
 }
 
 /**

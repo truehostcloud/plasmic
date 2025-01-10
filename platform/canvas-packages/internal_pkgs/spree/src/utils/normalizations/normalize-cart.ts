@@ -1,10 +1,10 @@
+import type { ProductVariant } from '../../types/cart'
 import { Cart, LineItem, SelectedOption } from '../../types/cart'
 import MissingLineItemVariantError from '../../errors/MissingLineItemVariantError'
 import { requireConfigValue } from '../../isomorphic-config'
 import type { OrderAttr } from '@spree/storefront-api-v2-sdk/types/interfaces/Order'
 import type { ProductAttr } from '@spree/storefront-api-v2-sdk/types/interfaces/Product'
 import type { Image } from '../../types/common'
-import type { ProductVariant } from '../../types/cart'
 import { jsonApi } from '@spree/storefront-api-v2-sdk'
 import createGetAbsoluteImageUrl from '../create-get-absolute-image-url'
 import getMediaGallery from '../get-media-gallery'
@@ -39,21 +39,18 @@ const normalizeVariant = (
       `Couldn't find product for variant with id ${spreeVariant.id}.`
     )
   }
-
   const spreeVariantImageRecords =
     jsonApi.findRelationshipDocuments<SpreeProductImage>(
       spreeSuccessResponse,
       spreeVariant,
       'images'
     )
-
-  let lineItemImage
+  let lineItemImage: Image
 
   const variantImage = getMediaGallery(
     spreeVariantImageRecords,
     createGetAbsoluteImageUrl(requireConfigValue('imageHost') as string)
   )[0]
-
   if (variantImage) {
     lineItemImage = variantImage
   } else {
@@ -64,12 +61,10 @@ const normalizeVariant = (
         'images'
       )
 
-    const productImage = getMediaGallery(
+    lineItemImage = getMediaGallery(
       spreeProductImageRecords,
       createGetAbsoluteImageUrl(requireConfigValue('imageHost') as string)
     )[0]
-
-    lineItemImage = productImage
   }
 
   const image: Image =

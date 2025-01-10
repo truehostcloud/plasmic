@@ -1,21 +1,21 @@
 import type { SWRHook } from '@plasmicpkgs/commerce'
-import type {
-  Product,
-  SearchProductsHook,
-} from '../types/product'
+import type { Product, SearchProductsHook } from '../types/product'
 import { UseSearch, useSearch } from '@plasmicpkgs/commerce'
 import normalizeProduct from '../utils/normalizations/normalize-product'
 import type { GraphQLFetcherResult } from '../types'
-import { IProducts as BaseIProducts, ProductAttr } from '@spree/storefront-api-v2-sdk/types/interfaces/Product'
+import {
+  IProducts as BaseIProducts,
+  ProductAttr,
+} from '@spree/storefront-api-v2-sdk/types/interfaces/Product'
 import { requireConfigValue } from '../isomorphic-config'
 
 export interface IProducts extends BaseIProducts {
-  data: ProductAttr[],
+  data: ProductAttr[]
   links: {
-    self: string,
-    first: string,
-    last: string,
-    next: string,
+    self: string
+    first: string
+    last: string
+    next: string
     prev: string
   }
 }
@@ -70,7 +70,7 @@ export const handler: SWRHook<any> = {
           {
             include:
               'primary_variant,variants,images,option_types,variants.option_values',
-            per_page: 50,
+            per_page: input.count ?? 50,
             ...filter,
             ...sort,
             image_transformation: {
@@ -82,10 +82,11 @@ export const handler: SWRHook<any> = {
       },
     })
 
-    const baseUrl = new URL(spreeSuccessResponse.links.self).origin;
+    const baseUrl = new URL(spreeSuccessResponse.links.self).origin
 
     const normalizedProducts: Product[] = spreeSuccessResponse.data.map(
-      (spreeProduct) => normalizeProduct(spreeSuccessResponse, spreeProduct, baseUrl)
+      (spreeProduct) =>
+        normalizeProduct(spreeSuccessResponse, spreeProduct, baseUrl)
     )
 
     const found = spreeSuccessResponse.data.length > 0
@@ -102,6 +103,8 @@ export const handler: SWRHook<any> = {
           ['categoryId', input.categoryId],
           ['brandId', input.brandId],
           ['sort', input.sort],
+          ['locale', input.locale],
+          ['count', input.count],
         ],
         swrOptions: {
           revalidateOnFocus: false,
