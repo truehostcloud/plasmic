@@ -2,9 +2,23 @@ import type { SWRHook } from '@plasmicpkgs/commerce'
 import { UseSearch, useSearch } from '@plasmicpkgs/commerce'
 import type { SearchProductsHook } from '../types/product'
 import type { GraphQLFetcherResult } from '../types'
-import { ITaxons } from '@spree/storefront-api-v2-sdk/types/interfaces/Taxon'
+import {
+  ITaxons as BaseITaxons,
+  TaxonAttr,
+} from '@spree/storefront-api-v2-sdk/types/interfaces/Taxon'
 import { requireConfigValue } from '../isomorphic-config'
 import normalizeTaxon from '../utils/normalizations/normalize-taxon'
+
+export interface ITaxons extends BaseITaxons {
+  data: TaxonAttr[]
+  links: {
+    self: string
+    first: string
+    last: string
+    next: string
+    prev: string
+  }
+}
 
 const imagesSize = requireConfigValue('imagesSize') as string
 const imagesQuality = requireConfigValue('imagesQuality') as number
@@ -35,7 +49,7 @@ export const handler: SWRHook<any> = {
         methodPath: 'taxons.list',
         arguments: [
           {
-            include: 'image',
+            include: 'image,children',
             per_page: 50,
             image_transformation: {
               quality: imagesQuality,
@@ -46,8 +60,10 @@ export const handler: SWRHook<any> = {
       },
     })
 
+    const baseUrl = new URL(spreeSuccessResponse.links.self).origin
+
     return spreeSuccessResponse.data.map((taxon) => {
-      return normalizeTaxon(spreeSuccessResponse, taxon)
+      return normalizeTaxon(spreeSuccessResponse, taxon, baseUrl)
     })
   },
   useHook: ({ useData }) => {
