@@ -12,17 +12,18 @@ const normalizeTaxon = (
 ): Taxon => {
   const spreeTaxonImages = taxon.relationships.image.data
     ? jsonApi.findRelationshipDocuments(spreeSuccessResponse, taxon, 'image')
-    : null
+    : []
   const spreeTaxonChildren = jsonApi.findRelationshipDocuments(
     spreeSuccessResponse,
     taxon,
     'children'
   )
-  const productImages = getMediaGallery(
+  const taxonImages = getMediaGallery(
     spreeTaxonImages,
     createGetAbsoluteImageUrl(baseUrl as string)
   )
   console.log('spreeTaxonImage', spreeTaxonImages)
+  console.log('taxonImages', taxonImages)
   console.log('spreeTaxonChildren', spreeTaxonChildren)
 
   return {

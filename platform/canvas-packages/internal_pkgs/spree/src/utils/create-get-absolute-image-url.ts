@@ -1,4 +1,4 @@
-import { SpreeProductImage, SpreeTaxonImage } from "../types";
+import { SpreeProductImage, SpreeTaxonImage } from '../types'
 import getImageUrl from './get-image-url'
 
 const createGetAbsoluteImageUrl =
@@ -11,7 +11,7 @@ const createGetAbsoluteImageUrl =
     let url
 
     if (useOriginalImageSize) {
-      url = image.attributes.transformed_url || null
+      url = image.attributes.transformed_url || image.attributes.original_url
     } else {
       url = getImageUrl(image, minWidth, minHeight)
     }
