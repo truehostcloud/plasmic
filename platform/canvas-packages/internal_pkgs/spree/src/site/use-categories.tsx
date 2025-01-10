@@ -3,8 +3,8 @@ import { UseSearch, useSearch } from '@plasmicpkgs/commerce'
 import type { SearchProductsHook } from '../types/product'
 import type { GraphQLFetcherResult } from '../types'
 import { ITaxons } from '@spree/storefront-api-v2-sdk/types/interfaces/Taxon'
-import { requireConfigValue } from "../isomorphic-config";
-import normalizeTaxon from "../utils/normalizations/normalize-taxon";
+import { requireConfigValue } from '../isomorphic-config'
+import normalizeTaxon from '../utils/normalizations/normalize-taxon'
 
 const imagesSize = requireConfigValue('imagesSize') as string
 const imagesQuality = requireConfigValue('imagesQuality') as number
@@ -36,8 +36,7 @@ export const handler: SWRHook<any> = {
         arguments: [
           {},
           {
-            include:
-              'image',
+            include: 'image',
             per_page: 50,
             image_transformation: {
               quality: imagesQuality,
@@ -48,7 +47,7 @@ export const handler: SWRHook<any> = {
       },
     })
 
-    const categories = spreeSuccessResponse.data.map((taxon) => {
+    return spreeSuccessResponse.data.map((taxon) => {
       return normalizeTaxon(spreeSuccessResponse, taxon)
     })
   },
