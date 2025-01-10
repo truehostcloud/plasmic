@@ -2,14 +2,26 @@ import type { SWRHook } from '@plasmicpkgs/commerce'
 import { UseSearch, useSearch } from '@plasmicpkgs/commerce'
 import type { SearchProductsHook } from '../types/product'
 import type { GraphQLFetcherResult } from '../types'
-import { ITaxons } from '@spree/storefront-api-v2-sdk/types/interfaces/Taxon'
+import {
+  ITaxons as BaseITaxons,
+  TaxonAttr,
+} from '@spree/storefront-api-v2-sdk/types/interfaces/Taxon'
+import { requireConfigValue } from '../isomorphic-config'
+import normalizeTaxon from '../utils/normalizations/normalize-taxon'
 
-const nextToSpreeSortMap: { [key: string]: string } = {
-  'trending-desc': 'available_on',
-  'latest-desc': 'updated_at',
-  'price-asc': 'price',
-  'price-desc': '-price',
+export interface ITaxons extends BaseITaxons {
+  data: TaxonAttr[]
+  links: {
+    self: string
+    first: string
+    last: string
+    next: string
+    prev: string
+  }
 }
+
+const imagesSize = requireConfigValue('imagesSize') as string
+const imagesQuality = requireConfigValue('imagesQuality') as number
 
 export const handler: SWRHook<any> = {
   // Provide fetchOptions for SWR cache key
@@ -30,22 +42,28 @@ export const handler: SWRHook<any> = {
       fetch
     )
 
-    const sort = input.sort ? { sort: nextToSpreeSortMap[input.sort] } : {}
-
     const { data: spreeSuccessResponse } = await fetch<
       GraphQLFetcherResult<ITaxons>
     >({
       variables: {
         methodPath: 'taxons.list',
-        arguments: [],
+        arguments: [
+          {
+            include: 'image,children',
+            per_page: 50,
+            image_transformation: {
+              quality: imagesQuality,
+              size: imagesSize,
+            },
+          },
+        ],
       },
     })
 
-    return spreeSuccessResponse.data.map((category) => {
-      return {
-        id: category.id,
-        ...category.attributes,
-      }
+    const baseUrl = new URL(spreeSuccessResponse.links.self).origin
+
+    return spreeSuccessResponse.data.map((taxon) => {
+      return normalizeTaxon(spreeSuccessResponse, taxon, baseUrl)
     })
   },
   useHook: ({ useData }) => {
@@ -53,12 +71,6 @@ export const handler: SWRHook<any> = {
       input = {}
     ) => {
       return useData({
-        input: [
-          ['search', input.search],
-          ['categoryId', input.categoryId],
-          ['brandId', input.brandId],
-          ['sort', input.sort],
-        ],
         swrOptions: {
           revalidateOnFocus: false,
           // revalidateOnFocus: false means do not fetch products again when website is refocused in the web browser.

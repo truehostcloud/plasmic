@@ -1,9 +1,9 @@
 // Based on https://github.com/spark-solutions/spree2vuestorefront/blob/d88d85ae1bcd2ec99b13b81cd2e3c25600a0216e/src/utils/index.ts
 
-import type { ImageStyle, SpreeProductImage } from '../types'
+import { ImageStyle, SpreeProductImage, SpreeTaxonImage } from "../types";
 
 const getImageUrl = (
-  image: SpreeProductImage,
+  image: SpreeProductImage | SpreeTaxonImage,
   minWidth: number,
   _: number
 ): string | null => {

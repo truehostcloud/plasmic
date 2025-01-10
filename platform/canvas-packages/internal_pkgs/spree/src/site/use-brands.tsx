@@ -10,7 +10,7 @@ export const handler: SWRHook<GetBrandsHook> = {
     query: "use-brands",
   },
   async fetcher() {
-    return []; // brands it's not available on saleor
+    return []; // brands it's not available on spree
   },
   useHook:
     ({ useData }) =>

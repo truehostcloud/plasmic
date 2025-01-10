@@ -1,6 +1,6 @@
 {
   "name": "commerce-spree",
-  "version": "0.0.25",
+  "version": "0.0.26",
   "description": "Plasmic registration calls for spree commerce provider",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
