@@ -4,6 +4,7 @@ import { handler as useAddItem } from './cart/use-add-item'
 import { handler as useUpdateItem } from './cart/use-update-item'
 import { handler as useRemoveItem } from './cart/use-remove-item'
 import { handler as useSearch } from './product/use-search'
+import { handler as useProduct } from './product/use-product'
 import { handler as useCategories } from './site/use-categories'
 import { handler as useBrands } from './site/use-brands'
 import { requireConfigValue } from './isomorphic-config'
@@ -16,21 +17,21 @@ export const getSpreeProvider = (apiHost: string) => {
     fetcher: (requestOptions: FetcherOptions<any>) =>
       fetcher(apiHost, requestOptions),
     cart: { useCart, useAddItem, useUpdateItem, useRemoveItem },
-    products: { useSearch },
+    products: { useSearch, useProduct },
     site: { useCategories, useBrands },
   }
 }
 
 export type SpreeProvider = {
-  locale: string,
-  cartCookie: string,
-  fetcher: Fetcher,
+  locale: string
+  cartCookie: string
+  fetcher: Fetcher
   cart: {
-    useCart: typeof useCart;
-    useAddItem: typeof useAddItem;
-    useUpdateItem: typeof useUpdateItem;
+    useCart: typeof useCart
+    useAddItem: typeof useAddItem
+    useUpdateItem: typeof useUpdateItem
     useRemoveItem: typeof useRemoveItem
-  };
-  products: { useSearch: typeof useSearch},
-  site: { useCategories: typeof useCategories, useBrands: typeof useBrands }
+  }
+  products: { useSearch: typeof useSearch; useProduct: typeof useProduct }
+  site: { useCategories: typeof useCategories; useBrands: typeof useBrands }
 }
