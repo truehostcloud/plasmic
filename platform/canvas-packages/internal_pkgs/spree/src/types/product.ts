@@ -143,7 +143,7 @@ export interface SearchProductsBody {
   /**
    * The category ID to filter the products by.
    */
-  categoryId?: string
+  categoryId?: string | number
   /**
    * The brand ID to filter the products by.
    */
