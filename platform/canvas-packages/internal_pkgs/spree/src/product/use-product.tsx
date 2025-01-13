@@ -50,7 +50,7 @@ export const handler: SWRHook<any> = {
           {},
           {
             filter: {
-              'filter[ids]': input.id,
+              ids: input.id,
             },
             include:
               'primary_variant,variants,images,option_types,variants.option_values',
