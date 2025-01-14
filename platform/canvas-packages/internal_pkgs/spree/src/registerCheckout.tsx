@@ -9,7 +9,7 @@ interface CheckoutProps {
 }
 
 export const checkoutMeta: ComponentMeta<CheckoutProps> = {
-  name: 'plasmic-commerce-checkout',
+  name: 'commerce-spree-checkout',
   displayName: 'Checkout',
   description:
     'Shows the checkout order page with the cart items and total price.',
