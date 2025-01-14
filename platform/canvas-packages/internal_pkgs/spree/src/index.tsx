@@ -5,6 +5,7 @@ import {
 } from './registerCommerceProvider'
 import { registerCheckout } from './registerCheckout'
 export * from './registerable'
+export * from './registerCheckout'
 
 export * from './spree'
 
