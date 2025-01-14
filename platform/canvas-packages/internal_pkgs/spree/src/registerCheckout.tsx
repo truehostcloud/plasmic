@@ -1,0 +1,34 @@
+import registerComponent, {
+  ComponentMeta,
+} from '@plasmicapp/host/registerComponent'
+import { Registerable } from './registerable'
+import React from 'react'
+
+interface CheckoutProps {
+  className?: string
+}
+
+export const cartMeta: ComponentMeta<CheckoutProps> = {
+  name: 'plasmic-commerce-cart',
+  displayName: 'Checkout',
+  description:
+    'Shows the checkout order page with the cart items and total price.',
+  props: {},
+  importPath: '@plasmicpkgs/commerce',
+  importName: 'CheckoutComponent',
+}
+
+export function CheckoutComponent(props: CheckoutProps) {
+  const { className } = props
+
+  return <span className={className}>Checkout Order</span>
+}
+
+export function registerCheckout(
+  loader?: Registerable,
+  customCartMeta?: ComponentMeta<CheckoutProps>
+) {
+  const doRegisterComponent: typeof registerComponent = (...args) =>
+    loader ? loader.registerComponent(...args) : registerComponent(...args)
+  doRegisterComponent(CheckoutComponent, customCartMeta ?? cartMeta)
+}

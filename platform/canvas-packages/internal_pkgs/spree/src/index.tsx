@@ -1,14 +1,16 @@
-import { Registerable } from "./registerable";
+import { Registerable } from './registerable'
 import {
   registerCommerceProvider,
   CommerceProviderComponent,
-} from "./registerCommerceProvider";
-export * from "./registerable";
+} from './registerCommerceProvider'
+import { registerCheckout } from './registerCheckout'
+export * from './registerable'
 
-export * from "./spree";
+export * from './spree'
 
 export function registerAll(loader?: Registerable) {
-  registerCommerceProvider(loader);
+  registerCommerceProvider(loader)
+  registerCheckout(loader)
 }
 
-export { registerCommerceProvider, CommerceProviderComponent };
+export { registerCommerceProvider, CommerceProviderComponent }
