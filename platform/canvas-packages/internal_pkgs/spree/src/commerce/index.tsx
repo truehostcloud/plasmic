@@ -1,18 +1,15 @@
-import type {
-  CommerceConfig,
-  CommerceProps,
-  CommerceProviderProps,
-  Provider as BaseProvider,
-  Fetcher,
-} from '@plasmicpkgs/commerce'
-import type { SWRHook, MutationHook } from './utils/types'
-import type { Checkout } from './types'
-import React, { createContext, MutableRefObject, useMemo, useRef } from 'react'
+import React, {
+  ReactNode,
+  MutableRefObject,
+  createContext,
+  useContext,
+  useMemo,
+  useRef,
+} from 'react'
+import type { Fetcher, SWRHook, MutationHook } from './utils/types'
 
-export type CommerceContextValue<P extends Provider> = {
-  providerRef: MutableRefObject<P>
-  fetcherRef: MutableRefObject<Fetcher>
-} & CommerceConfig
+import type { Provider as BaseProvider } from '@plasmicpkgs/commerce'
+import { Checkout } from './types'
 
 const Commerce = createContext<CommerceContextValue<any> | {}>({})
 
@@ -22,6 +19,29 @@ export type Provider = BaseProvider & {
     useSubmitCheckout?: MutationHook<Checkout.SubmitCheckoutHook>
   }
 }
+
+export type CommerceConfig = {
+  locale: string
+  cartCookie: string
+}
+
+export type CommerceContextValue<P extends Provider> = {
+  providerRef: MutableRefObject<P>
+  fetcherRef: MutableRefObject<Fetcher>
+} & CommerceConfig
+
+export type CommerceProps<P extends Provider> = {
+  children?: ReactNode
+  provider: P
+}
+
+/**
+ * These are the properties every provider should allow when implementing
+ * the core commerce provider
+ */
+export type CommerceProviderProps = {
+  children?: ReactNode
+} & Partial<CommerceConfig>
 
 export function CoreCommerceProvider<P extends Provider>({
   provider,
@@ -52,4 +72,8 @@ export function getCommerceProvider<P extends Provider>(provider: P) {
       </CoreCommerceProvider>
     )
   }
+}
+
+export function useCommerce<P extends Provider>() {
+  return useContext(Commerce) as CommerceContextValue<P>
 }
