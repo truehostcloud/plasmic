@@ -1,10 +1,9 @@
 import { SWRHook } from '@plasmicpkgs/commerce'
 import useCheckout, { UseCheckout } from '../commerce/checkout/use-checkout'
-import type { GetCheckoutHook } from '../commerce/types/checkout'
 
 export default useCheckout as UseCheckout<typeof handler>
 
-export const handler: SWRHook<GetCheckoutHook> = {
+export const handler: SWRHook<any> = {
   // Provide fetchOptions for SWR cache key
   fetchOptions: {
     // TODO: Revise url and query
