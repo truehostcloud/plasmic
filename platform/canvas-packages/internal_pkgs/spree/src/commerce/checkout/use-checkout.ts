@@ -4,7 +4,7 @@ import type { GetCheckoutHook } from '../types/checkout'
 import Cookies from 'js-cookie'
 
 import { useHook, useSWRHook } from '../utils/use-hook'
-import { useCommerce } from '@plasmicpkgs/commerce'
+import { useCommerce } from '..'
 import { Provider } from '..'
 
 export type UseCheckout<

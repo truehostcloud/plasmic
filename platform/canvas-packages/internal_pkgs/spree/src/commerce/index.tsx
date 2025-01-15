@@ -16,7 +16,7 @@ const Commerce = createContext<CommerceContextValue<any> | {}>({})
 export type Provider = BaseProvider & {
   checkout?: {
     useCheckout?: SWRHook<Checkout.GetCheckoutHook> | any
-    useSubmitCheckout?: MutationHook<Checkout.SubmitCheckoutHook>
+    useSubmitCheckout?: MutationHook<Checkout.SubmitCheckoutHook> | any
   }
 }
 
