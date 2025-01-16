@@ -1,5 +1,7 @@
 import { SWRHook } from '@plasmicpkgs/commerce'
 import useCheckout, { UseCheckout } from '../commerce/checkout/use-checkout'
+import type { GraphQLFetcherResult } from '../types'
+import type { IOrder } from '@spree/storefront-api-v2-sdk/types/interfaces/Order'
 
 export default useCheckout as UseCheckout<typeof handler>
 
@@ -10,7 +12,21 @@ export const handler: SWRHook<any> = {
     url: 'checkout',
     query: 'show',
   },
-  async fetcher({ input, options, fetch }) {},
+  async fetcher({ input, options, fetch }) {
+    console.info(
+      'useCart fetcher called. Configuration: ',
+      'input: ',
+      input,
+      'options: ',
+      options
+    )
+    return fetch<GraphQLFetcherResult<IOrder>>({
+      variables: {
+        methodPath: 'cart.create',
+        arguments: [token],
+      },
+    })
+  },
   useHook:
     ({ useData }) =>
     async (input) => ({}),

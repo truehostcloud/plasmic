@@ -22,6 +22,7 @@ export const checkoutProviderMeta: ComponentMeta<
 
 export function CheckoutProvider(props: React.PropsWithChildren<object>) {
   const { data } = useCheckout()
+  console.log('CheckoutProvider', data)
   return (
     <DataProvider data={data} name="checkout">
       {props.children}
