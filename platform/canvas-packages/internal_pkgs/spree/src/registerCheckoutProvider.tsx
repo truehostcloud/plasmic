@@ -6,17 +6,21 @@ import React from 'react'
 import useCheckout from './checkout/use-checkout'
 import { DataProvider } from '@plasmicapp/host'
 
-export const checkoutMeta: ComponentMeta<React.PropsWithChildren<object>> = {
+export const checkoutProviderMeta: ComponentMeta<
+  React.PropsWithChildren<object>
+> = {
   name: 'plasmic-commerce-spree-checkout',
-  displayName: 'Checkout',
+  displayName: 'Checkout Provider',
   description:
-    'Shows the checkout order page with the cart items and total price.',
-  props: {},
+    'Use this to create bespoke checkout UI. Inside Checkout Provider, use dynamic values to access checkout data.',
+  props: {
+    children: 'slot',
+  },
   importPath: 'commerce-spree',
-  importName: 'CheckoutComponent',
+  importName: 'CheckoutProvider',
 }
 
-export function CheckoutComponent(props: React.PropsWithChildren<object>) {
+export function CheckoutProvider(props: React.PropsWithChildren<object>) {
   const { data } = useCheckout()
   return (
     <DataProvider data={data} name="checkout">
@@ -25,11 +29,14 @@ export function CheckoutComponent(props: React.PropsWithChildren<object>) {
   )
 }
 
-export function registerCheckout(
+export function registerCheckoutProvider(
   loader?: Registerable,
   customCheckoutMeta?: ComponentMeta<React.PropsWithChildren<object>>
 ) {
   const doRegisterComponent: typeof registerComponent = (...args) =>
     loader ? loader.registerComponent(...args) : registerComponent(...args)
-  doRegisterComponent(CheckoutComponent, customCheckoutMeta ?? checkoutMeta)
+  doRegisterComponent(
+    CheckoutProvider,
+    customCheckoutMeta ?? checkoutProviderMeta
+  )
 }

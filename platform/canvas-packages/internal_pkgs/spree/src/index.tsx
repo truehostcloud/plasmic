@@ -1,13 +1,13 @@
 import { Registerable } from './registerable'
 import { registerCommerceProvider } from './registerCommerceProvider'
-import { registerCheckout } from './registerCheckout'
+import { registerCheckoutProvider } from './registerCheckoutProvider'
 export * from './registerable'
-export * from './registerCheckout'
+export * from './registerCheckoutProvider'
 export * from './registerCommerceProvider'
 
 export * from './spree'
 
 export function registerAll(loader?: Registerable) {
   registerCommerceProvider(loader)
-  registerCheckout(loader)
+  registerCheckoutProvider(loader)
 }
