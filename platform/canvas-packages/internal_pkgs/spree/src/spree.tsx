@@ -1,4 +1,4 @@
-import { useCommerce as useCoreCommerce } from './commerce'
+import { useCommerce as useCoreCommerce } from '@plasmicpkgs/commerce'
 import { getSpreeProvider, SpreeProvider } from './provider'
 import { getCommerceProvider as getCoreCommerceProvider } from './commerce'
 
