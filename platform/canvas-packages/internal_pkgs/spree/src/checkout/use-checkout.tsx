@@ -1,7 +1,10 @@
 import { SWRHook } from '@plasmicpkgs/commerce'
 import useCheckout, { UseCheckout } from '../commerce/checkout/use-checkout'
-import type { GraphQLFetcherResult } from '../types'
-import type { IOrder } from '@spree/storefront-api-v2-sdk/types/interfaces/Order'
+import getCart from '../utils/get-cart'
+import normalizeCart from '../utils/normalizations/normalize-cart'
+import { useMemo } from 'react'
+import { GetCheckoutHook } from '../commerce/types/checkout'
+import useSubmitCheckout from './use-submit-checkout'
 
 export default useCheckout as UseCheckout<typeof handler>
 
@@ -20,14 +23,46 @@ export const handler: SWRHook<any> = {
       'options: ',
       options
     )
-    return fetch<GraphQLFetcherResult<IOrder>>({
-      variables: {
-        methodPath: 'cart.create',
-        arguments: [token],
-      },
-    })
+    const spreeCartResponse = await getCart(fetch)
+    const cart = normalizeCart(spreeCartResponse, spreeCartResponse.data)
+    return {
+      hasPayment: false,
+      hasShipping: false,
+      addressId: null,
+      payments: [],
+      cardId: null,
+      lineItems: cart.lineItems,
+    }
   },
-  useHook:
-    ({ useData }) =>
-    async (input) => ({}),
+  useHook: ({ useData }) => {
+    const useWrappedHook: ReturnType<SWRHook<GetCheckoutHook>['useHook']> = (
+      input
+    ) => {
+      const submit = useSubmitCheckout()
+      const response = useData({
+        swrOptions: { revalidateOnFocus: false, ...input?.swrOptions },
+      })
+
+      return useMemo(
+        () =>
+          Object.create(response, {
+            isEmpty: {
+              get() {
+                return response.data?.lineItems?.length ?? 0
+              },
+              enumerable: true,
+            },
+            submit: {
+              get() {
+                return submit
+              },
+              enumerable: true,
+            },
+          }),
+        [response, submit]
+      )
+    }
+
+    return useWrappedHook
+  },
 }
