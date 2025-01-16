@@ -1,6 +1,6 @@
 import type { HookFetcherFn, MutationHook } from '../utils/types'
 import type { SubmitCheckoutHook } from '../types/checkout'
-import type { Provider } from '..'
+import type { Provider } from '@plasmicpkgs/commerce'
 
 import { useHook, useMutationHook } from '../utils/use-hook'
 import { mutationFetcher } from '../utils/default-fetcher'

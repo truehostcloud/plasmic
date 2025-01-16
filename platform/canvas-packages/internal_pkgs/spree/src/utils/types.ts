@@ -1,7 +1,7 @@
 import type { SWRConfiguration } from 'swr'
 import type { CommerceError } from '@plasmicpkgs/commerce'
 import type { ResponseState } from '../commerce/utils/use-data'
-import { Provider } from '../commerce'
+import { Provider } from '@plasmicpkgs/commerce'
 
 /**
  * Returns the properties in T with the properties in type K, overriding properties defined in T

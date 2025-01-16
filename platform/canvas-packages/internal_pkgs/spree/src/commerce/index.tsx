@@ -1,3 +1,7 @@
+/*
+  Forked from https://github.com/vercel/commerce/tree/main/packages/commerce/src
+  Changes: Removed authentication, customer and wishlist hooks
+*/
 import React, {
   ReactNode,
   MutableRefObject,
@@ -6,19 +10,10 @@ import React, {
   useMemo,
   useRef,
 } from 'react'
-import type { Fetcher, SWRHook, MutationHook } from './utils/types'
-
-import type { Provider as BaseProvider } from '@plasmicpkgs/commerce'
-import { Checkout } from './types'
+import type { Fetcher } from './utils/types'
+import { Provider } from '@plasmicpkgs/commerce'
 
 const Commerce = createContext<CommerceContextValue<any> | {}>({})
-
-export type Provider = BaseProvider & {
-  checkout?: {
-    useCheckout?: SWRHook<Checkout.GetCheckoutHook> | any
-    useSubmitCheckout?: MutationHook<Checkout.SubmitCheckoutHook> | any
-  }
-}
 
 export type CommerceConfig = {
   locale: string
