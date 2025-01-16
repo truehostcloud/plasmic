@@ -4,8 +4,7 @@ import type { GetCheckoutHook } from '../types/checkout'
 import Cookies from 'js-cookie'
 
 import { useHook, useSWRHook } from '../utils/use-hook'
-import { useCommerce } from '..'
-import { Provider } from '@plasmicpkgs/commerce'
+import { Provider, useCommerce } from '@plasmicpkgs/commerce'
 
 export type UseCheckout<
   H extends SWRHook<GetCheckoutHook> = SWRHook<GetCheckoutHook>
@@ -19,9 +18,7 @@ export const fetcher: HookFetcherFn<GetCheckoutHook> = async ({
   return cartId ? await fetch(options) : null
 }
 
-const fn = (provider: Provider) => {
-  return provider.checkout?.useCheckout!
-}
+const fn = (provider: Provider) => provider.checkout?.useCheckout!
 
 const useCheckout: UseCheckout = (input) => {
   const hook = useHook(fn)

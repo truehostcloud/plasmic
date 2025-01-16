@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
-import { Provider } from '@plasmicpkgs/commerce'
-import { useCommerce } from '..'
+import { Provider, useCommerce } from '@plasmicpkgs/commerce'
 import type { MutationHook, PickRequired, SWRHook } from './types'
 import useData from './use-data'
 
