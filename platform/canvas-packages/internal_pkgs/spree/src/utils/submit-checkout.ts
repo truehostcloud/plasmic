@@ -78,25 +78,40 @@ const submitCheckout = async (
       },
     }
 
+    const includeParams = [
+      'line_items',
+      'line_items.variant',
+      'line_items.variant.product',
+      'line_items.variant.product.images',
+      'line_items.variant.images',
+      'line_items.variant.option_values',
+      'line_items.variant.product.option_types',
+    ].join(',')
+
     const { data: spreeSuccessResponse } = await fetch<
       GraphQLFetcherResult<IOrder>
     >({
       variables: {
         methodPath: 'checkout.orderUpdate',
         arguments: [token, orderUpdateParameters],
-        include: [
-          'line_items',
-          'line_items.variant',
-          'line_items.variant.product',
-          'line_items.variant.product.images',
-          'line_items.variant.images',
-          'line_items.variant.option_values',
-          'line_items.variant.product.option_types',
-        ].join(','),
+        include: includeParams,
       },
     })
 
-    spreeCartResponse = spreeSuccessResponse
+    if (input.onSuccessAction) {
+      const { data: checkoutActionResponse } = await fetch<
+        GraphQLFetcherResult<IOrder>
+      >({
+        variables: {
+          methodPath: `checkout.${input.onSuccessAction}`,
+          arguments: [token],
+          include: includeParams,
+        },
+      })
+      spreeCartResponse = checkoutActionResponse
+    } else {
+      spreeCartResponse = spreeSuccessResponse
+    }
   } catch (updateItemError) {
     if (
       updateItemError instanceof FetcherError &&

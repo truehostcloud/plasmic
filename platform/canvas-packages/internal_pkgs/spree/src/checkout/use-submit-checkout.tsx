@@ -42,6 +42,7 @@ export const handler: MutationHook<SubmitCheckoutHook> = {
             billing_address,
             shipping_address,
             payments,
+            onSuccessAction,
           } = input
 
           if (
@@ -63,6 +64,7 @@ export const handler: MutationHook<SubmitCheckoutHook> = {
               billing_address,
               shipping_address,
               payments,
+              onSuccessAction,
             },
           })
 

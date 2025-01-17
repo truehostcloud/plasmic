@@ -65,6 +65,7 @@ export interface CheckoutBody {
    * The list of payments.
    */
   payments?: Payment[]
+  onSuccessAction?: 'next' | 'advance' | 'complete' | null
 }
 
 export type CheckoutTypes = {
