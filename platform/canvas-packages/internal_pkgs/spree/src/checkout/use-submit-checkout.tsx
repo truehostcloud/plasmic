@@ -15,7 +15,7 @@ import { GraphQLFetcherResult } from '../types'
 import { IOrder } from '@spree/storefront-api-v2-sdk/types/interfaces/Order'
 import isLoggedIn from '../utils/tokens/is-logged-in'
 import debounce from 'lodash.debounce'
-import type { AddressFields } fm '../commerce/types/customer/address'
+import type { AddressFields } from '../commerce/types/customer/address'
 import { IPayment } from '@spree/storefront-api-v2-sdk/types/interfaces/attributes/Payment'
 import normalizeCart from '../utils/normalizations/normalize-cart'
 
