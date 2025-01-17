@@ -12,6 +12,8 @@ import {
 import useSubmitCheckout from './commerce/checkout/use-submit-checkout'
 import type { AddressFields } from './commerce/types/customer/address'
 import { Payment } from './commerce/types/checkout'
+import { globalActionsRegistrations as baseGlobalActionsRegistrations } from '@plasmicpkgs/commerce'
+import { GlobalActionRegistration } from '@plasmicapp/host/registerGlobalContext'
 
 export const checkoutProviderMeta: ComponentMeta<
   React.PropsWithChildren<object>
@@ -94,4 +96,41 @@ export function registerCheckoutProvider(
     CheckoutProvider,
     customCheckoutMeta ?? checkoutProviderMeta
   )
+}
+
+export const globalActionsRegistrations: Record<
+  string,
+  GlobalActionRegistration<any>
+> = {
+  ...baseGlobalActionsRegistrations,
+  submitCheckout: {
+    displayName: 'Submit checkout',
+    parameters: [
+      {
+        name: 'email',
+        displayName: 'Email',
+        type: 'string',
+      },
+      {
+        name: 'special_instructions',
+        displayName: 'Special instructions',
+        type: 'string',
+      },
+      {
+        name: 'billing_address',
+        displayName: 'Billing address',
+        type: 'object',
+      },
+      {
+        name: 'shipping_address',
+        displayName: 'Shipping address',
+        type: 'object',
+      },
+      {
+        name: 'payments',
+        displayName: 'Payments',
+        type: 'object',
+      },
+    ],
+  },
 }

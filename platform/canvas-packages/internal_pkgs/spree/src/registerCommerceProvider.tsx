@@ -1,13 +1,13 @@
 import { GlobalContextMeta } from '@plasmicapp/host'
 import registerGlobalContext from '@plasmicapp/host/registerGlobalContext'
-import {
-  CartActionsProvider,
-  globalActionsRegistrations,
-} from '@plasmicpkgs/commerce'
+import { CartActionsProvider } from '@plasmicpkgs/commerce'
 import React from 'react'
 import { Registerable } from './registerable'
 import { getCommerceProvider } from './spree'
-import { CheckoutActionsProvider } from './registerCheckoutProvider'
+import {
+  CheckoutActionsProvider,
+  globalActionsRegistrations,
+} from './registerCheckoutProvider'
 
 interface CommerceProviderProps {
   children?: React.ReactNode
