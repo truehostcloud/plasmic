@@ -44,9 +44,17 @@ export interface AddressFields {
    */
   city: string
   /**
+   * The customer's billing address state.
+   */
+  state: string
+  /**
    * The customer's billing address country.
    */
   country: string
+  /**
+   * The customer's phone number.
+   */
+  phone: string
 }
 
 /**

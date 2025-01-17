@@ -30,7 +30,15 @@ export interface Checkout {
   lineItems?: LineItem[]
 }
 
+export interface Payment {
+  paymentMethodId: string
+}
+
 export interface CheckoutBody {
+  /**
+   * The email assigned to this cart.
+   */
+  email: string
   /**
    * The unique identifier for the cart.
    */
@@ -39,12 +47,25 @@ export interface CheckoutBody {
    * The Card information.
    * @see CardFields
    */
-  card: CardFields
+  card?: CardFields
   /**
-   * The Address information.
+   * The billing Address information.
    * @see AddressFields
    */
-  address: AddressFields
+  billing_address?: AddressFields
+  /**
+   * The shipping Address information.
+   * @see AddressFields
+   */
+  shipping_address?: AddressFields
+  /**
+   * The special instructions for the order.
+   */
+  special_instructions?: string
+  /**
+   * The list of payments.
+   */
+  payments?: Payment[]
 }
 
 export type SubmitCheckoutHook = {

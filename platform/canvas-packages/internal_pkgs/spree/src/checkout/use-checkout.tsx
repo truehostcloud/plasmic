@@ -17,7 +17,7 @@ export const handler: SWRHook<any> = {
   },
   async fetcher({ input, options, fetch }) {
     console.info(
-      'useCart fetcher called. Configuration: ',
+      'useCheckout fetcher called. Configuration: ',
       'input: ',
       input,
       'options: ',
