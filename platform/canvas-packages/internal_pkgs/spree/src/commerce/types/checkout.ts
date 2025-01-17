@@ -81,7 +81,6 @@ export type GetCheckoutHook = {
   input: {}
   fetcherInput: { cartId?: string }
   swrState: { isEmpty: boolean }
-  mutations: { submit: UseSubmitCheckout }
 }
 
 export type CheckoutHooks = {

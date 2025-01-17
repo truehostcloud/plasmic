@@ -4,7 +4,6 @@ import getCart from '../utils/get-cart'
 import normalizeCart from '../utils/normalizations/normalize-cart'
 import { useMemo } from 'react'
 import { GetCheckoutHook } from '../commerce/types/checkout'
-import useSubmitCheckout from './use-submit-checkout'
 
 export default useCheckout as UseCheckout<typeof handler>
 
@@ -38,7 +37,6 @@ export const handler: SWRHook<any> = {
     const useWrappedHook: ReturnType<SWRHook<GetCheckoutHook>['useHook']> = (
       input
     ) => {
-      const submit = useSubmitCheckout()
       const response = useData({
         swrOptions: { revalidateOnFocus: false, ...input?.swrOptions },
       })
@@ -52,14 +50,8 @@ export const handler: SWRHook<any> = {
               },
               enumerable: true,
             },
-            submit: {
-              get() {
-                return submit
-              },
-              enumerable: true,
-            },
           }),
-        [response, submit]
+        [response]
       )
     }
 
