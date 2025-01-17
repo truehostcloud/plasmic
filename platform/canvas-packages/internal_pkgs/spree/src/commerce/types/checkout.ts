@@ -1,4 +1,3 @@
-import type { UseSubmitCheckout } from '../checkout/use-submit-checkout'
 import type { AddressFields } from './customer/address'
 import type { Card, CardFields } from './customer/card'
 import type { LineItem } from './cart'
@@ -68,12 +67,17 @@ export interface CheckoutBody {
   payments?: Payment[]
 }
 
-export type SubmitCheckoutHook = {
-  data: Checkout | null
-  input?: CheckoutBody
-  fetcherInput: CheckoutBody
-  body: { item: CheckoutBody }
-  actionInput: CheckoutBody
+export type CheckoutTypes = {
+  checkout: Checkout
+  checkoutBody: CheckoutBody
+}
+
+export type SubmitCheckoutHook<T extends CheckoutTypes = CheckoutTypes> = {
+  data: T['checkout'] | null
+  input?: T['checkoutBody']
+  fetcherInput: T['checkoutBody']
+  body: { item: T['checkoutBody'] }
+  actionInput: T['checkoutBody']
 }
 
 export type GetCheckoutHook = {

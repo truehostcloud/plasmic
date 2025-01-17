@@ -1,15 +1,21 @@
-import useSWR, { SWRResponse } from 'swr'
-import type {
-  HookSWRInput,
-  HookFetchInput,
-  HookFetcherOptions,
-  HookFetcherFn,
-  Fetcher,
-  SwrOptions,
-  SWRHookSchemaBase,
-} from './types'
+/*
+  Forked from https://github.com/vercel/commerce/tree/main/packages/commerce/src
+  Changes: Replaced useSWR for useMutablePlasmicQueryData and add provider to useData
+*/
+import { useMutablePlasmicQueryData } from '@plasmicapp/query'
+import { SWRResponse } from 'swr'
+import { Provider } from '@plasmicpkgs/commerce'
 import defineProperty from './define-property'
 import { CommerceError } from '@plasmicpkgs/commerce'
+import type {
+  Fetcher,
+  HookFetcherFn,
+  HookFetcherOptions,
+  HookFetchInput,
+  HookSWRInput,
+  SWRHookSchemaBase,
+  SwrOptions,
+} from './types'
 
 export type ResponseState<Result> = SWRResponse<Result, CommerceError> & {
   isLoading: boolean
@@ -22,10 +28,11 @@ export type UseData = <H extends SWRHookSchemaBase>(
   },
   input: HookFetchInput | HookSWRInput,
   fetcherFn: Fetcher,
-  swrOptions?: SwrOptions<H['data'], H['fetcherInput']>
+  swrOptions?: SwrOptions<H['data'], H['fetcherInput']>,
+  provider?: Provider
 ) => ResponseState<H['data']>
 
-const useData: UseData = (options, input, fetcherFn, swrOptions) => {
+const useData: UseData = (options, input, fetcherFn, swrOptions, provider) => {
   const hookInput = Array.isArray(input) ? input : Object.entries(input)
   const fetcher = async (
     url: string,
@@ -42,6 +49,7 @@ const useData: UseData = (options, input, fetcherFn, swrOptions) => {
           return obj
         }, {}),
         fetch: fetcherFn,
+        provider,
       })
     } catch (error) {
       // SWR will not log errors, but any error that's not an instance
@@ -52,7 +60,7 @@ const useData: UseData = (options, input, fetcherFn, swrOptions) => {
       throw error
     }
   }
-  const response = useSWR(
+  const response = useMutablePlasmicQueryData(
     () => {
       const opts = options.fetchOptions
       return opts

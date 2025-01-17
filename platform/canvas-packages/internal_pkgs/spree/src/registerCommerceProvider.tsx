@@ -1,49 +1,52 @@
-import { GlobalContextMeta } from "@plasmicapp/host";
-import registerGlobalContext from "@plasmicapp/host/registerGlobalContext";
+import { GlobalContextMeta } from '@plasmicapp/host'
+import registerGlobalContext from '@plasmicapp/host/registerGlobalContext'
 import {
   CartActionsProvider,
   globalActionsRegistrations,
-} from "@plasmicpkgs/commerce";
-import React from "react";
-import { Registerable } from "./registerable";
-import { getCommerceProvider } from "./spree";
+} from '@plasmicpkgs/commerce'
+import React from 'react'
+import { Registerable } from './registerable'
+import { getCommerceProvider } from './spree'
+import { CheckoutActionsProvider } from './registerCheckoutProvider'
 
 interface CommerceProviderProps {
-  children?: React.ReactNode;
-  apiHost: string;
+  children?: React.ReactNode
+  apiHost: string
 }
 
-const globalContextName = "plasmic-commerce-spree-provider";
+const globalContextName = 'plasmic-commerce-spree-provider'
 
 export const commerceProviderMeta: GlobalContextMeta<CommerceProviderProps> = {
   name: globalContextName,
-  displayName: "Spree Provider",
+  displayName: 'Spree Provider',
   props: {
     apiHost: {
-      type: "string",
-      defaultValue: "https://olitt.shop",
+      type: 'string',
+      defaultValue: 'https://olitt.shop',
     },
   },
   ...{ globalActions: globalActionsRegistrations },
-  importPath: "commerce-spree",
-  importName: "CommerceProviderComponent",
-};
+  importPath: 'commerce-spree',
+  importName: 'CommerceProviderComponent',
+}
 
 export function CommerceProviderComponent(props: CommerceProviderProps) {
-  const { apiHost, children } = props;
+  const { apiHost, children } = props
 
   const CommerceProvider = React.useMemo(
     () => getCommerceProvider(apiHost),
     [apiHost]
-  );
+  )
 
   return (
     <CommerceProvider>
       <CartActionsProvider globalContextName={globalContextName}>
-        {children}
+        <CheckoutActionsProvider globalContextName={globalContextName}>
+          {children}
+        </CheckoutActionsProvider>
       </CartActionsProvider>
     </CommerceProvider>
-  );
+  )
 }
 
 export function registerCommerceProvider(
@@ -53,9 +56,9 @@ export function registerCommerceProvider(
   const doRegisterComponent: typeof registerGlobalContext = (...args) =>
     loader
       ? loader.registerGlobalContext(...args)
-      : registerGlobalContext(...args);
+      : registerGlobalContext(...args)
   doRegisterComponent(
     CommerceProviderComponent,
     customCommerceProviderMeta ?? commerceProviderMeta
-  );
+  )
 }

@@ -8,6 +8,7 @@ import { handler as useProduct } from './product/use-product'
 import { handler as useCategories } from './site/use-categories'
 import { handler as useBrands } from './site/use-brands'
 import { handler as useCheckout } from './checkout/use-checkout'
+import { handler as useSubmitCheckout } from './checkout/use-submit-checkout'
 import { requireConfigValue } from './isomorphic-config'
 import type { Fetcher, FetcherOptions } from '@plasmicpkgs/commerce'
 
@@ -20,7 +21,7 @@ export const getSpreeProvider = (apiHost: string) => {
     cart: { useCart, useAddItem, useUpdateItem, useRemoveItem },
     products: { useSearch, useProduct },
     site: { useCategories, useBrands },
-    checkout: { useCheckout },
+    checkout: { useCheckout, useSubmitCheckout },
   }
 }
 
@@ -38,5 +39,6 @@ export type SpreeProvider = {
   site: { useCategories: typeof useCategories; useBrands: typeof useBrands }
   checkout: {
     useCheckout: typeof useCheckout
+    useSubmitCheckout: typeof useSubmitCheckout
   }
 }

@@ -2,9 +2,16 @@ import registerComponent, {
   ComponentMeta,
 } from '@plasmicapp/host/registerComponent'
 import { Registerable } from './registerable'
-import React from 'react'
+import React, { useMemo } from 'react'
 import useCheckout from './checkout/use-checkout'
-import { DataProvider } from '@plasmicapp/host'
+import {
+  DataProvider,
+  GlobalActionDict,
+  GlobalActionsProvider,
+} from '@plasmicapp/host'
+import useSubmitCheckout from './commerce/checkout/use-submit-checkout'
+import type { AddressFields } from './commerce/types/customer/address'
+import { Payment } from './commerce/types/checkout'
 
 export const checkoutProviderMeta: ComponentMeta<
   React.PropsWithChildren<object>
@@ -16,13 +23,60 @@ export const checkoutProviderMeta: ComponentMeta<
   props: {
     children: 'slot',
   },
+  providesData: true,
   importPath: 'commerce-spree',
   importName: 'CheckoutProvider',
 }
 
+interface CheckoutActions extends GlobalActionDict {
+  submitCheckout: (
+    email: string,
+    special_instructions: string,
+    billing_address: AddressFields,
+    shipping_address: AddressFields,
+    payments: Payment[]
+  ) => void
+}
+
+export function CheckoutActionsProvider(
+  props: React.PropsWithChildren<{
+    globalContextName: string
+  }>
+) {
+  const submitCheckout = useSubmitCheckout()
+  const actions: CheckoutActions = useMemo(
+    () => ({
+      submitCheckout(
+        email: string,
+        special_instructions: string,
+        billing_address: AddressFields,
+        shipping_address: AddressFields,
+        payments: Payment[]
+      ) {
+        submitCheckout({
+          email,
+          special_instructions,
+          billing_address,
+          shipping_address,
+          payments,
+        })
+      },
+    }),
+    [submitCheckout]
+  )
+
+  return (
+    <GlobalActionsProvider
+      contextName={props.globalContextName}
+      actions={actions}
+    >
+      {props.children}
+    </GlobalActionsProvider>
+  )
+}
+
 export function CheckoutProvider(props: React.PropsWithChildren<object>) {
   const { data } = useCheckout()
-  console.log('CheckoutProvider', data)
   return (
     <DataProvider data={data} name="checkout">
       {props.children}
