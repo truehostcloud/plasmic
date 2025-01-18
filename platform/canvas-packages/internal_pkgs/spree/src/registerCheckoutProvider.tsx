@@ -137,7 +137,12 @@ export const globalActionsRegistrations: Record<
         type: {
           type: 'choice',
           multiSelect: false,
-          options: ['next', 'advance', 'complete'],
+          options: [
+            { value: 'next', label: 'Next' },
+            { value: 'advance', label: 'Advance' },
+            { value: 'complete', label: 'Complete' },
+            { value: 'null', label: 'None' },
+          ],
         },
       },
     ],

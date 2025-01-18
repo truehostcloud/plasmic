@@ -44,6 +44,7 @@ const submitCheckout = async (
     billing_address,
     shipping_address,
     payments,
+    onSuccessAction,
   } = input
 
   if (!email) {
@@ -68,16 +69,6 @@ const submitCheckout = async (
       payment_method_id: payment.paymentMethodId,
     })) as IPayment[]
 
-    const orderUpdateParameters: OrderUpdate = {
-      order: {
-        email,
-        special_instructions,
-        bill_address_attributes: buildAddress(billing_address),
-        ship_address_attributes: buildAddress(shipping_address),
-        payments_attributes,
-      },
-    }
-
     const includeParams = [
       'line_items',
       'line_items.variant',
@@ -88,22 +79,32 @@ const submitCheckout = async (
       'line_items.variant.product.option_types',
     ].join(',')
 
+    const orderUpdateParameters: OrderUpdate = {
+      order: {
+        email,
+        special_instructions,
+        bill_address_attributes: buildAddress(billing_address),
+        ship_address_attributes: buildAddress(shipping_address),
+        payments_attributes,
+      },
+      include: includeParams,
+    }
+
     const { data: spreeSuccessResponse } = await fetch<
       GraphQLFetcherResult<IOrder>
     >({
       variables: {
         methodPath: 'checkout.orderUpdate',
         arguments: [token, orderUpdateParameters],
-        include: includeParams,
       },
     })
 
-    if (input.onSuccessAction) {
+    if (onSuccessAction) {
       const { data: checkoutActionResponse } = await fetch<
         GraphQLFetcherResult<IOrder>
       >({
         variables: {
-          methodPath: `checkout.${input.onSuccessAction}`,
+          methodPath: `checkout.${onSuccessAction}`,
           arguments: [token],
           include: includeParams,
         },
