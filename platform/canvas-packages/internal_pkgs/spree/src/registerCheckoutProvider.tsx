@@ -36,7 +36,8 @@ interface CheckoutActions extends GlobalActionDict {
     special_instructions: string,
     billing_address: AddressFields,
     shipping_address: AddressFields,
-    payments: Payment[]
+    payments: Payment[],
+    onSuccessAction: 'next' | 'advance' | 'complete' | null
   ) => void
 }
 
@@ -53,7 +54,8 @@ export function CheckoutActionsProvider(
         special_instructions: string,
         billing_address: AddressFields,
         shipping_address: AddressFields,
-        payments: Payment[]
+        payments: Payment[],
+        onSuccessAction: 'next' | 'advance' | 'complete' | null
       ) {
         submitCheckout({
           email,
@@ -61,6 +63,7 @@ export function CheckoutActionsProvider(
           billing_address,
           shipping_address,
           payments,
+          onSuccessAction,
         })
       },
     }),
@@ -98,6 +101,60 @@ export function registerCheckoutProvider(
   )
 }
 
+const addressFields: Record<string, { displayName: string; type: any }> = {
+  type: {
+    displayName: 'Type',
+    type: {
+      type: 'choice',
+      multiSelect: false,
+      options: [
+        { value: 'billing', label: 'Billing' },
+        { value: 'shipping', label: 'Shipping' },
+      ],
+    },
+  },
+  firstName: {
+    displayName: 'First name',
+    type: 'string',
+  },
+  lastName: {
+    displayName: 'Last name',
+    type: 'string',
+  },
+  company: {
+    displayName: 'Company',
+    type: 'string',
+  },
+  streetNumber: {
+    displayName: 'Street number',
+    type: 'string',
+  },
+  apartments: {
+    displayName: 'Apartments',
+    type: 'string',
+  },
+  zipCode: {
+    displayName: 'Zip code',
+    type: 'string',
+  },
+  city: {
+    displayName: 'City',
+    type: 'string',
+  },
+  state: {
+    displayName: 'State',
+    type: 'string',
+  },
+  country: {
+    displayName: 'Country',
+    type: 'string',
+  },
+  phone: {
+    displayName: 'Phone',
+    type: 'string',
+  },
+}
+
 export const globalActionsRegistrations: Record<
   string,
   GlobalActionRegistration<any>
@@ -119,12 +176,18 @@ export const globalActionsRegistrations: Record<
       {
         name: 'billing_address',
         displayName: 'Billing address',
-        type: 'object',
+        type: {
+          type: 'object',
+          fields: addressFields,
+        },
       },
       {
         name: 'shipping_address',
         displayName: 'Shipping address',
-        type: 'object',
+        type: {
+          type: 'object',
+          fields: addressFields,
+        },
       },
       {
         name: 'payments',
