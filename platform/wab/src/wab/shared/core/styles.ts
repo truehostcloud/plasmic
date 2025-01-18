@@ -37,6 +37,7 @@ import {
   isBaseRuleVariant,
   isBaseVariant,
   isCodeComponentVariant,
+  isMaybeInteractiveStyleOrCodeComponentVariant,
   isScreenVariant,
   isStyleOrCodeComponentVariant,
   isStyleVariant,
@@ -1312,7 +1313,6 @@ export const showSimpleCssRuleSet = (
   opts: {
     targetEnv: TargetEnv;
     useCssModules?: boolean;
-    onlyInteractiveCanvasPseudoClasses?: boolean;
     whitespaceNormal?: boolean;
     useCssFlexGap?: boolean;
   }
@@ -1324,7 +1324,7 @@ export const showSimpleCssRuleSet = (
 
   let ruleName = ruleNamer(tpl, vs);
 
-  if (isStudio && opts.onlyInteractiveCanvasPseudoClasses) {
+  if (isStudio && opts.targetEnv === "canvas-interactive") {
     if (!ruleName.includes(":")) {
       return [];
     } else {
@@ -1720,10 +1720,13 @@ export function makeBaseRuleNamer(
  */
 export function makePseudoClassAwareRuleNamer(
   component: Component,
-  ruleNamer: RuleNamer
+  ruleNamer: RuleNamer,
+  opts?: {
+    targetEnv?: TargetEnv;
+  }
 ): RuleNamer {
   const namer = (tpl: TplNode, vs: VariantSetting) =>
-    showPseudoClassSelector(component, tpl, vs, ruleNamer);
+    showPseudoClassSelector(component, tpl, vs, ruleNamer, opts);
   namer.classNamer = ruleNamer.classNamer;
   return namer;
 }
@@ -1741,11 +1744,28 @@ function showPseudoClassSelector(
   component: Component,
   tpl: TplNode,
   vs: VariantSetting,
-  ruleNamer: RuleNamer
+  ruleNamer: RuleNamer,
+  opts?: {
+    targetEnv?: TargetEnv;
+  }
 ) {
-  // We don't need to deal with screen variants, as they are dealt with via
-  // media query in the generated css
-  const variants = vs.variants.filter((v) => !isScreenVariant(v));
+  const variants = vs.variants
+    // We don't need to deal with screen variants, as they are dealt with via
+    // media query in the generated css
+    .filter((v) => !isScreenVariant(v))
+    .filter((v) => {
+      if (!isStyleOrCodeComponentVariant(v)) {
+        return true;
+      }
+      if (opts?.targetEnv === "canvas-interactive") {
+        return isMaybeInteractiveStyleOrCodeComponentVariant(v);
+      }
+      if (opts?.targetEnv === "canvas-non-interactive") {
+        return !isMaybeInteractiveStyleOrCodeComponentVariant(v);
+      }
+      return true;
+    });
+
   const [
     privateStyleVariants,
     styleVariants,
@@ -1830,23 +1850,31 @@ function showPseudoClassSelector(
     return combo.filter(isBaseRuleVariant);
   };
 
+  // For non-interactive canvas, we want to be able to turn on the variant (for previewing/recording)
+  // even when the selector does not hold
+  // e.g. a :visited selector applied on a link that is not yet visited
+  const baseRuleName =
+    opts?.targetEnv === "canvas-non-interactive"
+      ? `${ruleNamer(tpl, vs)},`
+      : "";
+
   if (isRoot) {
-    const styleOrCodeComponentVariants = vs.variants.filter(
+    const styleOrCodeComponentVariants = variants.filter(
       isStyleOrCodeComponentVariant
     );
-    const baseRuleVariants = getBaseRuleVariants(vs.variants);
+    const baseRuleVariants = getBaseRuleVariants(variants);
     const baseRuleVs = ensure(
       tryGetVariantSetting(root, baseRuleVariants),
       () =>
         `Expected VariantSettings in tpl ${root.uuid} for combo ` +
         baseRuleVariants.map((v) => `${v.name} (${v.uuid})`).join(", ")
     );
-    return `${ruleNamer(root, baseRuleVs)}${makeSelectorString(
+    return `${baseRuleName}${ruleNamer(root, baseRuleVs)}${makeSelectorString(
       styleOrCodeComponentVariants
     )}`;
   }
 
-  const parts: string[] = [];
+  const parts: string[] = [baseRuleName];
 
   const baseRootRuleVs = ensure(
     tryGetVariantSetting(root, nonStyleVariants),
@@ -2659,9 +2687,15 @@ export function makeCanvasRuleNamers(component: Component) {
   const baseRuleNamer = makeBaseRuleNamer(classNamer);
   return {
     interactive: makePseudoElementAwareRuleNamer(
-      makePseudoClassAwareRuleNamer(component, baseRuleNamer)
+      makePseudoClassAwareRuleNamer(component, baseRuleNamer, {
+        targetEnv: "canvas-interactive",
+      })
     ),
-    nonInteractive: makePseudoElementAwareRuleNamer(baseRuleNamer),
+    nonInteractive: makePseudoElementAwareRuleNamer(
+      makePseudoClassAwareRuleNamer(component, baseRuleNamer, {
+        targetEnv: "canvas-non-interactive",
+      })
+    ),
   };
 }
 
@@ -2694,9 +2728,8 @@ export function genCanvasRules(
     vs,
     ruleNamers.nonInteractive,
     {
-      targetEnv: "canvas",
+      targetEnv: "canvas-non-interactive",
       useCssModules: false,
-      onlyInteractiveCanvasPseudoClasses: false,
     }
   );
   const interactiveRuleSet = showSimpleCssRuleSet(
@@ -2705,13 +2738,13 @@ export function genCanvasRules(
     vs,
     ruleNamers.interactive,
     {
-      targetEnv: "canvas",
-      useCssModules: false,
-      // We will generate the interactive pseudo classes but they only can be activated if the
+      // We will generate the interactivepseudo classes but they only can be activated if the
       // canvas is in interactive mode
-      onlyInteractiveCanvasPseudoClasses: true,
+      targetEnv: "canvas-interactive",
+      useCssModules: false,
     }
   );
+
   return [...nonInteractiveRuleSet, ...interactiveRuleSet];
 }
 
