@@ -37,7 +37,7 @@ interface CheckoutActions extends GlobalActionDict {
     billing_address: AddressFields,
     shipping_address: AddressFields,
     payments: Payment[],
-    onSuccessAction: 'next' | 'advance' | 'complete' | null
+    onSuccessAction: 'orderNext' | 'advance' | 'complete' | null
   ) => void
 }
 
@@ -55,7 +55,7 @@ export function CheckoutActionsProvider(
         billing_address: AddressFields,
         shipping_address: AddressFields,
         payments: Payment[],
-        onSuccessAction: 'next' | 'advance' | 'complete' | null
+        onSuccessAction: 'orderNext' | 'advance' | 'complete' | null
       ) {
         submitCheckout({
           email,
@@ -201,7 +201,7 @@ export const globalActionsRegistrations: Record<
           type: 'choice',
           multiSelect: false,
           options: [
-            { value: 'next', label: 'Next' },
+            { value: 'orderNext', label: 'Next' },
             { value: 'advance', label: 'Advance' },
             { value: 'complete', label: 'Complete' },
             { value: 'null', label: 'None' },
