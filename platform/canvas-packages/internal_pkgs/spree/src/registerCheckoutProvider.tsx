@@ -131,6 +131,15 @@ export const globalActionsRegistrations: Record<
         displayName: 'Payments',
         type: 'object',
       },
+      {
+        name: 'onSuccessAction',
+        displayName: 'On success action',
+        type: {
+          type: 'choice',
+          multiSelect: false,
+          options: ['next', 'advance', 'complete'],
+        },
+      },
     ],
   },
 }
