@@ -320,6 +320,10 @@ const csrfFreeStaticRoutes = [
   "/api/v1/cli/emit-token",
 ];
 
+if (process.env.ELASTIC_APM_SERVER_URL) {
+  require("elastic-apm-node").start();
+}
+
 const isCsrfFreeRoute = (pathname: string, config: Config) => {
   return (
     csrfFreeStaticRoutes.includes(pathname) ||
