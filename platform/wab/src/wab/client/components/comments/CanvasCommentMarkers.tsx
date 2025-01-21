@@ -115,6 +115,7 @@ function CanvasCommentMarker(props: {
           comment={comment}
           subjectLabel={<ObjInstLabel subject={subject} />}
           isThread
+          isRootComment
           repliesLinkLabel={
             threadComments.length > 1
               ? `${threadComments.length - 1} replies`
@@ -193,7 +194,9 @@ export const CanvasCommentOverlay = observer(function CanvasCommentOverlay({
     isTplVariantable(tpl) &&
     viewCtx.variantTplMgr().isTargetingNonBaseVariant(tpl);
 
-  const [valNode, doms] = viewCtx.maybeDomsForTpl(tpl);
+  const [valNode, doms] = viewCtx.maybeDomsForTpl(tpl, {
+    ignoreFocusedCloneKey: true,
+  });
 
   const $elt = $(doms ?? []);
 
