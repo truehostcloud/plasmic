@@ -160,7 +160,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: platform
-          file: platform/wab/canvas-packages.Dockerfile
+          file: platform/wab/Dockerfile
           push: true
           tags: docker.io/${{ env.DOCKER_USERNAME }}/${{ env.SERVER_DOCKER_REPO_NAME }}:${{ env.SERVER_IMAGE_TAG }}
           cache-from: type=gha
