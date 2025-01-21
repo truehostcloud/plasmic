@@ -159,7 +159,8 @@ jobs:
       - name: Build and Push Server Docker image
         uses: docker/build-push-action@v6
         with:
-          context: platform/wab
+          context: platform
+          file: wab/canvas-packages.Dockerfile
           push: true
           tags: docker.io/${{ env.DOCKER_USERNAME }}/${{ env.SERVER_DOCKER_REPO_NAME }}:${{ env.SERVER_IMAGE_TAG }}
           cache-from: type=gha
