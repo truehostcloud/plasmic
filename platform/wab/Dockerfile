@@ -32,7 +32,7 @@ RUN mkdir -p src/wab/gen/ && touch src/wab/client/plasmic-deployed.json && make
 RUN rm -rf ./node_modules
 RUN yarn install --production --frozen-lockfile && yarn cache clean
 
-COPY --chown=normaluser tools/docker-dev/secrets.json /home/normaluser/.plasmic/secrets.json
+COPY --chown=normaluser wab/tools/docker-dev/secrets.json /home/normaluser/.plasmic/secrets.json
 RUN chmod 600 ~/.plasmic/secrets.json
 
 # loader-bundle-env is expected to be a peer folder to wab, so we copy it there
