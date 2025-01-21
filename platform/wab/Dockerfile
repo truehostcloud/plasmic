@@ -38,6 +38,7 @@ RUN chmod 600 ~/.plasmic/secrets.json
 # loader-bundle-env is expected to be a peer folder to wab, so we copy it there
 COPY --chown=normaluser loader-bundle-env /home/normaluser/loader-bundle-env
 WORKDIR /home/normaluser/loader-bundle-env
+RUN for d in internal_pkgs/*; do if [ -d "$d" ]; then cd $d && yarn && yarn build && cd -; fi done && yarn
 RUN yarn install && yarn cache clean
 
 # loader-html-hydrate is expected to be a peer folder to wab, so we copy it there
