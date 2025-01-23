@@ -131,7 +131,9 @@ const DependencyItem = observer(function DependencyItem(props: {
           )}
         </label>
       </Tooltip>
-      {(!isHostLessPkg || isDevUser(studioCtx)) &&
+      {(!isHostLessPkg ||
+        isDevUser(studioCtx) ||
+        studioCtx.appCtx.appConfig.allowImportedHostlessPkgUpdate) &&
         !readOnly &&
         data.latestPkgVersionMeta &&
         data.latestPkgVersionMeta.version !== data.model.version && (

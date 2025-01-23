@@ -581,6 +581,8 @@ const DEFAULT_DEVFLAGS = {
   arbitraryCssSelectors: false,
 
   autoOpen: false,
+
+  allowImportedHostlessPkgUpdate: false,
 };
 
 Object.assign(DEFAULT_DEVFLAGS, DEFAULT_DEVFLAG_OVERRIDES);
