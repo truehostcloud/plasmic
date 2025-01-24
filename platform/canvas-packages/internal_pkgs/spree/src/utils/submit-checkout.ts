@@ -44,6 +44,7 @@ const submitCheckout = async (
     billing_address,
     shipping_address,
     payments,
+    shipments,
     onSuccessAction,
   } = input
 
@@ -68,6 +69,10 @@ const submitCheckout = async (
     const payments_attributes = payments?.map((payment) => ({
       payment_method_id: payment.paymentMethodId,
     })) as IPayment[]
+    const shipments_attributes = shipments?.map((shipment) => ({
+      id: shipment.id,
+      selected_shipping_rate_id: shipment.selectedShippingRateId,
+    }))
 
     const includeParams = [
       'line_items',
@@ -86,6 +91,7 @@ const submitCheckout = async (
         bill_address_attributes: buildAddress(billing_address),
         ship_address_attributes: buildAddress(shipping_address),
         payments_attributes,
+        shipments_attributes,
       },
       include: includeParams,
     }

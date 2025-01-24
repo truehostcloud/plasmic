@@ -33,6 +33,11 @@ export interface Payment {
   paymentMethodId: string
 }
 
+export interface Shipment {
+  id: string
+  selectedShippingRateId: string
+}
+
 export interface CheckoutBody {
   /**
    * The email assigned to this cart.
@@ -65,6 +70,7 @@ export interface CheckoutBody {
    * The list of payments.
    */
   payments?: Payment[]
+  shipments?: Shipment[]
   onSuccessAction?: 'orderNext' | 'advance' | 'complete' | null
 }
 

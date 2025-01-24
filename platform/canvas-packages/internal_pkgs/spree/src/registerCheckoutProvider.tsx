@@ -11,7 +11,7 @@ import {
 } from '@plasmicapp/host'
 import useSubmitCheckout from './commerce/checkout/use-submit-checkout'
 import type { AddressFields } from './commerce/types/customer/address'
-import { Payment } from './commerce/types/checkout'
+import { Payment, Shipment } from './commerce/types/checkout'
 import { globalActionsRegistrations as baseGlobalActionsRegistrations } from '@plasmicpkgs/commerce'
 import { GlobalActionRegistration } from '@plasmicapp/host/registerGlobalContext'
 
@@ -37,6 +37,7 @@ interface CheckoutActions extends GlobalActionDict {
     billing_address: AddressFields,
     shipping_address: AddressFields,
     payments: Payment[],
+    shipments: Shipment[],
     onSuccessAction: 'orderNext' | 'advance' | 'complete' | null
   ) => void
 }
@@ -55,6 +56,7 @@ export function CheckoutActionsProvider(
         billing_address: AddressFields,
         shipping_address: AddressFields,
         payments: Payment[],
+        shipments: Shipment[],
         onSuccessAction: 'orderNext' | 'advance' | 'complete' | null
       ) {
         submitCheckout({
@@ -63,6 +65,7 @@ export function CheckoutActionsProvider(
           billing_address,
           shipping_address,
           payments,
+          shipments,
           onSuccessAction,
         })
       },
@@ -192,6 +195,11 @@ export const globalActionsRegistrations: Record<
       {
         name: 'payments',
         displayName: 'Payments',
+        type: 'object',
+      },
+      {
+        name: 'shipments',
+        displayName: 'Shipments',
         type: 'object',
       },
       {

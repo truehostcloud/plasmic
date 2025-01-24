@@ -42,6 +42,7 @@ export const handler: MutationHook<SubmitCheckoutHook> = {
             billing_address,
             shipping_address,
             payments,
+            shipments,
             onSuccessAction,
           } = input
 
@@ -50,11 +51,13 @@ export const handler: MutationHook<SubmitCheckoutHook> = {
             !special_instructions &&
             !billing_address &&
             !shipping_address &&
-            !payments
+            !payments &&
+            !shipments
           ) {
             throw new ValidationError({
               message:
-                'email or special_instructions or billing_address or shipping_address or payments needs to be provided.',
+                'email or special_instructions or billing_address or' +
+                ' shipping_address or payments or shipments needs to be provided.',
             })
           }
           const data = await fetch({
@@ -64,6 +67,7 @@ export const handler: MutationHook<SubmitCheckoutHook> = {
               billing_address,
               shipping_address,
               payments,
+              shipments,
               onSuccessAction,
             },
           })
