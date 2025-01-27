@@ -33,11 +33,13 @@ export const checkoutProviderMeta: ComponentMeta<
 interface CheckoutActions extends GlobalActionDict {
   submitCheckout: (
     email: string,
-    special_instructions: string,
-    billing_address: AddressFields,
-    shipping_address: AddressFields,
+    specialInstructions: string,
+    billingAddress: AddressFields,
+    shippingAddress: AddressFields,
     payments: Payment[],
     shipments: Shipment[],
+    shippingMethodId: string,
+    paymentMethodId: string,
     onSuccessAction: 'orderNext' | 'advance' | 'complete' | null
   ) => void
 }
@@ -52,20 +54,24 @@ export function CheckoutActionsProvider(
     () => ({
       submitCheckout(
         email: string,
-        special_instructions: string,
-        billing_address: AddressFields,
-        shipping_address: AddressFields,
+        specialInstructions: string,
+        billingAddress: AddressFields,
+        shippingAddress: AddressFields,
         payments: Payment[],
         shipments: Shipment[],
+        shippingMethodId: string,
+        paymentMethodId: string,
         onSuccessAction: 'orderNext' | 'advance' | 'complete' | null
       ) {
         submitCheckout({
           email,
-          special_instructions,
-          billing_address,
-          shipping_address,
+          specialInstructions,
+          billingAddress,
+          shippingAddress,
           payments,
           shipments,
+          shippingMethodId,
+          paymentMethodId,
           onSuccessAction,
         })
       },
@@ -201,6 +207,32 @@ export const globalActionsRegistrations: Record<
         name: 'shipments',
         displayName: 'Shipments',
         type: 'object',
+      },
+      {
+        name: 'shippingMethodId',
+        displayName: 'Shipping method ID',
+        type: 'string',
+      },
+      {
+        name: 'paymentMethodId',
+        displayName: 'Payment method ID',
+        type: 'string',
+      },
+      {
+        name: 'action',
+        displayName: 'Action',
+        type: {
+          type: 'choice',
+          multiSelect: false,
+          options: [
+            { value: 'orderUpdate', label: 'Update checkout' },
+            { value: 'orderNext', label: 'Next' },
+            { value: 'advance', label: 'Advance' },
+            { value: 'complete', label: 'Complete' },
+            { value: 'selectShippingMethod', label: 'Select shipping method' },
+            { value: 'addPayment', label: 'Add payment' },
+          ],
+        },
       },
       {
         name: 'onSuccessAction',

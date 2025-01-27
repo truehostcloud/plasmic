@@ -38,36 +38,43 @@ export const handler: MutationHook<SubmitCheckoutHook> = {
         async (input) => {
           const {
             email,
-            special_instructions,
-            billing_address,
-            shipping_address,
+            specialInstructions,
+            billingAddress,
+            shippingAddress,
             payments,
             shipments,
+            shippingMethodId,
+            paymentMethodId,
             onSuccessAction,
           } = input
 
           if (
             !email &&
-            !special_instructions &&
-            !billing_address &&
-            !shipping_address &&
+            !specialInstructions &&
+            !billingAddress &&
+            !shippingAddress &&
             !payments &&
+            !shippingMethodId &&
+            !paymentMethodId &&
             !shipments
           ) {
             throw new ValidationError({
               message:
                 'email or special_instructions or billing_address or' +
-                ' shipping_address or payments or shipments needs to be provided.',
+                ' shipping_address or payments or shipments or shippingMethodId or paymentMethodId' +
+                ' needs to be provided.',
             })
           }
           const data = await fetch({
             input: {
               email,
-              special_instructions,
-              billing_address,
-              shipping_address,
+              specialInstructions,
+              billingAddress,
+              shippingAddress,
               payments,
               shipments,
+              shippingMethodId,
+              paymentMethodId,
               onSuccessAction,
             },
           })
