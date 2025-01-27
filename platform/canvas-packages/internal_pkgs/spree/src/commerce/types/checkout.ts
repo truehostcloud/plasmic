@@ -43,7 +43,7 @@ export interface CheckoutBody {
   /**
    * The email assigned to this cart.
    */
-  email: string
+  email?: string
   /**
    * The unique identifier for the cart.
    */
@@ -57,22 +57,24 @@ export interface CheckoutBody {
    * The billing Address information.
    * @see AddressFields
    */
-  billing_address?: AddressFields
+  billingAddress?: AddressFields
   /**
    * The shipping Address information.
    * @see AddressFields
    */
-  shipping_address?: AddressFields
+  shippingAddress?: AddressFields
   /**
    * The special instructions for the order.
    */
-  special_instructions?: string
+  specialInstructions?: string
   /**
    * The list of payments.
    */
   payments?: Payment[]
   shipments?: Shipment[]
   onSuccessAction?: 'orderNext' | 'advance' | 'complete' | null
+  shippingMethodId?: string
+  paymentMethodId?: string
 }
 
 export type CheckoutTypes = {
