@@ -4,11 +4,10 @@
 */
 import type { Image, Measurement } from './common'
 import { CartType as Core } from '@plasmicpkgs/commerce'
-
-
+import { AddressFields } from '../commerce/types/customer/address'
 
 export type SaleorCart = {}
-export type LineItem = Core.LineItem;
+export type LineItem = Core.LineItem
 
 /**
  * Extend core cart types
@@ -17,6 +16,10 @@ export type LineItem = Core.LineItem;
 export type Cart = Core.Cart & {
   lineItems: Core.LineItem[]
   url?: string
+  shippingAddress?: AddressFields
+  billingAddress?: AddressFields
+  payments?: Payment[]
+  shipments?: Shipment[]
 }
 
 export type CartTypes = Core.CartTypes
@@ -93,7 +96,6 @@ export interface ProductVariant {
   depth?: Measurement
 }
 
-
 export interface SelectedOption {
   /**
    * The unique identifier for the option.
@@ -107,4 +109,41 @@ export interface SelectedOption {
    * The product option’s value, such as "Red" or "XL".
    */
   value: string
+}
+
+export interface Shipment {
+  tracking: string
+  number: string
+  cost: string
+  shippedAt: any
+  state: string
+  createdAt: string
+  updatedAt: string
+  adjustmentTotal: string
+  additionalTaxTotal: string
+  promoTotal: string
+  includedTaxTotal: string
+  preTaxAmount: string
+  taxableAdjustmentTotal: string
+  nonTaxableAdjustmentTotal: string
+  displayDiscountedCost: string
+  displayItemCost: string
+  displayAmount: string
+  displayFinalPrice: string
+  displayCost: string
+  trackingUrl: any
+}
+
+export interface Payment {
+  amount: string
+  sourceType: string
+  state: string
+  responseCode: string
+  avsResponse: string
+  createdAt: string
+  updatedAt: string
+  number: string
+  cvvResponseCode: string
+  cvvResponseMessage: string
+  displayAmount: string
 }

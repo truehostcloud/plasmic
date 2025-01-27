@@ -1,6 +1,7 @@
 import type { AddressFields } from './customer/address'
-import type { Card, CardFields } from './customer/card'
+import type { CardFields } from './customer/card'
 import type { LineItem } from './cart'
+import { AddressAttr, PaymentAttr, ShipmentAttr } from '../../types'
 
 export interface Checkout {
   /**
@@ -16,10 +17,6 @@ export interface Checkout {
    */
   addressId: string
   /**
-   * The list of payment cards that the customer has available.
-   */
-  payments?: Card[]
-  /**
    * The unique identifier of the card that the customer has selected for payment.
    */
   cardId?: string
@@ -27,6 +24,10 @@ export interface Checkout {
    * List of items in the checkout.
    */
   lineItems?: LineItem[]
+  shippingAddress?: AddressAttr
+  billingAddress?: AddressAttr
+  payments?: PaymentAttr[]
+  shipments?: ShipmentAttr[]
 }
 
 export interface Payment {
