@@ -25,12 +25,15 @@ export const handler: SWRHook<any> = {
     const spreeCartResponse = await getCart(fetch)
     const cart = normalizeCart(spreeCartResponse, spreeCartResponse.data)
     return {
-      hasPayment: false,
-      hasShipping: false,
+      hasPayment: cart.payments.length > 0,
+      hasShipping: cart.shipments.length > 0,
       addressId: null,
-      payments: [],
+      payments: cart.payments,
       cardId: null,
       lineItems: cart.lineItems,
+      billingAddress: cart.billingAddress,
+      shippingAddress: cart.shippingAddress,
+      shipments: cart.shipments,
     }
   },
   useHook: ({ useData }) => {

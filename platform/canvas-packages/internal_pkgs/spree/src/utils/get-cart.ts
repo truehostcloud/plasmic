@@ -40,6 +40,9 @@ const getCart = async (
                 'line_items.variant.images',
                 'line_items.variant.option_values',
                 'line_items.variant.product.option_types',
+                'billing_address',
+                'shipping_address',
+                'payments',
               ].join(','),
               image_transformation: {
                 quality: imagesQuality,

@@ -9,11 +9,14 @@ import { jsonApi } from '@spree/storefront-api-v2-sdk'
 import createGetAbsoluteImageUrl from '../create-get-absolute-image-url'
 import getMediaGallery from '../get-media-gallery'
 import type {
+  AddressAttr,
   LineItemAttr,
   OptionTypeAttr,
   SpreeProductImage,
   SpreeSdkResponse,
   VariantAttr,
+  ShipmentAttr,
+  PaymentAttr,
 } from '../../types'
 
 const placeholderImage = requireConfigValue('lineItemPlaceholderImageUrl') as
@@ -181,6 +184,36 @@ const normalizeCart = (
     )
     .map((lineItem) => normalizeLineItem(spreeSuccessResponse, lineItem))
 
+  const relationships = spreeCart.relationships
+
+  const billingAddress = relationships.billing_address?.data
+    ? jsonApi.findSingleRelationshipDocument<AddressAttr>(
+        spreeSuccessResponse,
+        spreeCart,
+        'billing_address'
+      )
+    : null
+
+  const shippingAddress = relationships.shipping_address?.data
+    ? jsonApi.findSingleRelationshipDocument<AddressAttr>(
+        spreeSuccessResponse,
+        spreeCart,
+        'shipping_address'
+      )
+    : null
+
+  const payments = jsonApi.findRelationshipDocuments<PaymentAttr>(
+    spreeSuccessResponse,
+    spreeCart,
+    'payments'
+  )
+
+  const shipments = jsonApi.findRelationshipDocuments<ShipmentAttr>(
+    spreeSuccessResponse,
+    spreeCart,
+    'shipments'
+  )
+
   return {
     id: spreeCart.id,
     createdAt: spreeCart.attributes.created_at.toString(),
@@ -193,6 +226,10 @@ const normalizeCart = (
     customerId: spreeCart.attributes.token,
     email: spreeCart.attributes.email,
     discounts: [], // TODO: Implement when the template starts displaying them.
+    shippingAddress,
+    billingAddress,
+    payments,
+    shipments,
   }
 }
 
