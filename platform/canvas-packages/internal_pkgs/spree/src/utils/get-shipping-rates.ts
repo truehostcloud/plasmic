@@ -30,7 +30,7 @@ const getShippingRates = async (
       },
     })
 
-    const ShippingRates = []
+    let ShippingRates = []
 
     spreeSuccessResponse.data.forEach((shippingMethod) => {
       const relationships = shippingMethod.relationships
@@ -58,7 +58,7 @@ const getShippingRates = async (
               }
             })
         : null
-      ShippingRates.push(shipmentShippingRates)
+      ShippingRates = ShippingRates.concat(shipmentShippingRates)
     })
     return ShippingRates
   }
