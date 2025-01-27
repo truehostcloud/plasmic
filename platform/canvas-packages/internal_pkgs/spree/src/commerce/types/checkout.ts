@@ -28,6 +28,8 @@ export interface Checkout {
   billingAddress?: AddressAttr
   payments?: PaymentAttr[]
   shipments?: ShipmentAttr[]
+  paymentMethods?: PaymentMethod[]
+  shippingRates?: OrderShipment[]
 }
 
 export interface Payment {
