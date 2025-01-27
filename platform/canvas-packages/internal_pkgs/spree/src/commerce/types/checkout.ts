@@ -39,6 +39,41 @@ export interface Shipment {
   selectedShippingRateId: string
 }
 
+export interface OrderShipment {
+  id: string
+  number: string
+  finalPrice: string
+  displayFinalPrice: string
+  state: string
+  shippedAt: Date
+  trackingUrl: string
+  free: boolean
+  shippingRates: ShippingRate[]
+}
+
+export interface ShippingRate {
+  id: string
+  name: string
+  selected: boolean
+  finalPrice: string
+  displayFinalPrice: string
+  cost: string
+  displayCost: string
+  taxAmount: string
+  displayTaxAmount: string
+  shippingMethodId: string
+  free: boolean
+}
+
+export interface PaymentMethod {
+  id: string
+  type: string
+  name: string
+  description: string
+  publicMetadata: object
+  preferences: object
+}
+
 export interface CheckoutBody {
   /**
    * The email assigned to this cart.

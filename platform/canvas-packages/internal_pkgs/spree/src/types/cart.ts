@@ -147,3 +147,24 @@ export interface Payment {
   cvvResponseMessage?: string
   displayAmount?: string
 }
+
+export interface ShippingRate {
+  name?: string
+  selected?: boolean
+  finalPrice?: string
+  displayFinalPrice?: string
+  cost?: string
+  displayCost?: string
+  taxAmount?: string
+  displayTaxAmount?: string
+  shippingMethodId?: string
+  free?: boolean
+}
+
+export interface PaymentMethod {
+  type?: string
+  name?: string
+  description?: string
+  publicMetadata?: object
+  preferences?: object
+}
