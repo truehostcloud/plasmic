@@ -70,8 +70,8 @@ export interface PaymentMethod {
   type: string
   name: string
   description: string
-  publicMetadata: object
-  preferences: object
+  publicMetadata?: object
+  preferences?: object
 }
 
 export interface CheckoutBody {
