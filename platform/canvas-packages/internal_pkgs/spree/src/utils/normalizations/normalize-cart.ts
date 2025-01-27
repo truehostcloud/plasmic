@@ -1,5 +1,11 @@
 import type { ProductVariant } from '../../types/cart'
-import { Cart, LineItem, SelectedOption } from '../../types/cart'
+import {
+  Cart,
+  LineItem,
+  SelectedOption,
+  Payment,
+  Shipment,
+} from '../../types/cart'
 import MissingLineItemVariantError from '../../errors/MissingLineItemVariantError'
 import { requireConfigValue } from '../../isomorphic-config'
 import type { OrderAttr } from '@spree/storefront-api-v2-sdk/types/interfaces/Order'
@@ -18,6 +24,7 @@ import type {
   ShipmentAttr,
   PaymentAttr,
 } from '../../types'
+import { AddressFields } from '../../commerce/types/customer/address'
 
 const placeholderImage = requireConfigValue('lineItemPlaceholderImageUrl') as
   | string
@@ -172,6 +179,65 @@ const normalizeLineItem = (
   }
 }
 
+const normalizeAddress = (
+  address: AddressAttr,
+  type: string
+): AddressFields => {
+  return {
+    type,
+    firstName: address.attributes.firstname,
+    lastName: address.attributes.lastname,
+    company: address.attributes.company,
+    streetNumber: address.attributes.address1,
+    city: address.attributes.city,
+    state: address.attributes.state_name,
+    country: address.attributes.country_id,
+    zipCode: address.attributes.zipcode,
+    phone: address.attributes.phone,
+  }
+}
+
+const normalizePayment = (payment: PaymentAttr): Payment => {
+  return {
+    amount: parseFloat(payment.attributes.amount),
+    sourceType: payment.attributes.source_type,
+    state: payment.attributes.state,
+    responseCode: payment.attributes.response_code,
+    avsResponse: payment.attributes.avs_response,
+    createdAt: payment.attributes.created_at,
+    updatedAt: payment.attributes.updated_at,
+    number: payment.attributes.number,
+    cvvResponseCode: payment.attributes.cvv_response_code,
+    cvvResponseMessage: payment.attributes.cvv_response_message,
+    displayAmount: payment.attributes.display_amount,
+  }
+}
+
+const normalizeShipment = (shipment: ShipmentAttr): Shipment => {
+  return {
+    tracking: shipment.attributes.tracking,
+    number: shipment.attributes.number,
+    cost: shipment.attributes.cost,
+    shippedAt: shipment.attributes.shipped_at,
+    state: shipment.attributes.state,
+    createdAt: shipment.attributes.created_at,
+    updatedAt: shipment.attributes.updated_at,
+    adjustmentTotal: shipment.attributes.adjustment_total,
+    additionalTaxTotal: shipment.attributes.additional_tax_total,
+    promoTotal: shipment.attributes.promo_total,
+    includedTaxTotal: shipment.attributes.included_tax_total,
+    preTaxAmount: shipment.attributes.pre_tax_amount,
+    taxableAdjustmentTotal: shipment.attributes.taxable_adjustment_total,
+    nonTaxableAdjustmentTotal: shipment.attributes.non_taxable_adjustment_total,
+    displayDiscountedCost: shipment.attributes.display_discounted_cost,
+    displayItemCost: shipment.attributes.display_item_cost,
+    displayAmount: shipment.attributes.display_amount,
+    displayFinalPrice: shipment.attributes.display_final_price,
+    displayCost: shipment.attributes.display_cost,
+    trackingUrl: shipment.attributes.tracking_url,
+  }
+}
+
 const normalizeCart = (
   spreeSuccessResponse: SpreeSdkResponse,
   spreeCart: OrderAttr
@@ -187,32 +253,42 @@ const normalizeCart = (
   const relationships = spreeCart.relationships
 
   const billingAddress = relationships.billing_address?.data
-    ? jsonApi.findSingleRelationshipDocument<AddressAttr>(
-        spreeSuccessResponse,
-        spreeCart,
-        'billing_address'
+    ? normalizeAddress(
+        jsonApi.findSingleRelationshipDocument<AddressAttr>(
+          spreeSuccessResponse,
+          spreeCart,
+          'billing_address'
+        ),
+        'billing'
       )
     : null
 
   const shippingAddress = relationships.shipping_address?.data
-    ? jsonApi.findSingleRelationshipDocument<AddressAttr>(
-        spreeSuccessResponse,
-        spreeCart,
-        'shipping_address'
+    ? normalizeAddress(
+        jsonApi.findSingleRelationshipDocument<AddressAttr>(
+          spreeSuccessResponse,
+          spreeCart,
+          'shipping_address'
+        ),
+        'shipping'
       )
     : null
 
-  const payments = jsonApi.findRelationshipDocuments<PaymentAttr>(
-    spreeSuccessResponse,
-    spreeCart,
-    'payments'
-  )
+  const payments = jsonApi
+    .findRelationshipDocuments<PaymentAttr>(
+      spreeSuccessResponse,
+      spreeCart,
+      'payments'
+    )
+    .map((payment) => normalizePayment(payment))
 
-  const shipments = jsonApi.findRelationshipDocuments<ShipmentAttr>(
-    spreeSuccessResponse,
-    spreeCart,
-    'shipments'
-  )
+  const shipments = jsonApi
+    .findRelationshipDocuments<ShipmentAttr>(
+      spreeSuccessResponse,
+      spreeCart,
+      'shipments'
+    )
+    .map((shipment) => normalizeShipment(shipment))
 
   return {
     id: spreeCart.id,

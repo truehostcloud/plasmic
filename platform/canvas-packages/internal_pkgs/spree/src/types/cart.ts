@@ -112,38 +112,38 @@ export interface SelectedOption {
 }
 
 export interface Shipment {
-  tracking: string
-  number: string
-  cost: string
-  shippedAt: any
-  state: string
-  createdAt: string
-  updatedAt: string
-  adjustmentTotal: string
-  additionalTaxTotal: string
-  promoTotal: string
-  includedTaxTotal: string
-  preTaxAmount: string
-  taxableAdjustmentTotal: string
-  nonTaxableAdjustmentTotal: string
-  displayDiscountedCost: string
-  displayItemCost: string
-  displayAmount: string
-  displayFinalPrice: string
-  displayCost: string
-  trackingUrl: any
+  tracking?: string
+  number?: string
+  cost?: string
+  shippedAt?: any
+  state?: string
+  createdAt?: string
+  updatedAt?: string
+  adjustmentTotal?: string
+  additionalTaxTotal?: string
+  promoTotal?: string
+  includedTaxTotal?: string
+  preTaxAmount?: string
+  taxableAdjustmentTotal?: string
+  nonTaxableAdjustmentTotal?: string
+  displayDiscountedCost?: string
+  displayItemCost?: string
+  displayAmount?: string
+  displayFinalPrice?: string
+  displayCost?: string
+  trackingUrl?: any
 }
 
 export interface Payment {
-  amount: string
-  sourceType: string
-  state: string
-  responseCode: string
-  avsResponse: string
-  createdAt: string
-  updatedAt: string
-  number: string
-  cvvResponseCode: string
-  cvvResponseMessage: string
-  displayAmount: string
+  amount?: number
+  sourceType?: string
+  state?: string
+  responseCode?: string
+  avsResponse?: string
+  createdAt?: string
+  updatedAt?: string
+  number?: string
+  cvvResponseCode?: string
+  cvvResponseMessage?: string
+  displayAmount?: string
 }

@@ -158,67 +158,73 @@ export interface CommerceAPIFetchOptions<Variables> {
 }
 
 export interface AddressAttr extends JsonApiDocument {
-  country_id: string
-  state_id: string
-  state_name: string
-  address1: string
-  address2: string
-  city: string
-  zipcode: string
-  phone: string
-  alternative_phone: string
-  firstname: string
-  lastname: string
-  label: string
-  company: string
-  user_id: string
-  public_metadata?: {
-    [key: string]: string
-  }
-  private_metadata?: {
-    [key: string]: string
+  attributes: {
+    country_id: string
+    state_id: string
+    state_name: string
+    address1: string
+    address2: string
+    city: string
+    zipcode: string
+    phone: string
+    alternative_phone: string
+    firstname: string
+    lastname: string
+    label: string
+    company: string
+    user_id: string
+    public_metadata?: {
+      [key: string]: string
+    }
+    private_metadata?: {
+      [key: string]: string
+    }
   }
 }
 
 export interface ShipmentAttr extends JsonApiDocument {
-  tracking: string
-  number: string
-  cost: string
-  shipped_at: any
-  state: string
-  created_at: string
-  updated_at: string
-  adjustment_total: string
-  additional_tax_total: string
-  promo_total: string
-  included_tax_total: string
-  pre_tax_amount: string
-  taxable_adjustment_total: string
-  non_taxable_adjustment_total: string
-  display_discounted_cost: string
-  display_item_cost: string
-  display_amount: string
-  display_final_price: string
-  display_cost: string
-  tracking_url: any
-  public_metadata?: {
-    [key: string]: string
-  }
-  private_metadata?: {
-    [key: string]: string
+  attributes: {
+    tracking: string
+    number: string
+    cost: string
+    shipped_at: any
+    state: string
+    created_at: string
+    updated_at: string
+    adjustment_total: string
+    additional_tax_total: string
+    promo_total: string
+    included_tax_total: string
+    pre_tax_amount: string
+    taxable_adjustment_total: string
+    non_taxable_adjustment_total: string
+    display_discounted_cost: string
+    display_item_cost: string
+    display_amount: string
+    display_final_price: string
+    display_cost: string
+    tracking_url: any
+    public_metadata?: {
+      [key: string]: string
+    }
+    private_metadata?: {
+      [key: string]: string
+    }
   }
 }
 
 export interface PaymentAttr extends JsonApiDocument {
-  amount: string
-  source_type: string
-  state: string
-  response_code: string
-  avs_response: string
-  created_at: string
-  updated_at: string
-  number: string
-  cvv_response_code: string
-  cvv_response_message: string
-  display_amount: string
+  attributes: {
+    amount: string
+    source_type: string
+    state: string
+    response_code: string
+    avs_response: string
+    created_at: string
+    updated_at: string
+    number: string
+    cvv_response_code: string
+    cvv_response_message: string
+    display_amount: string
+  }
 }

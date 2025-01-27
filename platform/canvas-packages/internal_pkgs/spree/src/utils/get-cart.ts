@@ -43,6 +43,7 @@ const getCart = async (
                 'billing_address',
                 'shipping_address',
                 'payments',
+                'shipments',
               ].join(','),
               image_transformation: {
                 quality: imagesQuality,
