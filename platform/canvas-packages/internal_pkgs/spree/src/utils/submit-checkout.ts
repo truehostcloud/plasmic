@@ -11,7 +11,6 @@ import createEmptyCart from './create-empty-cart'
 import isLoggedIn from './tokens/is-logged-in'
 import { setCartToken } from './tokens/cart-token'
 import { IPayment } from '@spree/storefront-api-v2-sdk/types/interfaces/attributes/Payment'
-import { OrderUpdate } from '@spree/storefront-api-v2-sdk/types/interfaces/Checkout'
 import normalizeCart from './normalizations/normalize-cart'
 import type { AddressFields } from '../commerce/types/customer/address'
 import { Checkout, CheckoutBody } from '../commerce/types/checkout'
@@ -40,12 +39,14 @@ const submitCheckout = async (
 
   const {
     email,
-    special_instructions,
-    billing_address,
-    shipping_address,
+    specialInstructions,
+    billingAddress,
+    shippingAddress,
     payments,
     shipments,
-    onSuccessAction,
+    shippingMethodId,
+    paymentMethodId,
+    action,
   } = input
 
   if (!email) {
@@ -84,14 +85,16 @@ const submitCheckout = async (
       'line_items.variant.product.option_types',
     ].join(',')
 
-    const orderUpdateParameters: OrderUpdate = {
+    const orderUpdateParameters = {
       order: {
         email,
-        special_instructions,
-        bill_address_attributes: buildAddress(billing_address),
-        ship_address_attributes: buildAddress(shipping_address),
+        special_instructions: specialInstructions,
+        bill_address_attributes: buildAddress(billingAddress),
+        ship_address_attributes: buildAddress(shippingAddress),
         payments_attributes,
         shipments_attributes,
+        shipping_method_id: shippingMethodId,
+        payment_method_id: paymentMethodId,
       },
       include: includeParams,
     }
@@ -100,25 +103,11 @@ const submitCheckout = async (
       GraphQLFetcherResult<IOrder>
     >({
       variables: {
-        methodPath: 'checkout.orderUpdate',
+        methodPath: `checkout.${action}`,
         arguments: [token, orderUpdateParameters],
       },
     })
-
-    if (onSuccessAction) {
-      const { data: checkoutActionResponse } = await fetch<
-        GraphQLFetcherResult<IOrder>
-      >({
-        variables: {
-          methodPath: `checkout.${onSuccessAction}`,
-          arguments: [token],
-          include: includeParams,
-        },
-      })
-      spreeCartResponse = checkoutActionResponse
-    } else {
-      spreeCartResponse = spreeSuccessResponse
-    }
+    spreeCartResponse = spreeSuccessResponse
   } catch (updateItemError) {
     if (
       updateItemError instanceof FetcherError &&

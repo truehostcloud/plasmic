@@ -40,7 +40,13 @@ interface CheckoutActions extends GlobalActionDict {
     shipments: Shipment[],
     shippingMethodId: string,
     paymentMethodId: string,
-    onSuccessAction: 'orderNext' | 'advance' | 'complete' | null
+    action:
+      | 'orderUpdate'
+      | 'orderNext'
+      | 'advance'
+      | 'complete'
+      | 'selectShippingMethod'
+      | 'addPayment'
   ) => void
 }
 
@@ -61,7 +67,13 @@ export function CheckoutActionsProvider(
         shipments: Shipment[],
         shippingMethodId: string,
         paymentMethodId: string,
-        onSuccessAction: 'orderNext' | 'advance' | 'complete' | null
+        action:
+          | 'orderUpdate'
+          | 'orderNext'
+          | 'advance'
+          | 'complete'
+          | 'selectShippingMethod'
+          | 'addPayment'
       ) {
         submitCheckout({
           email,
@@ -72,7 +84,7 @@ export function CheckoutActionsProvider(
           shipments,
           shippingMethodId,
           paymentMethodId,
-          onSuccessAction,
+          action,
         })
       },
     }),
@@ -231,20 +243,6 @@ export const globalActionsRegistrations: Record<
             { value: 'complete', label: 'Complete' },
             { value: 'selectShippingMethod', label: 'Select shipping method' },
             { value: 'addPayment', label: 'Add payment' },
-          ],
-        },
-      },
-      {
-        name: 'onSuccessAction',
-        displayName: 'On success action',
-        type: {
-          type: 'choice',
-          multiSelect: false,
-          options: [
-            { value: 'orderNext', label: 'Next' },
-            { value: 'advance', label: 'Advance' },
-            { value: 'complete', label: 'Complete' },
-            { value: 'null', label: 'None' },
           ],
         },
       },
