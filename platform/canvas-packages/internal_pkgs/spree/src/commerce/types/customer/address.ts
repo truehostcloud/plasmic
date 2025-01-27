@@ -18,43 +18,43 @@ export interface AddressFields {
   /**
    * The customer's first name.
    */
-  firstName: string
+  firstName?: string
   /**
    * The customer's last name.
    */
-  lastName: string
+  lastName?: string
   /**
    * Company name.
    */
-  company: string
+  company?: string
   /**
    * The customer's billing address street number.
    */
-  streetNumber: string
+  streetNumber?: string
   /**
    * The customer's billing address apartment number.
    */
-  apartments: string
+  apartments?: string
   /**
    * The customer's billing address zip code.
    */
-  zipCode: string
+  zipCode?: string
   /**
    * The customer's billing address city.
    */
-  city: string
+  city?: string
   /**
    * The customer's billing address state.
    */
-  state: string
+  state?: string
   /**
    * The customer's billing address country.
    */
-  country: string
+  country?: string
   /**
    * The customer's phone number.
    */
-  phone: string
+  phone?: string
 }
 
 /**
