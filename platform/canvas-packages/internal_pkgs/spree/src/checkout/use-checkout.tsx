@@ -4,6 +4,8 @@ import getCart from '../utils/get-cart'
 import normalizeCart from '../utils/normalizations/normalize-cart'
 import { useMemo } from 'react'
 import { GetCheckoutHook } from '../commerce/types/checkout'
+import getShippingRates from '../utils/get-shipping-rates'
+import getPaymentMethods from '../utils/get-payment-methods'
 
 export default useCheckout as UseCheckout<typeof handler>
 
@@ -24,6 +26,12 @@ export const handler: SWRHook<any> = {
     )
     const spreeCartResponse = await getCart(fetch)
     const cart = normalizeCart(spreeCartResponse, spreeCartResponse.data)
+    let shippingRates = null
+    let paymentMethods = null
+    if (cart.shippingAddress) {
+      shippingRates = await getShippingRates(fetch)
+      paymentMethods = await getPaymentMethods(fetch)
+    }
     return {
       hasPayment: cart.payments.length > 0,
       hasShipping: cart.shipments.length > 0,
@@ -34,6 +42,8 @@ export const handler: SWRHook<any> = {
       billingAddress: cart.billingAddress,
       shippingAddress: cart.shippingAddress,
       shipments: cart.shipments,
+      shippingRates,
+      paymentMethods,
     }
   },
   useHook: ({ useData }) => {
