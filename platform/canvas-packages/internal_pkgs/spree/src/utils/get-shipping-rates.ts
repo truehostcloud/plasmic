@@ -4,13 +4,13 @@ import type { IToken } from '@spree/storefront-api-v2-sdk/types/interfaces/Token
 import ensureIToken from './tokens/ensure-itoken'
 import { IShippingMethods } from '@spree/storefront-api-v2-sdk/types/interfaces/ShippingMethod'
 import { jsonApi } from '@spree/storefront-api-v2-sdk'
-import { OrderShipment, ShippingRate } from '../commerce/types/checkout'
+import { ShippingRate } from '../commerce/types/checkout'
 
 const getShippingRates = async (
   fetch: HookFetcherContext<{
     data: any
   }>['fetch']
-): Promise<OrderShipment[]> => {
+): Promise<ShippingRate[]> => {
   const token: IToken | undefined = ensureIToken()
 
   if (!token) {
@@ -30,9 +30,12 @@ const getShippingRates = async (
       },
     })
 
-    return spreeSuccessResponse.data.map((shippingMethod): OrderShipment => {
+    const ShippingRates = []
+
+    spreeSuccessResponse.data.forEach((shippingMethod) => {
       const relationships = shippingMethod.relationships
-      const shippingRates: ShippingRate[] = relationships.shipping_rates?.data
+      const shipmentShippingRates: ShippingRate[] = relationships.shipping_rates
+        ?.data
         ? jsonApi
             .findRelationshipDocuments<ShippingRateAttr>(
               spreeSuccessResponse,
@@ -55,18 +58,9 @@ const getShippingRates = async (
               }
             })
         : null
-      return {
-        id: shippingMethod.id,
-        number: shippingMethod.attributes.number,
-        finalPrice: shippingMethod.attributes.final_price,
-        displayFinalPrice: shippingMethod.attributes.display_final_price,
-        state: shippingMethod.attributes.state,
-        shippedAt: shippingMethod.attributes.shipped_at,
-        trackingUrl: shippingMethod.attributes.tracking_url,
-        free: shippingMethod.attributes.free,
-        shippingRates,
-      }
+      ShippingRates.push(shipmentShippingRates)
     })
+    return ShippingRates
   }
 }
 
