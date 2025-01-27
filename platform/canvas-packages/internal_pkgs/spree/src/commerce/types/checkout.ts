@@ -29,7 +29,7 @@ export interface Checkout {
   payments?: PaymentAttr[]
   shipments?: ShipmentAttr[]
   paymentMethods?: PaymentMethod[]
-  shippingRates?: OrderShipment[]
+  shippingRates?: ShippingRate[]
 }
 
 export interface Payment {
