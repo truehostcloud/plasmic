@@ -72,9 +72,15 @@ export interface CheckoutBody {
    */
   payments?: Payment[]
   shipments?: Shipment[]
-  onSuccessAction?: 'orderNext' | 'advance' | 'complete' | null
   shippingMethodId?: string
   paymentMethodId?: string
+  action:
+    | 'orderUpdate'
+    | 'orderNext'
+    | 'advance'
+    | 'complete'
+    | 'selectShippingMethod'
+    | 'addPayment'
 }
 
 export type CheckoutTypes = {

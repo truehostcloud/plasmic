@@ -45,7 +45,7 @@ export const handler: MutationHook<SubmitCheckoutHook> = {
             shipments,
             shippingMethodId,
             paymentMethodId,
-            onSuccessAction,
+            action,
           } = input
 
           if (
@@ -75,7 +75,7 @@ export const handler: MutationHook<SubmitCheckoutHook> = {
               shipments,
               shippingMethodId,
               paymentMethodId,
-              onSuccessAction,
+              action,
             },
           })
 
