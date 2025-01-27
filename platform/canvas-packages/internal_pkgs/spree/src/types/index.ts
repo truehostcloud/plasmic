@@ -228,3 +228,18 @@ export interface PaymentAttr extends JsonApiDocument {
     display_amount: string
   }
 }
+
+export interface ShippingRateAttr extends JsonApiDocument {
+  attributes: {
+    name: string
+    selected: boolean
+    final_price: string
+    display_final_price: string
+    cost: string
+    display_cost: string
+    tax_amount: string
+    display_tax_amount: string
+    shipping_method_id: string
+    free: boolean
+  }
+}
