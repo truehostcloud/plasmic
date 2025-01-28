@@ -190,12 +190,12 @@ export const globalActionsRegistrations: Record<
         type: 'string',
       },
       {
-        name: 'special_instructions',
+        name: 'specialInstructions',
         displayName: 'Special instructions',
         type: 'string',
       },
       {
-        name: 'billing_address',
+        name: 'billingAddress',
         displayName: 'Billing address',
         type: {
           type: 'object',
@@ -203,7 +203,7 @@ export const globalActionsRegistrations: Record<
         },
       },
       {
-        name: 'shipping_address',
+        name: 'shippingAddress',
         displayName: 'Shipping address',
         type: {
           type: 'object',
