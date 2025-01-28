@@ -122,58 +122,17 @@ export function registerCheckoutProvider(
   )
 }
 
-const addressFields: Record<string, { displayName: string; type: any }> = {
-  type: {
-    displayName: 'Type',
-    type: {
-      type: 'choice',
-      multiSelect: false,
-      options: [
-        { value: 'billing', label: 'Billing' },
-        { value: 'shipping', label: 'Shipping' },
-      ],
-    },
-  },
-  firstName: {
-    displayName: 'First name',
-    type: 'string',
-  },
-  lastName: {
-    displayName: 'Last name',
-    type: 'string',
-  },
-  company: {
-    displayName: 'Company',
-    type: 'string',
-  },
-  streetNumber: {
-    displayName: 'Street number',
-    type: 'string',
-  },
-  apartments: {
-    displayName: 'Apartments',
-    type: 'string',
-  },
-  zipCode: {
-    displayName: 'Zip code',
-    type: 'string',
-  },
-  city: {
-    displayName: 'City',
-    type: 'string',
-  },
-  state: {
-    displayName: 'State',
-    type: 'string',
-  },
-  country: {
-    displayName: 'Country',
-    type: 'string',
-  },
-  phone: {
-    displayName: 'Phone',
-    type: 'string',
-  },
+const defaultAddressValueHint = {
+  firstName: 'John',
+  lastName: 'Doe',
+  company: 'ACME Inc.',
+  streetNumber: '123',
+  apartments: 'Apt 1',
+  city: 'San Francisco',
+  zipCode: '94105',
+  phone: '1234567890',
+  state: 'CA',
+  country: 'US',
 }
 
 export const globalActionsRegistrations: Record<
@@ -199,7 +158,7 @@ export const globalActionsRegistrations: Record<
         displayName: 'Billing address',
         type: {
           type: 'object',
-          fields: addressFields,
+          defaultValueHint: defaultAddressValueHint,
         },
       },
       {
@@ -207,18 +166,33 @@ export const globalActionsRegistrations: Record<
         displayName: 'Shipping address',
         type: {
           type: 'object',
-          fields: addressFields,
+          defaultValueHint: defaultAddressValueHint,
         },
       },
       {
         name: 'payments',
         displayName: 'Payments',
-        type: 'object',
+        type: {
+          type: 'array',
+          defaultValueHint: [
+            {
+              paymentMethodId: 1,
+            },
+          ],
+        },
       },
       {
         name: 'shipments',
         displayName: 'Shipments',
-        type: 'object',
+        type: {
+          type: 'array',
+          defaultValueHint: [
+            {
+              id: 1,
+              selectedShippingRateId: 1,
+            },
+          ],
+        },
       },
       {
         name: 'shippingMethodId',
