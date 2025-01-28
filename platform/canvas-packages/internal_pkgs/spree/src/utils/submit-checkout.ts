@@ -93,9 +93,9 @@ const submitCheckout = async (
         ship_address_attributes: buildAddress(shippingAddress),
         payments_attributes,
         shipments_attributes,
-        shipping_method_id: shippingMethodId,
-        payment_method_id: paymentMethodId,
       },
+      shipping_method_id: shippingMethodId,
+      payment_method_id: paymentMethodId,
       include: includeParams,
     }
 
