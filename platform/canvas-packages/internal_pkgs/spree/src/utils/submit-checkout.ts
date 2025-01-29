@@ -67,13 +67,19 @@ const submitCheckout = async (
   }
 
   try {
-    const payments_attributes = payments?.map((payment) => ({
-      payment_method_id: payment.paymentMethodId,
-    })) as IPayment[]
-    const shipments_attributes = shipments?.map((shipment) => ({
-      id: shipment.id,
-      selected_shipping_rate_id: shipment.selectedShippingRateId,
-    }))
+    const payments_attributes =
+      payments.length > 0
+        ? (payments?.map((payment) => ({
+            payment_method_id: payment.paymentMethodId,
+          })) as IPayment[])
+        : undefined
+    const shipments_attributes =
+      shipments.length > 0
+        ? shipments?.map((shipment) => ({
+            id: shipment.id,
+            selected_shipping_rate_id: shipment.selectedShippingRateId,
+          }))
+        : undefined
 
     const includeParams = [
       'line_items',

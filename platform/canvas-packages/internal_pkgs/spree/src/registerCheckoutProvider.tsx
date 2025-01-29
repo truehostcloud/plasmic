@@ -122,18 +122,8 @@ export function registerCheckoutProvider(
   )
 }
 
-const defaultAddressValueHint = {
-  firstName: 'John',
-  lastName: 'Doe',
-  company: 'ACME Inc.',
-  streetNumber: '123',
-  apartments: 'Apt 1',
-  city: 'San Francisco',
-  zipCode: '94105',
-  phone: '1234567890',
-  state: 'CA',
-  country: 'US',
-}
+const addressFields =
+  'firstName, lastName, company, streetNumber, apartments, city, zipCode, phone, state, and country (country ISO code)'
 
 export const globalActionsRegistrations: Record<
   string,
@@ -158,7 +148,7 @@ export const globalActionsRegistrations: Record<
         displayName: 'Billing address',
         type: {
           type: 'object',
-          defaultValueHint: defaultAddressValueHint,
+          helpText: `The billing address object. It can have ${addressFields} fields.`,
         },
       },
       {
@@ -166,7 +156,7 @@ export const globalActionsRegistrations: Record<
         displayName: 'Shipping address',
         type: {
           type: 'object',
-          defaultValueHint: defaultAddressValueHint,
+          helpText: `The shipping address object. It can have ${addressFields} fields.`,
         },
       },
       {
@@ -174,11 +164,8 @@ export const globalActionsRegistrations: Record<
         displayName: 'Payments',
         type: {
           type: 'array',
-          defaultValueHint: [
-            {
-              paymentMethodId: 1,
-            },
-          ],
+          helpText:
+            "A list of payment objects. Each object should have a 'paymentMethodId' field.",
         },
       },
       {
@@ -186,12 +173,8 @@ export const globalActionsRegistrations: Record<
         displayName: 'Shipments',
         type: {
           type: 'array',
-          defaultValueHint: [
-            {
-              id: 1,
-              selectedShippingRateId: 1,
-            },
-          ],
+          helpText:
+            'A list of shipment objects. Each object should have id and selectedShippingRateId fields.',
         },
       },
       {
