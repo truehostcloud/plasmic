@@ -201,6 +201,8 @@ export const globalActionsRegistrations: Record<
             { value: 'selectShippingMethod', label: 'Select shipping method' },
             { value: 'addPayment', label: 'Add payment' },
           ],
+          defaultValue: 'orderUpdate',
+          required: true,
         },
       },
     ],

@@ -14,6 +14,7 @@ import { IPayment } from '@spree/storefront-api-v2-sdk/types/interfaces/attribut
 import normalizeCart from './normalizations/normalize-cart'
 import type { AddressFields } from '../commerce/types/customer/address'
 import { Checkout, CheckoutBody } from '../commerce/types/checkout'
+import normalizeCheckout from './normalizations/normalize-checkout'
 
 function buildAddress(address: AddressFields) {
   return {
@@ -68,13 +69,13 @@ const submitCheckout = async (
 
   try {
     const payments_attributes =
-      payments.length > 0
+      payments?.length > 0
         ? (payments?.map((payment) => ({
             payment_method_id: payment.paymentMethodId,
           })) as IPayment[])
         : undefined
     const shipments_attributes =
-      shipments.length > 0
+      shipments?.length > 0
         ? shipments?.map((shipment) => ({
             id: shipment.id,
             selected_shipping_rate_id: shipment.selectedShippingRateId,
@@ -141,14 +142,7 @@ const submitCheckout = async (
     throw updateItemError
   }
   const cart = normalizeCart(spreeCartResponse, spreeCartResponse.data)
-  return {
-    hasPayment: false,
-    hasShipping: false,
-    addressId: null,
-    payments: [],
-    cardId: null,
-    lineItems: cart.lineItems,
-  }
+  return normalizeCheckout(cart, fetch)
 }
 
 export default submitCheckout

@@ -6,6 +6,7 @@ import { useMemo } from 'react'
 import { GetCheckoutHook } from '../commerce/types/checkout'
 import getShippingRates from '../utils/get-shipping-rates'
 import getPaymentMethods from '../utils/get-payment-methods'
+import normalizeCheckout from '../utils/normalizations/normalize-checkout'
 
 export default useCheckout as UseCheckout<typeof handler>
 
@@ -26,25 +27,7 @@ export const handler: SWRHook<any> = {
     )
     const spreeCartResponse = await getCart(fetch)
     const cart = normalizeCart(spreeCartResponse, spreeCartResponse.data)
-    let shippingRates = null
-    let paymentMethods = null
-    if (cart.shippingAddress) {
-      shippingRates = await getShippingRates(fetch)
-      paymentMethods = await getPaymentMethods(fetch)
-    }
-    return {
-      hasPayment: cart.payments.length > 0,
-      hasShipping: cart.shipments.length > 0,
-      addressId: null,
-      payments: cart.payments,
-      cardId: null,
-      lineItems: cart.lineItems,
-      billingAddress: cart.billingAddress,
-      shippingAddress: cart.shippingAddress,
-      shipments: cart.shipments,
-      shippingRates,
-      paymentMethods,
-    }
+    return normalizeCheckout(cart, fetch)
   },
   useHook: ({ useData }) => {
     const useWrappedHook: ReturnType<SWRHook<GetCheckoutHook>['useHook']> = (
