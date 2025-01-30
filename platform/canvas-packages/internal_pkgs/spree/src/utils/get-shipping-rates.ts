@@ -53,7 +53,7 @@ const getShippingRates = async (
                 displayCost: shippingRate.attributes.display_cost,
                 taxAmount: shippingRate.attributes.tax_amount,
                 displayTaxAmount: shippingRate.attributes.display_tax_amount,
-                shippingMethodId: shippingMethod.id,
+                shippingMethodId: shippingRate.attributes.shipping_method_id,
                 free: shippingRate.attributes.free,
               }
             })
