@@ -28,6 +28,7 @@ const normalizeCheckout = async (
     shipments: cart.shipments,
     shippingRates,
     paymentMethods,
+    cart: cart,
   }
 }
 

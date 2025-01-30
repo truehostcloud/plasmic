@@ -20,6 +20,30 @@ export type Cart = Core.Cart & {
   billingAddress?: AddressFields
   payments?: Payment[]
   shipments?: Shipment[]
+  number?: string
+  itemTotal?: string
+  total?: string
+  shipTotal?: string
+  adjustmentTotal?: string
+  includedTaxTotal?: string
+  additionalTaxTotal?: string
+  displayAdditionalTaxTotal?: string
+  displayIncludedTaxTotal?: string
+  taxTotal?: string
+  email?: string
+  displayItemTotal?: string
+  displayShipTotal?: string
+  displayAdjustmentTotal?: string
+  displayTaxTotal?: string
+  promoTotal?: string
+  displayPromoTotal?: string
+  itemCount?: number
+  specialInstructions?: string
+  displayTotal?: string
+  preTaxItemAmount?: string
+  displayPreTaxItemAmount?: string
+  preTaxTotal?: string
+  displayPreTaxTotal?: string
 }
 
 export type CartTypes = Core.CartTypes

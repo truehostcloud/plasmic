@@ -1,7 +1,8 @@
 import type { AddressFields } from './customer/address'
 import type { CardFields } from './customer/card'
 import type { LineItem } from './cart'
-import type {
+import {
+  Cart,
   Payment as CartPayment,
   Shipment as CartShipment,
 } from '../../types/cart'
@@ -33,6 +34,7 @@ export interface Checkout {
   shipments?: CartShipment[]
   paymentMethods?: PaymentMethod[]
   shippingRates?: ShippingRate[]
+  cart: Cart
 }
 
 export interface Payment {

@@ -306,6 +306,26 @@ const normalizeCart = (
     billingAddress,
     payments,
     shipments,
+    number: spreeCart.attributes.number,
+    itemTotal: spreeCart.attributes.item_total,
+    total: spreeCart.attributes.total,
+    shipTotal: spreeCart.attributes.ship_total,
+    adjustmentTotal: spreeCart.attributes.adjustment_total,
+    includedTaxTotal: spreeCart.attributes.included_tax_total,
+    additionalTaxTotal: spreeCart.attributes.additional_tax_total,
+    displayAdditionalTaxTotal:
+      spreeCart.attributes.display_additional_tax_total,
+    displayIncludedTaxTotal: spreeCart.attributes.display_included_tax_total,
+    taxTotal: spreeCart.attributes.tax_total,
+    displayItemTotal: spreeCart.attributes.display_item_total,
+    displayShipTotal: spreeCart.attributes.display_ship_total,
+    displayAdjustmentTotal: spreeCart.attributes.display_adjustment_total,
+    displayTaxTotal: spreeCart.attributes.display_tax_total,
+    promoTotal: spreeCart.attributes.promo_total,
+    displayPromoTotal: spreeCart.attributes.display_promo_total,
+    itemCount: spreeCart.attributes.item_count,
+    specialInstructions: spreeCart.attributes.special_instructions,
+    displayTotal: spreeCart.attributes.display_total,
   }
 }
 
