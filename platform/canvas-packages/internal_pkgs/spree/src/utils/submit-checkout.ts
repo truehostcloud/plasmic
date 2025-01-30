@@ -141,6 +141,10 @@ const submitCheckout = async (
 
     throw updateItemError
   }
+  if (action === 'complete') {
+    setCartToken(null)
+    return null
+  }
   const cart = normalizeCart(spreeCartResponse, spreeCartResponse.data)
   return normalizeCheckout(cart, fetch)
 }

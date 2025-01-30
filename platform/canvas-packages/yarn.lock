@@ -7314,10 +7314,10 @@ commander@^7.2.0:
   resolved "https://registry.yarnpkg.com/commander/-/commander-7.2.0.tgz#a36cb57d0b501ce108e4d20559a150a391d97ab7"
   integrity sha512-QrWXB+ZQSVPmIWIhtEO9H+gwHaMGYiF5ChvoJ+K9ZGHG/sVsa6yiesAD1GC/x46sET00Xlwo1u49RVVVzvcSkw==
 
-commerce-spree@^0.2.7:
-  version "0.2.7"
-  resolved "https://registry.yarnpkg.com/commerce-spree/-/commerce-spree-0.2.7.tgz#01d51b11452fd2d0e670d1b5ddc35135012418fa"
-  integrity sha512-z/5D9clBoeLmHYhfEB04wz6o+ph6eeBXc5U9uOB+3/GFWL7iGfRuJXkj0msV9gJCf8vs2E5SkBF5e0gozETrbQ==
+commerce-spree@^0.2.8:
+  version "0.2.8"
+  resolved "https://registry.yarnpkg.com/commerce-spree/-/commerce-spree-0.2.8.tgz#bb1fcfe3c1893c5f2789af0a52a830ccf940e140"
+  integrity sha512-hUkIEd+0Tuhb8et1hfZ7wDf9Se8+4Vvzs5N9JA3DcrJqU64l6v2O0gYuLcAku3V+0dEcd1fr9x0m5lA4FOrW6Q==
   dependencies:
     "@plasmicpkgs/commerce" "0.0.206"
     "@spree/storefront-api-v2-sdk" "^5.1.1"
