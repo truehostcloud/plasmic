@@ -6631,12 +6631,12 @@ combined-stream@^1.0.6, combined-stream@^1.0.8:
   dependencies:
     delayed-stream "~1.0.0"
 
-commerce-spree@^0.2.8:
-  version "0.2.8"
-  resolved "https://registry.yarnpkg.com/commerce-spree/-/commerce-spree-0.2.8.tgz#bb1fcfe3c1893c5f2789af0a52a830ccf940e140"
-  integrity sha512-hUkIEd+0Tuhb8et1hfZ7wDf9Se8+4Vvzs5N9JA3DcrJqU64l6v2O0gYuLcAku3V+0dEcd1fr9x0m5lA4FOrW6Q==
+commerce-spree@^0.2.10:
+  version "0.2.10"
+  resolved "https://registry.yarnpkg.com/commerce-spree/-/commerce-spree-0.2.10.tgz#ee13f94a21072c6661eb437beb7831e876cd65b3"
+  integrity sha512-X9s23lVrPFF6lA2AkJpXtaF8ZidhO2Cdk9/c+0f0YDaqF6VdwskfRGTqJ1hZxfm37mt3nyg9TrdjLD2MRa6gjg==
   dependencies:
-    "@plasmicpkgs/commerce" "0.0.206"
+    "@plasmicpkgs/commerce" "0.0.207"
     "@spree/storefront-api-v2-sdk" "^5.1.1"
     debounce "^1.2.1"
     js-cookie "^3.0.5"

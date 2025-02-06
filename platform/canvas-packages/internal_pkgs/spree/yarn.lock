@@ -1223,10 +1223,10 @@
   dependencies:
     swr "^1.0.0"
 
-"@plasmicpkgs/commerce@0.0.206":
-  version "0.0.206"
-  resolved "https://registry.yarnpkg.com/@plasmicpkgs/commerce/-/commerce-0.0.206.tgz#e872a85d79301cd1a7c88180a1ec2743a49b1e80"
-  integrity sha512-trQL4oJTa1dsAOWY5Af8YlWlgnBemkxm4/L5/9jSq8ibG5gPCRf90qQYbjDixqTfdsJNI92FHuJ3cHZYCKL4gA==
+"@plasmicpkgs/commerce@0.0.207":
+  version "0.0.207"
+  resolved "https://registry.yarnpkg.com/@plasmicpkgs/commerce/-/commerce-0.0.207.tgz#9484a262d81ed82c7b4d9808918467248e510ffa"
+  integrity sha512-7gr3SpxmGrTxaqxrQoi+ASqHn4Wy9wfjgaXTl42jHFw8bIk2hWb0XzaDu4wJIQ2CtrOtI09dt+rcEZB6YFOWAQ==
   dependencies:
     "@types/react" "^18.0.27"
     "@vercel/fetch" "^6.2.0"
@@ -5286,7 +5286,7 @@ ms@2.0.0:
 
 ms@^2.0.0, ms@^2.1.1, ms@^2.1.3:
   version "2.1.3"
-  resolved "https://registry.npmjs.org/ms/-/ms-2.1.3.tgz"
+  resolved "https://registry.yarnpkg.com/ms/-/ms-2.1.3.tgz#574c8138ce1d2b5861f0b44579dbadd60c6615b2"
   integrity sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==
 
 mute-stream@0.0.8:
