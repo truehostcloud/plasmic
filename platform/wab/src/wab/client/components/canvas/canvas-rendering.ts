@@ -414,20 +414,19 @@ export const createCanvasComponent = computedFn(
         viewCtx,
         (_comp) => createCanvasComponent(viewCtx, _comp)
       ) as React.ComponentType<CanvasComponentProps>) ?? CanvasComponent;
-    const CanvasComponentWrapper: typeof MaybePlumeComp = sub.React.forwardRef(
-      (props, ref) =>
-        sub.React.createElement<CanvasErrorBoundaryProps>(
-          mkCanvasErrorBoundary(sub.React, viewCtx),
-          {
-            ctx: props[renderingCtxProp] ?? makeEmptyRenderingCtx(viewCtx, ""),
-            nodeOrComponent: component,
-            children: sub.React.createElement(MaybePlumeComp, {
-              ...props,
-              ref,
-            }),
-          }
-        )
-    );
+    const CanvasComponentWrapper = sub.React.forwardRef((props, ref) =>
+      sub.React.createElement<CanvasErrorBoundaryProps>(
+        mkCanvasErrorBoundary(sub.React, viewCtx),
+        {
+          ctx: props[renderingCtxProp] ?? makeEmptyRenderingCtx(viewCtx, ""),
+          nodeOrComponent: component,
+          children: sub.React.createElement(MaybePlumeComp, {
+            ...props,
+            ref,
+          }),
+        }
+      )
+    ) as typeof MaybePlumeComp;
     Object.assign(CanvasComponentWrapper, {
       displayName: getExportedComponentName(component),
       ...(component.plumeInfo
@@ -556,7 +555,7 @@ function mkInitFuncExpr(
             (viewCtx.component !== exprCtx.component ||
               viewCtx.studioCtx.isInteractiveMode)
           ? getRawCode(state.param.defaultExpr, exprCtx)
-          : undefined ?? `$props["${getStateValuePropName(state)}"]`
+          : `$props["${getStateValuePropName(state)}"]`
       }`
     );
   } else if (!state.tplNode && state.param.previewExpr && isCurrentComponent) {

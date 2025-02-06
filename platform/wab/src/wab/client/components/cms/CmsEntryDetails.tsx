@@ -4,7 +4,9 @@ import {
   useCmsRow,
   useCmsTable,
   useMutateRow,
+  useMutateTableRows,
 } from "@/wab/client/components/cms/cms-contexts";
+import { CmsEntryCloneModal } from "@/wab/client/components/cms/CmsEntryCloneModal";
 import { CmsEntryHistory } from "@/wab/client/components/cms/CmsEntryHistory";
 import {
   ContentEntryFormContext,
@@ -13,7 +15,7 @@ import {
   renderMaybeLocalizedInput,
 } from "@/wab/client/components/cms/CmsInputs";
 import { isCmsTextLike } from "@/wab/client/components/cms/utils";
-import { useApi, useAppCtx } from "@/wab/client/contexts/AppContexts";
+import { useApi } from "@/wab/client/contexts/AppContexts";
 import {
   DefaultCmsEntryDetailsProps,
   PlasmicCmsEntryDetails,
@@ -42,27 +44,28 @@ import { useBeforeUnload, useInterval } from "react-use";
 
 export type CmsEntryDetailsProps = DefaultCmsEntryDetailsProps;
 
-export function getRowIdentifierText(
+function getRowIdentifierText(
   table: ApiCmsTable,
   row: ApiCmseRow,
   formIdentifier?: string
 ) {
   const identifier = formIdentifier ?? row.identifier;
-  if (identifier && identifier !== "") {
+  if (identifier) {
     return { identifier };
   }
+
   const firstTextField = table.schema.fields.find((field, _) =>
     [CmsMetaType.TEXT, CmsMetaType.LONG_TEXT].includes(field.type)
   )?.identifier;
-  let placeholder: string | undefined = undefined;
   if (firstTextField) {
-    placeholder = (row.draftData?.[""]?.[firstTextField] ||
+    const placeholder = (row.draftData?.[""]?.[firstTextField] ||
       row.data?.[""]?.[firstTextField]) as string | undefined;
+    if (placeholder) {
+      return { placeholder };
+    }
   }
-  if (!placeholder || placeholder === "") {
-    placeholder = "Untitled entry";
-  }
-  return { placeholder };
+
+  return {};
 }
 
 export function getRowIdentifierNode(
@@ -75,7 +78,9 @@ export function getRowIdentifierNode(
     row,
     formIdentifier
   );
-  return identifier ?? <div className="dimfg">{placeholder}</div>;
+  return (
+    identifier ?? <div className="dimfg">{placeholder || "Untitled entry"}</div>
+  );
 }
 
 function CmsEntryDetails_(
@@ -167,17 +172,19 @@ function CmsEntryDetailsForm_(
   const { database, table, row, ...rest } = props;
   const api = useApi();
 
-  const appCtx = useAppCtx();
   const [isSaving, setSaving] = React.useState(false);
   const [isPublishing, setPublishing] = React.useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = React.useState(false);
-  const [updateCounter, setUpdateCounter] = React.useState(0);
   const [hasUnpublishedChanges, setHasUnpublishedChanges] = React.useState(
     !!row?.draftData
   );
+  const [showDuplicateModal, setShowDuplicateModal] = React.useState(false);
+  const [isDuplicating, setDuplicating] = React.useState(false);
+
   const [revision, setRevision] = React.useState(row.revision);
   const [inConflict, setInConflict] = React.useState(false);
   const mutateRow_ = useMutateRow();
+  const mutateTableRows = useMutateTableRows();
 
   const mutateRow = async () => {
     const newRow = await mutateRow_(table.id, row.id);
@@ -295,7 +302,6 @@ function CmsEntryDetailsForm_(
         revision,
       });
       await mutateRow();
-      setUpdateCounter((counter) => counter + 1);
       setSaving(false);
       setHasUnsavedChanges(false);
     } catch (err) {
@@ -347,13 +353,20 @@ function CmsEntryDetailsForm_(
 
   useBeforeUnload(() => {
     return hasChanges();
-  }, "You have unsaved changes, are you sure ?");
+  }, "You have unsaved changes, are you sure?");
+
+  const { identifier: entryIdenfitier, placeholder: entryPlaceholder } =
+    getRowIdentifierText(table, row);
+  const entryDisplayName =
+    entryIdenfitier || entryPlaceholder
+      ? `"${entryIdenfitier || entryPlaceholder}" entry`
+      : "untitled entry";
 
   return (
     <>
       <Prompt
         when={hasUnsavedChanges}
-        message={"You have unsaved changes, are you sure ?"}
+        message={"You have unsaved changes, are you sure?"}
       />
       <Route
         path={UU.cmsEntryRevisions.pattern}
@@ -572,16 +585,22 @@ function CmsEntryDetailsForm_(
                             content: "Reverted.",
                           });
                         }}
-                        disabled={isSaving || isPublishing}
+                        disabled={isSaving}
                       >
                         <Tooltip title="Reverts draft data to previously-published data">
                           <span>Revert to published entry</span>
                         </Tooltip>
                       </Menu.Item>
                     )}
-                    <Menu.Divider />
                   </>
                 )}
+                <Menu.Item
+                  key="duplicate"
+                  onClick={() => setShowDuplicateModal(true)}
+                  disabled={isSaving || isPublishing}
+                >
+                  <span>Duplicate entry</span>
+                </Menu.Item>
                 <Menu.Item
                   key="delete"
                   onClick={async () => {
@@ -632,6 +651,43 @@ function CmsEntryDetailsForm_(
           }}
         />
       </Form>
+      <CmsEntryCloneModal
+        open={showDuplicateModal}
+        disabled={isDuplicating}
+        defaultIdentifier={
+          row.identifier ? `Duplicate of ${row.identifier}` : ""
+        }
+        entryDisplayName={entryDisplayName}
+        placeholderIdentifier={entryPlaceholder}
+        onClone={async (newIdentifier) => {
+          await message.loading({
+            key: "duplicate-message",
+            content: `Duplicating ${entryDisplayName}...`,
+          });
+          try {
+            setDuplicating(true);
+            const clonedRow = await api.cloneCmsRow(row.id, {
+              identifier: newIdentifier,
+            });
+            await mutateTableRows(table.id);
+            setShowDuplicateModal(false);
+            history.push(
+              UU.cmsEntry.fill({
+                databaseId: database.id,
+                tableId: table.id,
+                rowId: clonedRow.id,
+              })
+            );
+            await message.success({
+              key: "duplicate-message",
+              content: `A duplicate of ${entryDisplayName} has been created. You are now viewing the duplicated entry.`,
+            });
+          } finally {
+            setDuplicating(false);
+          }
+        }}
+        onCancel={() => setShowDuplicateModal(false)}
+      />
     </>
   );
 }

@@ -1,6 +1,6 @@
 {
   "name": "@plasmicpkgs/commerce-shopify",
-  "version": "0.0.213",
+  "version": "0.0.215",
   "description": "Plasmic registration calls for shopify commerce provider",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -11,18 +11,21 @@
   "scripts": {
     "build": "tsdx build",
     "start": "tsdx watch",
-    "test": "TEST_CWD=`pwd` yarn --cwd=../../.. test --passWithNoTests",
+    "test": "TEST_CWD=`pwd` yarn --cwd=../../.. test",
     "lint": "tsdx lint",
     "prepublishOnly": "npm run build",
     "size": "size-limit",
-    "analyze": "size-limit --why"
+    "analyze": "size-limit --why",
+    "graphql-codegen": "graphql-codegen --config src/graphql-config.ts"
   },
   "devDependencies": {
-    "@plasmicapp/host": "1.0.208",
+    "@graphql-codegen/cli": "^5.0.3",
+    "@plasmicapp/host": "1.0.209",
     "@size-limit/preset-small-lib": "^4.11.0",
     "@types/debounce": "^1.2.3",
     "@types/js-cookie": "^3.0.1",
     "@types/node": "^14.0.26",
+    "nock": "14.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "size-limit": "^4.11.0",
@@ -33,7 +36,7 @@
     "react": ">=16.8.0"
   },
   "dependencies": {
-    "@plasmicpkgs/commerce": "0.0.206",
+    "@plasmicpkgs/commerce": "0.0.207",
     "@types/react": "^18.0.27",
     "debounce": "^1.2.1",
     "js-cookie": "^3.0.5"

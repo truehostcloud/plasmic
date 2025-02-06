@@ -591,7 +591,7 @@ export class ViewCtx extends WithDbCtx {
     this.disposals.forEach((d) => d());
     this._editingTextResizeObserver?.disconnect();
     this.canvasObservers.forEach(
-      (reaction) => !reaction.isDisposed_ && reaction.dispose()
+      (reaction) => !reaction.isDisposed && reaction.dispose()
     );
     this.canvasCtx.dispose();
     this.csEvaluator?.dispose();
@@ -847,7 +847,7 @@ export class ViewCtx extends WithDbCtx {
 
       this.renderState.val2dom(x.val, this.canvasCtx).forEach((domElt) => {
         this.canvasCtx.updateCanvasOverlay(domElt.getBoundingClientRect());
-        this._editingTextResizeObserver.observe(domElt);
+        this._editingTextResizeObserver?.observe(domElt);
       });
     } else {
       this.canvasCtx.resetCanvasOverlay();
