@@ -1,40 +1,52 @@
 diff --git a/node_modules/@plasmicpkgs/commerce/dist/commerce.d.ts b/node_modules/@plasmicpkgs/commerce/dist/commerce.d.ts
-index e4075b1..a23a631 100644
+index a23a631..e4075b1 100644
 --- a/node_modules/@plasmicpkgs/commerce/dist/commerce.d.ts
 +++ b/node_modules/@plasmicpkgs/commerce/dist/commerce.d.ts
-@@ -18,35 +18,6 @@ export declare type Provider = CommerceConfig & {
+@@ -18,6 +18,35 @@ export declare type Provider = CommerceConfig & {
          useBrands?: SWRHook<Site.GetBrandsHook>;
      };
      extraFeatures?: CommerceExtraFeatures;
--    checkout?: {
--        useCheckout?: SWRHook<any>
--        useSubmitCheckout?: MutationHook<any>
--    }
--    wishlist?: {
--        useWishlist?: SWRHook<any>
--        useAddItem?: MutationHook<any>
--        useRemoveItem?: MutationHook<any>
--    }
--    customer?: {
--        useCustomer?: SWRHook<any>
--        card?: {
--            useCards?: SWRHook<any>
--            useAddItem?: MutationHook<any>
--            useUpdateItem?: MutationHook<any>
--            useRemoveItem?: MutationHook<any>
--        }
--        address?: {
--            useAddresses?: SWRHook<any>
--            useAddItem?: MutationHook<any>
--            useUpdateItem?: MutationHook<any>
--            useRemoveItem?: MutationHook<any>
--        }
--    }
--    auth?: {
--        useSignup?: MutationHook<any>
--        useLogin?: MutationHook<any>
--        useLogout?: MutationHook<any>
--    }
++    checkout?: {
++        useCheckout?: SWRHook<any>
++        useSubmitCheckout?: MutationHook<any>
++    }
++    wishlist?: {
++        useWishlist?: SWRHook<any>
++        useAddItem?: MutationHook<any>
++        useRemoveItem?: MutationHook<any>
++    }
++    customer?: {
++        useCustomer?: SWRHook<any>
++        card?: {
++            useCards?: SWRHook<any>
++            useAddItem?: MutationHook<any>
++            useUpdateItem?: MutationHook<any>
++            useRemoveItem?: MutationHook<any>
++        }
++        address?: {
++            useAddresses?: SWRHook<any>
++            useAddItem?: MutationHook<any>
++            useUpdateItem?: MutationHook<any>
++            useRemoveItem?: MutationHook<any>
++        }
++    }
++    auth?: {
++        useSignup?: MutationHook<any>
++        useLogin?: MutationHook<any>
++        useLogout?: MutationHook<any>
++    }
  };
  export declare type CommerceConfig = {
      locale: string;
+diff --git a/node_modules/@plasmicpkgs/commerce/dist/types/product.d.ts b/node_modules/@plasmicpkgs/commerce/dist/types/product.d.ts
+index 332819e..d00224d 100644
+--- a/node_modules/@plasmicpkgs/commerce/dist/types/product.d.ts
++++ b/node_modules/@plasmicpkgs/commerce/dist/types/product.d.ts
+@@ -51,6 +51,7 @@ export declare type SearchProductsBody = {
+     sort?: string;
+     locale?: string;
+     count?: number;
++    page?: number;
+     includeSubCategories?: boolean;
+     categories?: Category[];
+ };
