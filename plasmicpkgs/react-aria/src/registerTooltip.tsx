@@ -8,6 +8,7 @@ import {
   CodeComponentMetaOverrides,
   Registerable,
   registerComponentHelper,
+  WithPlasmicCanvasComponentInfo,
 } from "./utils";
 import { pickAriaComponentVariants, WithVariants } from "./variant-utils";
 
@@ -27,6 +28,7 @@ const TOOLTIP_VARIANTS = [
 export interface BaseTooltipProps
   extends TooltipTriggerProps,
     TooltipProps,
+    WithPlasmicCanvasComponentInfo,
     WithVariants<typeof TOOLTIP_VARIANTS> {
   children: React.ReactElement<HTMLElement>;
   tooltipContent?: React.ReactElement;

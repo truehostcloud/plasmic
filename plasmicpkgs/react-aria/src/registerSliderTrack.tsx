@@ -24,7 +24,7 @@ export interface BaseSliderTrackProps
   extends React.ComponentProps<typeof SliderTrack>,
     WithVariants<typeof SLIDER_TRACK_VARIANTS> {
   progressBar?: React.ReactNode;
-  children?: React.ReactElement<HTMLElement>;
+  children?: React.ReactNode;
 }
 
 function isMultiValueGuard(value?: number | number[]): value is number[] {

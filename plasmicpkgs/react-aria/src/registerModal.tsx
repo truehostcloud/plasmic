@@ -14,13 +14,14 @@ import {
   makeComponentName,
   Registerable,
   registerComponentHelper,
+  WithPlasmicCanvasComponentInfo,
 } from "./utils";
 
 export interface BaseModalProps
   extends ModalOverlayProps,
+    WithPlasmicCanvasComponentInfo,
     HasControlContextData {
-  heading: React.ReactNode;
-  modalOverlayClass: string;
+  modalOverlayClass?: string;
   resetClassName?: string;
   children?: React.ReactNode;
   className?: string;
@@ -51,6 +52,7 @@ export const BaseModal = forwardRef<BaseModalActions, BaseModalProps>(
 
     const contextProps = React.useContext(PlasmicDialogTriggerContext);
     const isStandalone = !contextProps;
+    // TODO: React-aria does not like modal being passed defaultOpen while its inside a DialogTrigger.
     const mergedProps = mergeProps(contextProps, rest, {
       isOpen: isStandalone ? isSelected || isOpen : contextProps.isOpen,
       /*

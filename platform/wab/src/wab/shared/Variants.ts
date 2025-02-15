@@ -1047,3 +1047,35 @@ export function getActiveVariantSettings(
     vs.variants.every((v) => isBaseVariant(v) || isActive(v))
   );
 }
+
+export function toVariantKey(v: Variant) {
+  if (v.parent) {
+    return v.uuid;
+  }
+
+  if (isBaseVariant(v)) {
+    return BASE_VARIANT_NAME;
+  }
+
+  if (v.codeComponentVariantKeys) {
+    return JSON.stringify({
+      codeComponentName: v.codeComponentName,
+      codeComponentVariantKeys: [...v.codeComponentVariantKeys].sort(),
+    });
+  }
+
+  assert(!!v.selectors, () => `Expected style variant`);
+  return JSON.stringify([
+    JSON.stringify([...v.selectors].sort()),
+    v.forTpl?.uuid ?? null,
+  ]);
+}
+
+export function findDuplicateComponentVariant(
+  component: Component,
+  editingVariant: Variant
+) {
+  return component.variants
+    .filter((v) => v !== editingVariant)
+    .find((v) => toVariantKey(v) === toVariantKey(editingVariant));
+}

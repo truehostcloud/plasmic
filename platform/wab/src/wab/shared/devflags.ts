@@ -658,7 +658,7 @@ export function applyPlasmicUserDevFlagOverrides(target: DevFlagsType) {
     advancedAppAuth: true,
     posthog: true,
     linting: true,
-    componentThumbnails: true,
+    componentThumbnails: false,
     authUsersTab: true,
     warningsInCanvas: true,
     previewSteps: true,

@@ -928,14 +928,27 @@ export function makeTplMenu(
     push(
       <Menu.Item
         key="zoom-to-fit-selection"
-        onClick={() => studioCtx.tryZoomToFitSelection()}
+        onClick={() => studioCtx.tryZoomToFitTpl(tpl)}
       >
         <MenuItemContent shortcut={getComboForAction("ZOOM_TO_SELECTION")}>
-          Zoom to fit current selection
+          Zoom to fit
         </MenuItemContent>
       </Menu.Item>
     );
   });
+
+  if (studioCtx.appCtx.appConfig.comments && isTplNamable(tpl)) {
+    builder.genSection(undefined, (push) => {
+      push(
+        <Menu.Item
+          key="add-comment"
+          onClick={() => viewCtx.setSelectedNewThreadTpl(tpl)}
+        >
+          <MenuItemContent>Add comment</MenuItemContent>
+        </Menu.Item>
+      );
+    });
+  }
 
   if (
     isAdminTeamEmail(
