@@ -3436,19 +3436,6 @@
     js-cookie "^3.0.5"
     swell-js "^3.13.0"
 
-"@plasmicpkgs/commerce@0.0.207":
-  version "0.0.207"
-  resolved "https://registry.yarnpkg.com/@plasmicpkgs/commerce/-/commerce-0.0.207.tgz#9484a262d81ed82c7b4d9808918467248e510ffa"
-  integrity sha512-7gr3SpxmGrTxaqxrQoi+ASqHn4Wy9wfjgaXTl42jHFw8bIk2hWb0XzaDu4wJIQ2CtrOtI09dt+rcEZB6YFOWAQ==
-  dependencies:
-    "@types/react" "^18.0.27"
-    "@vercel/fetch" "^6.2.0"
-    debounce "^1.2.1"
-    js-cookie "^3.0.1"
-    lodash.debounce "^4.0.8"
-    react-hook-form "^7.28.0"
-    swr "^1.2.2"
-
 "@plasmicpkgs/commerce@0.0.209", "@plasmicpkgs/commerce@^0.0.209":
   version "0.0.209"
   resolved "https://registry.yarnpkg.com/@plasmicpkgs/commerce/-/commerce-0.0.209.tgz#a23d089932edef31a8681e0f82e9b96460a0c8d7"
@@ -7308,12 +7295,12 @@ commander@^7.2.0:
   resolved "https://registry.yarnpkg.com/commander/-/commander-7.2.0.tgz#a36cb57d0b501ce108e4d20559a150a391d97ab7"
   integrity sha512-QrWXB+ZQSVPmIWIhtEO9H+gwHaMGYiF5ChvoJ+K9ZGHG/sVsa6yiesAD1GC/x46sET00Xlwo1u49RVVVzvcSkw==
 
-commerce-spree@^0.2.10:
-  version "0.2.10"
-  resolved "https://registry.yarnpkg.com/commerce-spree/-/commerce-spree-0.2.10.tgz#ee13f94a21072c6661eb437beb7831e876cd65b3"
-  integrity sha512-X9s23lVrPFF6lA2AkJpXtaF8ZidhO2Cdk9/c+0f0YDaqF6VdwskfRGTqJ1hZxfm37mt3nyg9TrdjLD2MRa6gjg==
+commerce-spree@^0.2.11:
+  version "0.2.11"
+  resolved "https://registry.yarnpkg.com/commerce-spree/-/commerce-spree-0.2.11.tgz#8d6025f6225fbe93553547c7d302f7ceab35e5e0"
+  integrity sha512-qzgRuP0APURXqhd3yiH/HZDRvWZ+FgfOV4ePlqbudHM/WcmebG6SqEp2GYIT6yWQQ38x16yKadnAkO5GvxUcxg==
   dependencies:
-    "@plasmicpkgs/commerce" "0.0.207"
+    "@plasmicpkgs/commerce" "^0.0.209"
     "@spree/storefront-api-v2-sdk" "^5.1.1"
     debounce "^1.2.1"
     js-cookie "^3.0.5"

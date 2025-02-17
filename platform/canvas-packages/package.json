@@ -12,6 +12,7 @@
     "@ant-design/pro-components": "Must be 2.6.4. Earlier doesn't support newer antd, later incurs a disallowed dynamic require of antd/es/layout/Sider. https://app.shortcut.com/plasmic/story/37043/richlayout-always-initially-loads-with-dark-background"
   },
   "dependencies": {
+    "commerce-spree": "^0.2.11",
     "@ant-design/icons": "^5.0.1",
     "@ant-design/pro-components": "2.6.4",
     "@emotion/react": "^11.10.4",
@@ -70,7 +71,6 @@
     "axios": "^1.5.1",
     "chart.js": "^4.2.1",
     "classnames": "^2.3.2",
-    "commerce-spree": "^0.2.10",
     "copy-to-clipboard": "^3.3.3",
     "date-fns": "^2.30.0",
     "dayjs": "^1.11.10",
