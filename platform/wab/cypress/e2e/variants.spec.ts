@@ -21,7 +21,7 @@ describe("variants", function () {
     removeCurrentProject();
   });
 
-  it("can CRUD interaction variants, element interactions, enable multiple variants, alter content", function () {
+  it("can CRUD interaction variants, element variants, enable multiple variants, alter content", function () {
     cy.withinStudioIframe(() => {
       createNewComponent("Blah").then((framed) => {
         cy.focusFrameRoot(framed);
@@ -112,9 +112,10 @@ describe("variants", function () {
         cy.justLog("Select the child textbox.");
         cy.justType("{enter}");
         cy.justLog("Set placeholder style.");
-        cy.addElementInteraction("placeholder");
+        cy.toggleElementVariants();
+        cy.addElementVariant("placeholder");
         cy.chooseFontSize("48px");
-        cy.disableElementInteraction();
+        cy.stopRecordingElementVariant();
 
         cy.switchToTreeTab();
         cy.withinLiveMode(() => {
@@ -133,7 +134,7 @@ describe("variants", function () {
         // that just returns the input's font size setting. See
         // https://codepen.io/yaaang/pen/JjGyVGJ for a dissection.
 
-        cy.justLog("Delete element interactions.");
+        cy.justLog("Delete element variants.");
         cy.doVariantMenuCommand(true, "Placeholder", "Delete");
 
         cy.justLog("Hide hello from Secondary, check that it's still there.");

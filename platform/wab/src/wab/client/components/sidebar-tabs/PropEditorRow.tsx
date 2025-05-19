@@ -1,4 +1,3 @@
-//@ts-ignore
 import ContextMenuIndicator from "@/wab/client/components/ContextMenuIndicator/ContextMenuIndicator";
 import { ComponentPropModal } from "@/wab/client/components/modals/ComponentPropModal";
 import { DataPickerEditor } from "@/wab/client/components/sidebar-tabs/ComponentProps/DataPickerEditor";
@@ -74,7 +73,6 @@ import {
 import {
   asCode,
   clone,
-  code,
   codeLit,
   createExprForDataPickerValue,
   ExprCtx,
@@ -87,9 +85,9 @@ import {
   isPageHref,
   isRealCodeExpr,
   renderable,
-  summarizeExpr,
-  tryExtractLit,
+  tryExtractJson,
 } from "@/wab/shared/core/exprs";
+import { JsonValue } from "@/wab/shared/core/lang";
 import {
   getTplTextBlockContent,
   isTplRawString,
@@ -106,6 +104,7 @@ import {
 } from "@/wab/shared/defined-indicator";
 import { tryEvalExpr } from "@/wab/shared/eval";
 import { getInputTypeOptions } from "@/wab/shared/html-utils";
+import { RESET_CAP } from "@/wab/shared/Labels";
 import {
   CollectionExpr,
   CompositeExpr,
@@ -118,6 +117,7 @@ import {
   FunctionExpr,
   GenericEventHandler,
   ImageAssetRef,
+  isKnownClassNamePropType,
   isKnownCustomCode,
   isKnownExpr,
   isKnownFunctionExpr,
@@ -166,7 +166,7 @@ export interface ControlExtras {
 }
 
 interface PropEditorContextData {
-  componentPropValues: Record<string, any>;
+  componentPropValues: Record<string, any> | any[];
   ccContextData: any;
   invalidArg?: InvalidArgMeta;
   tpl?: TplTag | TplComponent;
@@ -268,16 +268,16 @@ function isQuery(_expr: Expr | undefined) {
   );
 }
 
-export function extractLitFromMaybeRenderable(
+function extractLitFromMaybeRenderable(
   expr: Expr | undefined | null,
   viewCtx: ViewCtx | undefined
-): [any, boolean] {
+): [JsonValue | Expr | undefined, boolean] {
   if (!expr) {
     return [undefined, true];
   }
 
   return switchType(expr)
-    .when(RenderExpr, (renderExpr): [any, boolean] => {
+    .when(RenderExpr, (renderExpr): [string | undefined, boolean] => {
       if (renderExpr.tpl.length === 0 || !viewCtx) {
         return [undefined, true];
       }
@@ -306,21 +306,20 @@ export function extractLitFromMaybeRenderable(
         MapExpr,
         CollectionExpr,
         CustomFunctionExpr,
+        ImageAssetRef,
       ],
-      (_expr): [any, boolean] => [_expr, true]
+      (_expr): [Expr, boolean] => [_expr, true]
     )
-    .when(ImageAssetRef, (imageAssetRef): [any, boolean] => [
-      imageAssetRef.asset,
-      true,
-    ])
-    .when(CustomCode, (customCode): [any, boolean] => {
+    .when(CustomCode, (customCode): [JsonValue | Expr | undefined, boolean] => {
       if (isRealCodeExpr(customCode)) {
         return [expr, true];
       }
-      return tuple(tryExtractLit(expr), true);
+      return tuple(tryExtractJson(expr), true);
     })
-    .when([StyleExpr, StrongFunctionArg], (_expr): [any, boolean] =>
-      tuple(tryExtractLit(expr), true)
+    .when(
+      [StyleExpr, StrongFunctionArg],
+      (_expr): [JsonValue | undefined, boolean] =>
+        tuple(tryExtractJson(expr), true)
     )
     .result();
 }
@@ -615,6 +614,8 @@ function InnerPropEditorRow_(props: PropEditorRowProps) {
     controlExtras = { path: [props.attr] },
     icon,
     shouldHighlight,
+    onChange,
+    onDelete,
   } = props;
 
   const currValueEditorCtx = usePropValueEditorContext();
@@ -668,7 +669,8 @@ function InnerPropEditorRow_(props: PropEditorRowProps) {
     viewCtx &&
     tpl &&
     viewCtx.tplMgr().canLinkToProp(tpl) &&
-    (!wabType || !isRenderableType(wabType));
+    (!wabType ||
+      (!isKnownClassNamePropType(wabType) && !isRenderableType(wabType)));
 
   const schema = studioCtx.customFunctionsSchema();
 
@@ -712,7 +714,7 @@ function InnerPropEditorRow_(props: PropEditorRowProps) {
       path: ["undefined"],
       fallback: expr ? clone(expr) : codeLit(undefined),
     });
-    props.onChange(maybeWrapExpr(newExpr));
+    onChange(maybeWrapExpr(newExpr));
     setShowFallback(true);
     setIsDataPickerVisible(true);
   }
@@ -720,18 +722,19 @@ function InnerPropEditorRow_(props: PropEditorRowProps) {
   const contextMenu = (
     <Menu>
       {!readOnly &&
-        props.onDelete &&
         !referencedParam &&
         expr &&
         ["set", "none", "invariantable", "setNonVariable"].includes(
           definedIndicator.source
         ) &&
         !["functionArgs"].includes(getPropTypeType(propType) ?? "") && (
-          <Menu.Item
-            onClick={() => ensure(props.onDelete, "Already type checked")()}
-          >
-            Unset {label}
-          </Menu.Item>
+          <>
+            {onDelete && (
+              <Menu.Item onClick={() => onDelete()}>
+                {RESET_CAP} <strong>{label}</strong> prop
+              </Menu.Item>
+            )}
+          </>
         )}
       {!readOnly &&
         referencedParam &&
@@ -753,7 +756,7 @@ function InnerPropEditorRow_(props: PropEditorRowProps) {
           </Menu.Item>
         )}
       {!readOnly && referencedParam && ownerComponent && (
-        <Menu.Item onClick={() => props.onChange(undefined)}>
+        <Menu.Item onClick={() => onChange(undefined)}>
           <span>
             Unlink from component prop{" "}
             <strong>
@@ -775,7 +778,7 @@ function InnerPropEditorRow_(props: PropEditorRowProps) {
                 <Menu.Item
                   key={param.uid}
                   onClick={() => {
-                    props.onChange(new VarRef({ variable: param.variable }));
+                    onChange(new VarRef({ variable: param.variable }));
                   }}
                 >
                   <strong>{param.variable.name}</strong>
@@ -821,7 +824,7 @@ function InnerPropEditorRow_(props: PropEditorRowProps) {
           <Menu.Item
             key={"!customCode"}
             onClick={() => {
-              props.onChange(
+              onChange(
                 isKnownCustomCode(expr) || isKnownObjectPath(expr)
                   ? maybeWrapExpr(expr.fallback)
                   : undefined
@@ -876,9 +879,9 @@ function InnerPropEditorRow_(props: PropEditorRowProps) {
             ? clone(codeExpr.fallback)
             : undefined;
           const newExpr = createExprForDataPickerValue(val, fallbackExpr);
-          props.onChange(maybeWrapExpr(newExpr));
+          onChange(maybeWrapExpr(newExpr));
         }}
-        onUnlink={() => props.onChange(maybeWrapExpr(codeExpr.fallback))}
+        onUnlink={() => onChange(maybeWrapExpr(codeExpr.fallback))}
         visible={isDataPickerVisible}
         setVisible={setIsDataPickerVisible}
         data={canvasEnv}
@@ -917,13 +920,13 @@ function InnerPropEditorRow_(props: PropEditorRowProps) {
                 viewCtx
               );
               if (newExpr !== expr) {
-                props.onChange(maybeWrapExpr(newExpr));
+                onChange(maybeWrapExpr(newExpr));
               }
             });
           } else {
             const newExpr = updateOrCreateExpr(expr, wabType, val);
             if (newExpr !== expr) {
-              props.onChange(maybeWrapExpr(newExpr));
+              onChange(maybeWrapExpr(newExpr));
             }
           }
         }}
@@ -1038,7 +1041,7 @@ function InnerPropEditorRow_(props: PropEditorRowProps) {
                   const _expr = new VarRef({
                     variable: newParam.variable,
                   });
-                  props.onChange(_expr);
+                  onChange(_expr);
                 });
               }}
             />
@@ -1050,20 +1053,6 @@ function InnerPropEditorRow_(props: PropEditorRowProps) {
                 "PageHref is expected to contain a page"
               ).path
             ).map((param) => {
-              // If we were showing a page href prop, then we need to show the params as well.
-              const _definedIndicator: DefinedIndicatorType =
-                definedIndicator.source === "none"
-                  ? {
-                      source: "none",
-                    }
-                  : {
-                      source: "setNonVariable",
-                      prop: param,
-                      value: summarizeExpr(
-                        expr.params[param] ?? code('""'),
-                        exprCtx
-                      ),
-                    };
               return (
                 <InnerPropEditorRow
                   key={param}
@@ -1085,12 +1074,12 @@ function InnerPropEditorRow_(props: PropEditorRowProps) {
                     } else {
                       delete newExpr.params[param];
                     }
-                    props.onChange(maybeWrapExpr(newExpr));
+                    onChange(maybeWrapExpr(newExpr));
                   }}
                   onDelete={() => {
                     const newExpr = clone(expr) as PageHref;
                     delete newExpr.params[param];
-                    props.onChange(maybeWrapExpr(newExpr));
+                    onChange(maybeWrapExpr(newExpr));
                   }}
                   disableLinkToProp={props.disableLinkToProp}
                   disableDynamicValue={props.disableDynamicValue}
@@ -1125,7 +1114,7 @@ function InnerPropEditorRow_(props: PropEditorRowProps) {
                             path: codeExpr.path,
                             fallback: undefined,
                           });
-                      props.onChange(maybeWrapExpr(newExpr));
+                      onChange(maybeWrapExpr(newExpr));
                     });
                   }}
                 >
@@ -1161,10 +1150,10 @@ function InnerPropEditorRow_(props: PropEditorRowProps) {
                               path: codeExpr.path,
                               fallback: fallbackExpr,
                             });
-                        props.onChange(maybeWrapExpr(newExpr));
+                        onChange(maybeWrapExpr(newExpr));
                       });
                     }}
-                    onDelete={props.onDelete}
+                    onDelete={onDelete}
                     controlExtras={controlExtras}
                   />
                 </FallbackEditor>

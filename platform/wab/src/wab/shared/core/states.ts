@@ -563,7 +563,7 @@ export function updateStateAccessType(
     state.onChangeParam.variable.name = onChangePropName;
     state.onChangeParam.exportType = ParamExportType.External;
   } else if (!isPrevStatePrivate && isCurrStatePrivate) {
-    removeImplicitStates(site, component, state);
+    removeImplicitStates(site, state);
     state.onChangeParam.exportType = ParamExportType.ToolsOnly;
   }
 }
@@ -616,16 +616,9 @@ export function* findRecursiveImplicitStates(site: Site, state: State) {
   }
 }
 
-export function removeImplicitStates(
-  site: Site,
-  component: Component,
-  state: State
-) {
-  for (const { component: refComponent, state: refState } of findImplicitStates(
-    site,
-    component,
-    state
-  )) {
+export function removeImplicitStates(site: Site, state: State) {
+  const usages = [...findRecursiveImplicitStates(site, state)];
+  for (const { component: refComponent, state: refState } of usages) {
     removeComponentState(site, refComponent, refState);
   }
 }
@@ -666,7 +659,7 @@ export function removeComponentStateOnly(
   state: State
 ) {
   if (!isPrivateState(state)) {
-    removeImplicitStates(site, component, state);
+    removeImplicitStates(site, state);
   }
   remove(component.states, state);
 }
@@ -764,7 +757,7 @@ type DistributedKeyOf<T> = T extends any ? keyof T : never;
 
 interface SiteCtx {
   projectId: string;
-  platform: "nextjs" | "gatsby" | "react";
+  platform: "nextjs" | "gatsby" | "react" | "tanstack";
   projectFlags: DevFlagsType;
   inStudio: boolean;
 }
@@ -1356,7 +1349,7 @@ export const extractLit = (
     return expr;
   }
   if (isKnownImageAssetRef(expr)) {
-    return expr.asset;
+    return expr;
   }
   return tryExtractLit(expr);
 };

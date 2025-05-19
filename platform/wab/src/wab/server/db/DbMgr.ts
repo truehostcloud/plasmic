@@ -108,6 +108,7 @@ import {
 } from "@/wab/server/util/cms-util";
 import { stringToPair } from "@/wab/server/util/hash";
 import { KnownProvider } from "@/wab/server/util/passport-multi-oauth2";
+import { UniqueViolationError } from "@/wab/shared/ApiErrors/cms-errors";
 import {
   BadRequestError,
   CopilotRateLimitExceededError,
@@ -124,6 +125,7 @@ import {
   BranchId,
   CmsDatabaseId,
   CmsIdAndToken,
+  CmsRowData,
   CmsRowId,
   CmsRowRevisionId,
   CmsTableId,
@@ -155,7 +157,9 @@ import {
   TeamId,
   TeamMember,
   TeamWhiteLabelInfo,
+  ThreadHistoryId,
   TutorialDbId,
+  UniqueFieldCheck,
   UserId,
   WorkspaceId,
   branchStatuses,
@@ -176,6 +180,7 @@ import {
 } from "@/wab/shared/Labels";
 import { Bundler } from "@/wab/shared/bundler";
 import { getBundle } from "@/wab/shared/bundles";
+import { getUniqueFieldsData } from "@/wab/shared/cms";
 import { toVarName } from "@/wab/shared/codegen/util";
 import { Dict, mkIdMap, safeHas } from "@/wab/shared/collections";
 import {
@@ -187,6 +192,7 @@ import {
   ensureString,
   filterMapTruthy,
   generate,
+  isUuidV4,
   jsonClone,
   last,
   maybe,
@@ -203,6 +209,7 @@ import {
   withoutNils,
   xor,
 } from "@/wab/shared/common";
+import { CreateChatCompletionRequest } from "@/wab/shared/copilot/prompt-utils";
 import {
   cloneSite,
   fixAppAuthRefs,
@@ -242,11 +249,13 @@ import {
   compareSites,
   compareVersionNumbers,
 } from "@/wab/shared/site-diffs";
+import { getLowestCommonAncestor } from "@/wab/shared/site-diffs/commit-graph";
 import {
   DirectConflictPickMap,
   MergeStep,
   tryMerge,
 } from "@/wab/shared/site-diffs/merge-core";
+import * as Sentry from "@sentry/node";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 import fs from "fs";
@@ -255,7 +264,6 @@ import { Draft, createDraft, finishDraft } from "immer";
 import * as _ from "lodash";
 import L, { fromPairs, omit, pick, uniq } from "lodash";
 import moment from "moment";
-import { CreateChatCompletionRequest } from "openai";
 import ShortUuid from "short-uuid";
 import type { Opaque } from "type-fest";
 import {
@@ -275,8 +283,6 @@ import {
   SelectQueryBuilder,
 } from "typeorm";
 import * as uuid from "uuid";
-
-import { getLowestCommonAncestor } from "@/wab/shared/site-diffs/commit-graph";
 
 export const updatableUserFields = [
   "firstName",
@@ -324,7 +330,6 @@ export const updatableProjectFields = [
   "name",
   "inviteOnly",
   "defaultAccessLevel",
-  "codeSandboxInfos",
   "readableByPublic",
   "hostUrl",
   "workspaceId",
@@ -337,7 +342,6 @@ export const updatableProjectFields = [
 export const editorOnlyUpdatableProjectFields = [
   "inviteOnly",
   "defaultAccessLevel",
-  "codeSandboxInfos",
   "readableByPublic",
   "hostUrl",
   "workspaceId",
@@ -564,10 +568,21 @@ export function generateId() {
   return crypto.randomBytes(18).toString("base64").replace(/\W/g, "");
 }
 
+/** Only used for development users in non-prod environments. */
+export const DEFAULT_DEV_PASSWORD = "!53kr3tz!";
+
 export async function checkWeakPassword(password: string | undefined) {
+  if (
+    process.env.NODE_ENV !== "production" &&
+    password === DEFAULT_DEV_PASSWORD
+  ) {
+    return;
+  }
+
   if (password === undefined) {
     return;
   }
+
   const passwordStrength = await ratePasswordStrength(password);
   if (password.length < 6 || passwordStrength < 2) {
     throw new WeakPasswordError();
@@ -581,7 +596,7 @@ export async function checkWeakPassword(password: string | undefined) {
   }
 }
 
-function pickKnownFieldsByLocale(table: CmsTable, x: Dict<Dict<unknown>>) {
+function pickKnownFieldsByLocale(table: CmsTable, x: CmsRowData) {
   return L.mapValues(x, (values) =>
     pick(values, ...table.schema.fields.map((f) => f.identifier))
   );
@@ -634,6 +649,8 @@ type MergeArgs = MergeSrcDst & {
   };
   autoCommitOnToBranch?: boolean;
   excludeMergeStepFromResult?: boolean;
+  description?: string;
+  tags?: string[];
 };
 
 function getCommitChainFromCommit(
@@ -1033,12 +1050,15 @@ export class DbMgr implements MigrationDbMgr {
   /**
    * Generate standard new-object timestamps and ID.
    */
-  protected stampNew(genShortUuid?: boolean): StampNewFields {
+  protected stampNew(opts?: {
+    id?: string;
+    genShortUuid?: boolean;
+  }): StampNewFields {
     const actorUserId = this.tryGetNormalActorId() ?? null;
     const UUID = uuid.v4();
     const date = new Date();
     return {
-      id: genShortUuid ? shortUuid.fromUUID(UUID) : UUID,
+      id: opts?.genShortUuid ? shortUuid.fromUUID(UUID) : opts?.id || UUID,
       createdAt: date,
       createdById: actorUserId,
       updatedAt: date,
@@ -1149,7 +1169,7 @@ export class DbMgr implements MigrationDbMgr {
     const user = await this.getUserById(userId);
     const devflags = await getDevFlagsMergedWithOverrides(this);
     const team = this.teams().create({
-      ...this.stampNew(true),
+      ...this.stampNew({ genShortUuid: true }),
       name,
       billingEmail: user.email,
       inviteId: generateId(),
@@ -1467,7 +1487,7 @@ export class DbMgr implements MigrationDbMgr {
       ...teamPerms,
       ...workspacePerms,
       ...projectPerms.filter(
-        (p) => accessLevelRank(p.accessLevel) >= accessLevelRank("content")
+        (p) => accessLevelRank(p.accessLevel) >= accessLevelRank("commenter")
       ),
     ].map((p) => {
       return {
@@ -2305,7 +2325,7 @@ export class DbMgr implements MigrationDbMgr {
       "create workspace"
     );
     const workspace = this.workspaces().create({
-      ...this.stampNew(true),
+      ...this.stampNew({ genShortUuid: true }),
       name,
       description,
       team: { id: teamId },
@@ -2333,7 +2353,7 @@ export class DbMgr implements MigrationDbMgr {
   }): Promise<Workspace> {
     this.checkSuperUser();
     const workspace = this.workspaces().create({
-      ...this.stampNew(true),
+      ...this.stampNew({ genShortUuid: true }),
       id,
       name,
       description,
@@ -2556,7 +2576,6 @@ export class DbMgr implements MigrationDbMgr {
   async createProject({
     name,
     workspaceId: _workspaceId,
-    orgId,
     ownerId,
     hostUrl,
     clonedFromProjectId,
@@ -2565,8 +2584,6 @@ export class DbMgr implements MigrationDbMgr {
   }: {
     name: string;
     workspaceId?: WorkspaceId;
-    orgId?: string;
-    localBlobIds?: string[];
     ownerId?: string;
     hostUrl?: string | null;
     clonedFromProjectId?: string;
@@ -2586,32 +2603,25 @@ export class DbMgr implements MigrationDbMgr {
     const creatorId = isNormalUser(this.actor) ? this.actor.userId : ownerId;
 
     if (!workspaceId && creatorId) {
-      const personalTeam = await this.teams().findOne({
-        where: {
-          personalTeamOwnerId: creatorId,
-        },
+      const personalTeam = await findExactlyOne(this.teams(), {
+        personalTeamOwnerId: creatorId,
       });
 
-      const personalWorkspace = personalTeam
-        ? await this.workspaces().findOne({
-            where: {
-              teamId: personalTeam.id,
-            },
-          })
-        : undefined;
+      const personalWorkspace = await findExactlyOne(this.workspaces(), {
+        teamId: personalTeam.id,
+      });
 
-      workspaceId = personalWorkspace?.id ?? workspaceId;
+      workspaceId = personalWorkspace.id;
     } else if (workspaceId && inviteOnly === undefined) {
       const team = await this.getTeamByWorkspaceId(workspaceId);
       inviteOnly = team ? true : undefined;
     }
 
     const project = this.projects().create({
-      ...this.stampNew(true),
-      org: orgId ? { id: orgId } : null,
-      workspace: workspaceId ? { id: workspaceId } : null,
+      ...this.stampNew({ genShortUuid: true }),
+      workspaceId,
       name,
-      defaultAccessLevel: "commenter",
+      defaultAccessLevel: "viewer",
       inviteOnly: inviteOnly ?? true,
       readableByPublic: false,
       hostUrl: hostUrl ?? null,
@@ -2683,8 +2693,6 @@ export class DbMgr implements MigrationDbMgr {
         "change workspace starters"
       );
     }
-    // We use assignAllowEmpty rather than mergeAllowEmpty to disallow merging
-    // the two codeSandboxInfo array
     assignAllowEmpty(project, this.stampUpdate(), fields);
     await this.entMgr.save(project);
     return await this.getProjectById(id, true);
@@ -2751,11 +2759,6 @@ export class DbMgr implements MigrationDbMgr {
       )
       .setParameters({ teamId, userId });
     return qb.getMany();
-  }
-
-  async listProjectsForOrg(orgId: string) {
-    // TODO add permissions check when moving to new permissions system
-    return await this._queryProjects({ orgId }).getMany();
   }
 
   async listProjectsForSelf() {
@@ -3689,7 +3692,7 @@ export class DbMgr implements MigrationDbMgr {
   ) {
     this.allowAnyone();
     const projectSyncMetadata = this.projectSyncMetadata().create({
-      ...this.stampNew(true),
+      ...this.stampNew({ genShortUuid: true }),
       projectId,
       revision,
       projectRevId,
@@ -5779,7 +5782,7 @@ export class DbMgr implements MigrationDbMgr {
   ) {
     await this._checkResourcesPerms(
       taggedResourceIds,
-      "commenter",
+      "viewer",
       "grant permission"
     );
 
@@ -6373,11 +6376,7 @@ export class DbMgr implements MigrationDbMgr {
     });
   }
 
-  async getRecentLoaderPublishments(
-    projectId: string,
-    opts?: { minLoaderVersion?: number }
-  ) {
-    const minLoaderVersion = opts?.minLoaderVersion;
+  async getRecentLoaderPublishments(projectId: string) {
     let loaderPublishments = await this.loaderPublishments().find({
       where: {
         projectId,
@@ -6400,11 +6399,6 @@ export class DbMgr implements MigrationDbMgr {
               moment(latest.updatedAt).diff(moment(p.updatedAt), "days") < 3
           ),
       ];
-    }
-    if (minLoaderVersion) {
-      loaderPublishments = loaderPublishments.filter(
-        (p) => p.loaderVersion >= minLoaderVersion
-      );
     }
     return loaderPublishments;
   }
@@ -6584,7 +6578,7 @@ export class DbMgr implements MigrationDbMgr {
     });
     if (!hostlessVersion) {
       hostlessVersion = this.hostlessVersions().create({
-        ...this.stampNew(true),
+        ...this.stampNew({ genShortUuid: true }),
         versionCount: 1,
       });
       await this.hostlessVersions().save(hostlessVersion);
@@ -6742,7 +6736,7 @@ export class DbMgr implements MigrationDbMgr {
   ) {
     await this.checkWorkspacePerms(workspaceId, "editor", "create data source");
     const dataSource = this.dataSources().create({
-      ...this.stampNew(true),
+      ...this.stampNew({ genShortUuid: true }),
       workspaceId,
       name: opts.name,
       credentials: opts.credentials ?? {},
@@ -6968,7 +6962,7 @@ export class DbMgr implements MigrationDbMgr {
       "create CMS database"
     );
     const db = this.cmsDatabases().create({
-      ...this.stampNew(true),
+      ...this.stampNew({ genShortUuid: true }),
       name: opts.name,
       workspaceId: opts.workspaceId,
       extraData: { locales: [] },
@@ -7045,7 +7039,7 @@ export class DbMgr implements MigrationDbMgr {
   }): Promise<CmsTable> {
     await this.checkCmsDatabasePerms(opts.databaseId, "editor");
     const table = this.cmsTables().create({
-      ...this.stampNew(true),
+      ...this.stampNew({ genShortUuid: true }),
       name: opts.name,
       identifier: toVarName(opts.identifier),
       description: opts.description,
@@ -7138,8 +7132,8 @@ export class DbMgr implements MigrationDbMgr {
     tableId: CmsTableId,
     opts: {
       identifier?: string;
-      data?: Dict<Dict<unknown>> | null;
-      draftData?: Dict<Dict<unknown>> | null;
+      data?: CmsRowData | null;
+      draftData?: CmsRowData | null;
     }
   ) {
     const [row] = await this.createCmsRows(tableId, [opts]);
@@ -7155,8 +7149,8 @@ export class DbMgr implements MigrationDbMgr {
     tableId: CmsTableId,
     rowInputs: {
       identifier?: string;
-      data?: Dict<Dict<unknown>> | null;
-      draftData?: Dict<Dict<unknown>> | null;
+      data?: CmsRowData | null;
+      draftData?: CmsRowData | null;
     }[]
   ) {
     const table = await this.getCmsTableById(tableId);
@@ -7179,21 +7173,21 @@ export class DbMgr implements MigrationDbMgr {
     );
 
     const rows = rowInputs.map((opts) => {
-      const data: Dict<Dict<unknown>> | null = opts.data
+      const data: CmsRowData | null = opts.data
         ? L.merge({}, defaults, pickKnownFieldsByLocale(table, opts.data))
         : null;
-      const draftData: Dict<Dict<unknown>> | null =
+      const draftData: CmsRowData | null =
         opts.draftData || !opts.data
           ? L.merge(
               {},
               defaults,
-              pickKnownFieldsByLocale(table, opts.draftData || {})
+              pickKnownFieldsByLocale(table, opts.draftData || { "": {} })
             )
           : null;
 
       // TODO: Verify that data is valid per field type!!
       const row = this.cmsRows().create({
-        ...this.stampNew(true),
+        ...this.stampNew({ genShortUuid: true }),
         tableId: tableId,
         identifier: opts.identifier,
         rank: "",
@@ -7220,13 +7214,68 @@ export class DbMgr implements MigrationDbMgr {
     );
   }
 
+  async checkUniqueFields(
+    tableId: CmsTableId,
+    opts: {
+      rowId: CmsRowId;
+      uniqueFieldsData: Dict<unknown>;
+    }
+  ): Promise<UniqueFieldCheck[]> {
+    const table = await this.getCmsTableById(tableId);
+    await this.checkCmsDatabasePerms(table.databaseId, "content");
+
+    // Check if unique fields have violations.
+    const uniqueFieldsData = getUniqueFieldsData(table, {
+      "": opts.uniqueFieldsData,
+    });
+    const finalData = Object.entries(uniqueFieldsData).filter(
+      ([_field, value]) => value !== null && value !== undefined
+    );
+    if (finalData.length === 0) {
+      throw new BadRequestError("No unique fields to check");
+    }
+
+    const { condition, params } = makeSqlCondition(
+      table,
+      {
+        $or: finalData.map(([field, value]) => ({
+          [field]: value,
+        })),
+      },
+      { useDraft: false }
+    );
+
+    const rows = await this.cmsRows()
+      .createQueryBuilder("r")
+      .where("r.tableId = :tableId", { tableId })
+      .andWhere("r.deletedAt IS NULL")
+      .andWhere("r.data IS NOT NULL")
+      .andWhere("r.id != :rowId", { rowId: opts.rowId })
+      .andWhere(condition)
+      .setParameters(params)
+      .getMany();
+    return Promise.all(
+      Object.entries(opts.uniqueFieldsData).map(
+        async ([fieldIdentifier, value]) => {
+          return {
+            fieldIdentifier: fieldIdentifier,
+            value: value,
+            conflictRowId:
+              rows.find((row) => row.data?.[""]?.[fieldIdentifier] === value)
+                ?.id ?? null,
+          };
+        }
+      )
+    );
+  }
+
   async updateCmsRow(
     rowId: CmsRowId,
     opts: {
       rank?: string;
       identifier?: string;
-      data?: Dict<Dict<unknown>>;
-      draftData?: Dict<Dict<unknown>> | null;
+      data?: CmsRowData;
+      draftData?: CmsRowData | null;
       revision?: number;
       noMerge?: boolean;
     }
@@ -7247,9 +7296,9 @@ export class DbMgr implements MigrationDbMgr {
       );
     }
     const mergedData = (
-      existing: Record<string, any> | null,
-      update: Record<string, any> | null | undefined
-    ) => {
+      existing: CmsRowData | null,
+      update: CmsRowData | null | undefined
+    ): CmsRowData | null => {
       if (update == null) {
         return null;
       }
@@ -7270,9 +7319,22 @@ export class DbMgr implements MigrationDbMgr {
         }
       );
     };
-
     if ("data" in opts) {
       row.data = mergedData(row.data, opts.data);
+
+      // Check if unique fields have violations.
+      if (row.data) {
+        const uniqueFieldsData = getUniqueFieldsData(table, row.data);
+        if (Object.keys(uniqueFieldsData).length > 0) {
+          const uniqueFieldsCheck = await this.checkUniqueFields(table.id, {
+            rowId: row.id,
+            uniqueFieldsData: uniqueFieldsData,
+          });
+          if (uniqueFieldsCheck.some((field) => field.conflictRowId)) {
+            throw new UniqueViolationError(uniqueFieldsCheck);
+          }
+        }
+      }
     }
     if ("draftData" in opts) {
       /* on publish, we set draft data to null, and then we should use
@@ -7284,7 +7346,7 @@ export class DbMgr implements MigrationDbMgr {
 
     const draftRevision = opts.draftData
       ? this.cmsRowRevisions().create({
-          ...this.stampNew(true),
+          ...this.stampNew({ genShortUuid: true }),
           rowId: rowId,
           data: ensure(
             row.draftData,
@@ -7296,7 +7358,7 @@ export class DbMgr implements MigrationDbMgr {
 
     const publishedRevision = opts.data
       ? this.cmsRowRevisions().create({
-          ...this.stampNew(true),
+          ...this.stampNew({ genShortUuid: true }),
           rowId: rowId,
           data: ensure(row.data, "All cms rows must have the data dictionary"),
           isPublished: true,
@@ -7365,6 +7427,23 @@ export class DbMgr implements MigrationDbMgr {
       draftData: row.draftData || row.data,
     });
     return await this.entMgr.save(copiedRow);
+  }
+
+  async getPublishedRows(tableId: CmsTableId) {
+    const publishedRows = await this.entMgr.find(CmsRow, {
+      tableId: tableId,
+      data: Not(IsNull()),
+      deletedAt: IsNull(),
+    });
+    if (publishedRows.length > 500) {
+      Sentry.captureEvent({
+        message: "The result of the db query contains more than 500 rows.",
+        extra: {
+          tableId: tableId,
+        },
+      });
+    }
+    return publishedRows;
   }
 
   // TODO We are always querying just the default locale.
@@ -7739,7 +7818,7 @@ export class DbMgr implements MigrationDbMgr {
     checkBranchFields({ name }, allBranches);
 
     const branch = this.branches().create({
-      ...this.stampNew(true),
+      ...this.stampNew({ genShortUuid: true }),
       name,
       status: "active",
       projectId,
@@ -7921,6 +8000,8 @@ export class DbMgr implements MigrationDbMgr {
       resolution,
       autoCommitOnToBranch = false,
       excludeMergeStepFromResult = false,
+      description = "Auto-generated commit post-merge",
+      tags = [],
     }: MergeArgs,
     { mode }: { mode: "preview" | "try" }
   ): Promise<MergeResult> {
@@ -8284,8 +8365,8 @@ export class DbMgr implements MigrationDbMgr {
       projectId,
       // TODO compute the semantic version bump
       undefined,
-      [],
-      "Auto-generated commit post-merge",
+      tags,
+      description,
       undefined,
       undefined,
       toBranchId,
@@ -9600,13 +9681,14 @@ export class DbMgr implements MigrationDbMgr {
   }: ProjectAndBranchId): Promise<CommentThread[]> {
     await this.checkProjectBranchPerms(
       { projectId, branchId },
-      "viewer",
+      "commenter",
       "view comments",
       false
     );
     const query = this.commentThreads()
       .createQueryBuilder("thread")
       .leftJoinAndSelect("thread.comments", "comment")
+      .leftJoinAndSelect("thread.commentThreadHistories", "history")
       .where("thread.projectId = :projectId", { projectId });
     if (branchId) {
       query.andWhere("thread.branchId = :branchId", {
@@ -9615,11 +9697,23 @@ export class DbMgr implements MigrationDbMgr {
     } else {
       query.andWhere("thread.branchId IS NULL");
     }
-    return await query
-      .andWhere("thread.deletedAt is null and comment.deletedAt is null")
-      .orderBy("thread.createdAt", "ASC")
+    const threads = await query
+      .andWhere("thread.deletedAt is null")
+      .orderBy("thread.createdAt", "DESC")
       .addOrderBy("comment.createdAt", "ASC")
+      .addOrderBy("history.createdAt", "ASC")
       .getMany();
+
+    // Update deleted comments in place
+    threads.forEach((thread) =>
+      thread.comments.forEach((comment) => {
+        if (comment.deletedAt) {
+          comment.body = "";
+        }
+      })
+    );
+
+    return threads;
   }
 
   async getCommentsForThread(
@@ -9637,35 +9731,117 @@ export class DbMgr implements MigrationDbMgr {
     });
   }
 
-  // TODO: Add a `lastChangedAt` timestamp for threads to track any updates
-  // (new comments, resolution changes). Use this field to filter threads
-  // efficiently instead of checking each comment's createdAt.
-  async getUnnotifiedCommentThreads(): Promise<CommentThread[]> {
+  async getUnnotifiedCommentThreads(before: Date): Promise<CommentThread[]> {
     this.checkSuperUser();
     return await this.commentThreads()
       .createQueryBuilder("thread")
-      .leftJoinAndSelect("thread.comments", "comment")
-      .leftJoinAndSelect("comment.createdBy", "createdBy")
-      .andWhere("thread.deletedAt is null and comment.deletedAt is null")
+      .where("thread.deletedAt IS NULL")
+      .leftJoinAndSelect("thread.branch", "branch")
       .andWhere(
-        "(thread.lastEmailedAt IS NULL OR comment.createdAt > thread.lastEmailedAt)"
+        "(thread.lastEmailedAt is NULL OR (thread.updatedAt > thread.lastEmailedAt AND thread.updatedAt <= :before))",
+        { before }
       )
-      .orderBy("thread.createdAt", "ASC")
-      .addOrderBy("comment.createdAt", "ASC")
+      .orderBy("thread.updatedAt", "ASC")
       .getMany();
   }
 
-  async markCommentsAsNotified(commentThreadIds: string[]): Promise<void> {
+  async getUnnotifiedCommentsByThreadIds(
+    threadIds: CommentThreadId[],
+    before: Date
+  ): Promise<Comment[]> {
+    this.checkSuperUser();
+    if (threadIds.length === 0) {
+      return [];
+    }
+
+    return await this.comments()
+      .createQueryBuilder("comment")
+      .leftJoinAndSelect("comment.commentThread", "thread")
+      .leftJoinAndSelect("comment.createdBy", "createdBy")
+      .where("thread.id IN (:...threadIds)", { threadIds })
+      .andWhere(
+        "(thread.lastEmailedAt is NULL OR (comment.createdAt > thread.lastEmailedAt AND comment.createdAt <= :before))",
+        { before }
+      )
+      .andWhere("comment.deletedAt IS NULL")
+      .orderBy("comment.createdAt", "ASC")
+      .getMany();
+  }
+
+  async getUnnotifiedCommentsThreadHistoriesByThreadIds(
+    threadIds: CommentThreadId[],
+    before: Date
+  ): Promise<CommentThreadHistory[]> {
+    this.checkSuperUser();
+    if (threadIds.length === 0) {
+      return [];
+    }
+
+    return await this.commentThreadHistory()
+      .createQueryBuilder("threadHistory")
+      .leftJoinAndSelect("threadHistory.commentThread", "thread")
+      .leftJoinAndSelect("thread.branch", "branch")
+      .leftJoinAndSelect("threadHistory.createdBy", "createdBy")
+      .where("thread.id IN (:...threadIds)", { threadIds })
+      .andWhere(
+        "(thread.lastEmailedAt is NULL OR (threadHistory.createdAt > thread.lastEmailedAt AND threadHistory.createdAt <= :before))",
+        { before }
+      )
+      .andWhere("threadHistory.deletedAt IS NULL")
+      .orderBy("threadHistory.createdAt", "ASC")
+      .getMany();
+  }
+
+  async getUnnotifiedCommentsReactionsByThreadIds(
+    threadIds: CommentThreadId[],
+    before: Date
+  ): Promise<CommentReaction[]> {
+    this.checkSuperUser();
+    if (threadIds.length === 0) {
+      return [];
+    }
+
+    return await this.commentReactions()
+      .createQueryBuilder("commentReaction")
+      .leftJoinAndSelect("commentReaction.comment", "comment")
+      .leftJoinAndSelect("comment.commentThread", "thread")
+      .leftJoinAndSelect("thread.branch", "branch")
+      .leftJoinAndSelect("commentReaction.createdBy", "reactionCreator")
+      .leftJoinAndSelect("comment.createdBy", "commentCreator")
+      .where("thread.id IN (:...threadIds)", { threadIds })
+      .andWhere(
+        "(thread.lastEmailedAt is NULL OR (commentReaction.createdAt > thread.lastEmailedAt AND commentReaction.createdAt <= :before))",
+        { before }
+      )
+      .andWhere("commentReaction.deletedAt IS NULL")
+      .orderBy("commentReaction.createdAt", "ASC")
+      .getMany();
+  }
+
+  async markCommentThreadsAsNotified(
+    commentThreadIds: string[],
+    notifiedDate: Date
+  ): Promise<void> {
     this.checkSuperUser();
     await this.commentThreads().update(
-      { id: In(commentThreadIds) }, // Match comments by their IDs
-      { lastEmailedAt: new Date() } // Set the notification status to true
+      { id: In(commentThreadIds) },
+      { lastEmailedAt: notifiedDate }
     );
+  }
+
+  async getCommentThreadAndStampUpdate(
+    threadId: CommentThreadId
+  ): Promise<CommentThread> {
+    const commentThread = await findExactlyOne(this.commentThreads(), {
+      id: threadId,
+    });
+    Object.assign(commentThread, this.stampUpdate());
+    return commentThread;
   }
 
   async postCommentInThread(
     { projectId, branchId }: ProjectAndBranchId,
-    data: { body: string; threadId: string }
+    data: { id: CommentId; threadId: CommentThreadId; body: string }
   ): Promise<Comment> {
     await this.checkProjectBranchPerms(
       { projectId, branchId },
@@ -9673,19 +9849,40 @@ export class DbMgr implements MigrationDbMgr {
       "post comment",
       true
     );
-    const threadId = data.threadId;
+    const { id, body, threadId } = data;
+    if (!isUuidV4(id)) {
+      throw new BadRequestError(
+        "Invalid UUID format: 'id' must be a valid UUID."
+      );
+    }
     const comment = this.comments().create({
-      ...this.stampNew(),
-      body: data.body,
+      ...this.stampNew({ id }),
       commentThreadId: threadId,
+      body: body,
     });
-    await this.entMgr.save([comment]);
+    await this.entMgr.save(comment);
+    await this.commentThreads().update(
+      {
+        id: comment.commentThreadId,
+      },
+      {
+        ...this.stampUpdate(),
+        deletedAt: null,
+        deletedById: null,
+      }
+    );
+
     return comment;
   }
 
   async postRootCommentInProject(
     { projectId, branchId }: ProjectAndBranchId,
-    data: { location: CommentLocation; body: string }
+    data: {
+      commentThreadId: CommentThreadId;
+      commentId: CommentId;
+      location: CommentLocation;
+      body: string;
+    }
   ): Promise<Comment> {
     await this.checkProjectBranchPerms(
       { projectId, branchId },
@@ -9693,16 +9890,27 @@ export class DbMgr implements MigrationDbMgr {
       "post comment",
       true
     );
+    const { commentThreadId, commentId, location, body } = data;
+    if (!isUuidV4(commentThreadId)) {
+      throw new BadRequestError(
+        "Invalid UUID format: 'commentThreadId' must be a valid UUID."
+      );
+    }
+    if (!isUuidV4(commentId)) {
+      throw new BadRequestError(
+        "Invalid UUID format: 'commentId' must be a valid UUID."
+      );
+    }
     const commentThread = this.commentThreads().create({
-      ...this.stampNew(),
+      ...this.stampNew({ id: commentThreadId }),
       projectId,
       branchId: branchId ?? null,
-      ...data,
+      location,
     });
     const comment = this.comments().create({
-      ...this.stampNew(),
-      body: data.body,
+      ...this.stampNew({ id: commentId }),
       commentThreadId: commentThread.id,
+      body,
     });
     await this.entMgr.save([commentThread, comment]);
     return comment;
@@ -9724,6 +9932,7 @@ export class DbMgr implements MigrationDbMgr {
   }
 
   async resolveThreadInProject(
+    id: ThreadHistoryId,
     commentThreadId: CommentThreadId,
     resolved: boolean
   ) {
@@ -9740,8 +9949,13 @@ export class DbMgr implements MigrationDbMgr {
       );
     }
 
+    if (!isUuidV4(id)) {
+      throw new BadRequestError(
+        "Invalid UUID format: 'id' must be a valid UUID."
+      );
+    }
     const commentThreadHistory = this.commentThreadHistory().create({
-      ...this.stampNew(),
+      ...this.stampNew({ id }),
       commentThreadId: commentThreadId,
       resolved: resolved,
     });
@@ -9749,7 +9963,7 @@ export class DbMgr implements MigrationDbMgr {
       resolved: resolved,
     });
     await this.entMgr.save([commentThread, commentThreadHistory]);
-    return commentThread;
+    return commentThreadHistory;
   }
 
   async deleteCommentInProject(
@@ -9769,6 +9983,21 @@ export class DbMgr implements MigrationDbMgr {
     }
     Object.assign(comment, this.stampDelete());
     await this.entMgr.save(comment);
+
+    await this.commentThreads()
+      .createQueryBuilder()
+      .update()
+      .set({ deletedAt: new Date() })
+      .where("id = :threadId", { threadId: comment.commentThreadId })
+      .andWhere(
+        `NOT EXISTS (
+      SELECT 1 FROM "comment" c
+      WHERE c."commentThreadId" = :threadId AND c."deletedAt" IS NULL
+    )`
+      )
+      .setParameter("threadId", comment.commentThreadId)
+      .execute();
+
     return comment;
   }
 
@@ -9833,7 +10062,7 @@ export class DbMgr implements MigrationDbMgr {
       ]) ?? undefined;
     await this.checkProjectBranchPerms(
       { projectId, branchId },
-      "viewer",
+      "commenter",
       "view comment reactions",
       false
     );
@@ -9849,6 +10078,7 @@ export class DbMgr implements MigrationDbMgr {
   }
 
   async addCommentReaction(
+    id: CommentReactionId,
     commentId: CommentId,
     data: CommentReactionData
   ): Promise<CommentReaction> {
@@ -9858,12 +10088,23 @@ export class DbMgr implements MigrationDbMgr {
       "post comment reaction",
       true
     );
+    if (!isUuidV4(id)) {
+      throw new BadRequestError(
+        "Invalid UUID format: 'id' must be a valid UUID."
+      );
+    }
     const reaction = this.commentReactions().create({
-      ...this.stampNew(),
+      ...this.stampNew({ id }),
       commentId,
       data,
     });
-    await this.entMgr.save([reaction]);
+    const comment = await findExactlyOne(this.comments(), {
+      id: reaction.commentId,
+    });
+    const commentThread = await this.getCommentThreadAndStampUpdate(
+      comment.commentThreadId
+    );
+    await this.entMgr.save([commentThread, reaction]);
     return reaction;
   }
 
@@ -9879,8 +10120,14 @@ export class DbMgr implements MigrationDbMgr {
       "post comment reaction",
       true
     );
+    const comment = await findExactlyOne(this.comments(), {
+      id: reaction.commentId,
+    });
     Object.assign(reaction, this.stampDelete());
-    await this.entMgr.save([reaction]);
+    const commentThread = await this.getCommentThreadAndStampUpdate(
+      comment.commentThreadId
+    );
+    await this.entMgr.save([commentThread, reaction]);
     return reaction;
   }
 
@@ -9891,7 +10138,7 @@ export class DbMgr implements MigrationDbMgr {
     addPerm: boolean
   ) {
     const comment = await findExactlyOne(this.comments(), {
-      id: commentId,
+      where: { id: commentId },
       relations: ["commentThread"],
     });
     const commentThread = ensure(
@@ -9915,7 +10162,7 @@ export class DbMgr implements MigrationDbMgr {
   ): Promise<ApiNotificationSettings | undefined> {
     await this.checkProjectPerms(
       projectId,
-      "viewer",
+      "commenter",
       "get notification settings",
       false
     );
@@ -9933,7 +10180,7 @@ export class DbMgr implements MigrationDbMgr {
   ) {
     await this.checkProjectPerms(
       projectId,
-      "viewer",
+      "commenter",
       "update notification settings",
       false
     );
@@ -10139,8 +10386,6 @@ export class DbMgr implements MigrationDbMgr {
     project.hostUrl = null;
     project.projectApiToken = null;
     project.secretApiToken = null;
-    project.codeSandboxId = null;
-    project.codeSandboxInfos = null;
     project.workspaceId = null;
     project.extraData = null;
     await this.entMgr.save(project);

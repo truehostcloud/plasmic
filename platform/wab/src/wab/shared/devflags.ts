@@ -287,7 +287,6 @@ const DEFAULT_DEVFLAGS = {
   defaultHostUrl:
     process.env.REACT_APP_DEFAULT_HOST_URL ||
     "https://host.plasmicdev.com/static/host.html",
-  defaultOpenStylePanels: true,
   dynamicPages: true,
   enablePlasmicHosting: true,
   // Used to invalidate etag cacheing mechanism altogether
@@ -335,11 +334,8 @@ const DEFAULT_DEVFLAGS = {
   freeTrialTierName: "Growth",
   newFreeTrialTierName: "Team",
   freeTrialDays: 15,
-  productHuntPromo: false,
   freeTrialPromoDays: 60,
   createTeamPrompt: true,
-  hideHelpForUsers: [".*@example.com"],
-  hideStartersForUsers: [".*@example.com"],
   insertPanelContent: ensureType<InsertPanelConfig>({
     componentsLabel: "Custom components",
     aliases: {},
@@ -405,16 +401,15 @@ const DEFAULT_DEVFLAGS = {
   secretApiTokenTeams: ["teamId"],
   selectInserted: true,
   showFullPreviewWarning: true,
-  skipFreeVars: true,
   starterSections: [] as StarterSectionConfig[],
-  versions: true,
-  showMultipleAvatars: true,
   hiddenQuickstartPlatforms: ensureType<string[]>([]),
   mungeErrorMessages: {
     "AuthError: CSRF token mismatch":
       "Your login session has expired. Please reload to log in again.",
   },
   showCopilot: true,
+  allowHtmlPaste: false,
+  enableUiCopilot: false,
 
   loaderBundler: "esbuild",
   esbuildProjectIds: [] as string[],
@@ -432,25 +427,19 @@ const DEFAULT_DEVFLAGS = {
   posthog: true,
   copilotTab: false,
   copilotClaude: false,
-  cleanRedundantOverrides: false,
-  cms: false,
   comments: false,
   commentsTeamIds: [] as TeamId[],
   rightTabs: true,
   codePreview: false,
   demo: false,
-  direct: false,
   enableReactDevTools: false, // used in studio.js
   hideBlankStarter: false,
-  hideSingleSlots: false,
   hideSyncStatusIndicator: false,
   interactiveCanvas: true,
   insert2022Q4: true,
   sso: false,
   omnibar: false,
-  orderVariantsByUid: false,
   paywalls: false,
-  showCondVariants: false,
   showIntroSplash: false,
   skipInvariants: false,
   uncatchErrors: false,
@@ -467,7 +456,6 @@ const DEFAULT_DEVFLAGS = {
   setHostLessProject: false,
   plasmicHostingSubdomainSuffix: "plasmic.run",
   splits: true,
-  mutateState: false,
   refActions: false,
   multiSelect: false,
   dataTabTourForUsersBefore: "2023-02-28",
@@ -512,7 +500,6 @@ const DEFAULT_DEVFLAGS = {
   spacingVisualizer202209: true,
   gapControls: false,
   contentOnly: false,
-  publishWithTags: true,
   ancestorsBoxes: true,
   branching: false,
   disableBranching: false,
@@ -578,9 +565,9 @@ const DEFAULT_DEVFLAGS = {
   */
   templateTours: {} as Record<string, string>,
 
-  arbitraryCssSelectors: false,
-
   autoOpen: false,
+  autoOpen2: false,
+  cmsUniqueFields: false,
 
   allowImportedHostlessPkgUpdate: false,
 };
@@ -662,8 +649,11 @@ export function applyPlasmicUserDevFlagOverrides(target: DevFlagsType) {
     authUsersTab: true,
     warningsInCanvas: true,
     previewSteps: true,
-    arbitraryCssSelectors: true,
     autoOpen: true,
+    autoOpen2: true,
+    allowHtmlPaste: true,
+    enableUiCopilot: true,
+    cmsUniqueFields: true,
   } as Partial<DevFlagsType>);
 }
 

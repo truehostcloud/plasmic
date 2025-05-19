@@ -1,13 +1,9 @@
-import { DEVFLAGS } from "@/wab/shared/devflags";
-
 export const PERSONAL_WORKSPACE = "My playground";
 
 export const ARENAS_CAP = "Custom arenas";
 
 export const ARENA_CAP = "Custom arena";
 export const ARENA_LOWER = ARENA_CAP.toLowerCase();
-
-export const A_FRAME_LOWER = "an artboard";
 
 export const VARIABLE_CAP = "State variable";
 export const VARIABLE_LOWER = VARIABLE_CAP.toLowerCase();
@@ -39,6 +35,12 @@ export const COMPONENT_PROP_LOWER = COMPONENT_PROP_CAP.toLowerCase();
 export const COMPONENT_PROP_PLURAL_CAP = "Props";
 export const COMPONENT_PROP_PLURAL_LOWER =
   COMPONENT_PROP_PLURAL_CAP.toLowerCase();
+
+/**
+ * Verb for resetting/clearing/removing a prop/style value,
+ * resulting in the prop/style reverting to its default value.
+ */
+export const RESET_CAP = "Remove";
 
 export const CONTAINER_LOWER = "box";
 export const STACK_LOWER = "stack";
@@ -88,11 +90,7 @@ export const VARIANT_OPTION_LOWER = VARIANT_OPTION_CAP.toLowerCase();
 
 export const INTERACTION_VARIANTS_LOWER = "interaction variants";
 
-// This label will be wrong until the devflag is changed in code.
-// TODO: Remove devflag to ensure the label is updated
-export const PRIVATE_STYLE_VARIANTS_CAP = DEVFLAGS.arbitraryCssSelectors
-  ? "Element variants"
-  : "Element states";
+export const PRIVATE_STYLE_VARIANTS_CAP = "Element variants";
 
 export const ARENAS_DESCRIPTION = `${ARENAS_CAP} are where you can lay out artboards however you want, similar to vector design tools.`;
 

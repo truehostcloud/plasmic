@@ -2,11 +2,12 @@ import { CmsTable } from "@/wab/server/entities/Entities";
 import { BadRequestError } from "@/wab/shared/ApiErrors/errors";
 import {
   CmsFieldMeta,
+  CmsMetaType,
+  CmsRowData,
   CmsTableSchema,
   CmsTypeName,
   FilterClause,
   FilterCond,
-  CmsMetaType,
 } from "@/wab/shared/ApiSchema";
 import { toVarName } from "@/wab/shared/codegen/util";
 import { Dict } from "@/wab/shared/collections";
@@ -40,7 +41,7 @@ export function makeFieldMetaMap(schema: CmsTableSchema, fields?: string[]) {
 }
 
 export function projectCmsData(
-  data: Dict<Dict<unknown> | undefined>,
+  data: CmsRowData,
   fieldMetaMap: Record<string, CmsFieldMeta>,
   locale: string
 ) {
@@ -59,12 +60,12 @@ export function projectCmsData(
 }
 
 export function normalizeCmsData(
-  data: Dict<unknown> | undefined,
+  data: CmsRowData | undefined,
   fieldMetaMap: Record<string, CmsFieldMeta>,
   locales?: string[]
-): Dict<Dict<unknown>> {
+): CmsRowData {
   if (!data) {
-    return {};
+    return { "": {} };
   }
   return Object.fromEntries(
     ["", ...(locales ?? [])].map((locale) => [
@@ -94,11 +95,11 @@ export function normalizeCmsData(
         )
       ),
     ])
-  );
+  ) as CmsRowData;
 }
 
 export function denormalizeCmsData(
-  data: Dict<Dict<unknown>> | null,
+  data: CmsRowData | null,
   tableSchema: CmsFieldMeta[],
   locales?: string[]
 ): Dict<unknown> | null {
@@ -304,11 +305,12 @@ export function makeSqlCondition(
   };
 }
 
-const typeToPgType = (type: CmsTypeName) => {
+export const typeToPgType = (type: CmsTypeName) => {
   switch (type) {
     case CmsMetaType.TEXT:
-      return "text";
     case CmsMetaType.LONG_TEXT:
+    case CmsMetaType.REF:
+    case CmsMetaType.ENUM:
       return "text";
     case CmsMetaType.BOOLEAN:
       return "boolean";
@@ -316,8 +318,6 @@ const typeToPgType = (type: CmsTypeName) => {
       return "numeric";
     case CmsMetaType.DATE_TIME:
       return "timestamp";
-    case CmsMetaType.REF:
-      return "text";
     default:
       throw new BadRequestError(`Cannot filter by a column of type ${type}`);
   }

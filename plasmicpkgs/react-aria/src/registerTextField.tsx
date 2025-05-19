@@ -33,8 +33,18 @@ const { variants, withObservedValues } =
 export function BaseTextField(props: BaseTextFieldProps) {
   const { children, plasmicUpdateVariant, autoComplete, ...rest } = props;
 
+  const contextValue = React.useMemo(() => {
+    return {
+      isDisabled: props.isDisabled,
+      isReadOnly: props.isReadOnly,
+    };
+  }, [props.isDisabled, props.isReadOnly]);
+
   return (
-    <PlasmicTextFieldContext.Provider value={props}>
+    // PlasmicTextFieldContext is used by
+    // - BaseInput
+    // - BaseTextArea
+    <PlasmicTextFieldContext.Provider value={contextValue}>
       <TextField
         autoComplete={resolveAutoComplete(autoComplete)}
         {...rest}

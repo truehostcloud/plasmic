@@ -1,6 +1,6 @@
-// @ts-nocheck
 /* eslint-disable */
 /* tslint:disable */
+// @ts-nocheck
 /* prettier-ignore-start */
 
 /** @jsxRuntime classic */
@@ -85,7 +85,6 @@ export type PlasmicButton__VariantsArgs = {
     | "bordered"
     | "leftAligned"
   >;
-
   withIcons?: MultiChoiceArg<"startIcon" | "endIcon" | "endIconOnHover">;
   font?: SingleChoiceArg<"bold" | "dim">;
   size?: SingleChoiceArg<"small" | "stretch" | "wide" | "compact" | "medium">;
@@ -105,19 +104,21 @@ export const PlasmicButton__VariantProps = new Array<VariantPropType>(
 );
 
 export type PlasmicButton__ArgsType = {
-  children?: React.ReactNode;
-  startIcon?: React.ReactNode;
-  endIcon?: React.ReactNode;
-  caption?: React.ReactNode;
   isSubmit?: boolean;
+  onClick?: (event: any) => void;
+  startIcon?: React.ReactNode;
+  children?: React.ReactNode;
+  caption?: React.ReactNode;
+  endIcon?: React.ReactNode;
 };
 type ArgPropType = keyof PlasmicButton__ArgsType;
 export const PlasmicButton__ArgProps = new Array<ArgPropType>(
-  "children",
+  "isSubmit",
+  "onClick",
   "startIcon",
-  "endIcon",
+  "children",
   "caption",
-  "isSubmit"
+  "endIcon"
 );
 
 export type PlasmicButton__OverridesType = {
@@ -128,11 +129,12 @@ export type PlasmicButton__OverridesType = {
 };
 
 export interface DefaultButtonProps {
-  children?: React.ReactNode;
-  startIcon?: React.ReactNode;
-  endIcon?: React.ReactNode;
-  caption?: React.ReactNode;
   isSubmit?: boolean;
+  onClick?: (event: any) => void;
+  startIcon?: React.ReactNode;
+  children?: React.ReactNode;
+  caption?: React.ReactNode;
+  endIcon?: React.ReactNode;
   type?: MultiChoiceArg<
     | "primary"
     | "link"
@@ -151,7 +153,6 @@ export interface DefaultButtonProps {
     | "bordered"
     | "leftAligned"
   >;
-
   withIcons?: MultiChoiceArg<"startIcon" | "endIcon" | "endIconOnHover">;
   font?: SingleChoiceArg<"bold" | "dim">;
   size?: SingleChoiceArg<"small" | "stretch" | "wide" | "compact" | "medium">;
@@ -236,7 +237,6 @@ function PlasmicButton__RenderFunc(props: {
         initFunc: ({ $props, $state, $queries, $ctx }) => $props.color,
       },
     ],
-
     [$props, $ctx, $refs]
   );
   const $state = useDollarState(stateSpecs, {
@@ -404,6 +404,7 @@ function PlasmicButton__RenderFunc(props: {
         }
       )}
       disabled={hasVariant($state, "disabled", "disabled") ? true : undefined}
+      onClick={args.onClick}
       data-plasmic-trigger-props={[triggerRootHoverProps]}
     >
       {(hasVariant($state, "withIcons", "startIcon") ? true : false) ? (
@@ -1253,7 +1254,6 @@ type NodeOverridesType<T extends NodeNameType> = Pick<
   PlasmicButton__OverridesType,
   DescendantsType<T>
 >;
-
 type NodeComponentProps<T extends NodeNameType> =
   // Explicitly specify variants, args, and overrides as objects
   {
@@ -1261,15 +1261,15 @@ type NodeComponentProps<T extends NodeNameType> =
     args?: PlasmicButton__ArgsType;
     overrides?: NodeOverridesType<T>;
   } & Omit<PlasmicButton__VariantsArgs, ReservedPropsType> & // Specify variants directly as props
-    /* Specify args directly as props*/ Omit<
-      PlasmicButton__ArgsType,
-      ReservedPropsType
-    > &
-    /* Specify overrides for each element directly as props*/ Omit<
+    // Specify args directly as props
+    Omit<PlasmicButton__ArgsType, ReservedPropsType> &
+    // Specify overrides for each element directly as props
+    Omit<
       NodeOverridesType<T>,
       ReservedPropsType | VariantPropType | ArgPropType
     > &
-    /* Specify props for the root element*/ Omit<
+    // Specify props for the root element
+    Omit<
       Partial<React.ComponentProps<NodeDefaultElementType[T]>>,
       ReservedPropsType | VariantPropType | ArgPropType | DescendantsType<T>
     >;

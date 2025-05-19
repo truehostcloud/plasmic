@@ -118,6 +118,7 @@ import {
   Component,
   ComponentDataQuery,
   ComponentParams,
+  ComponentServerQuery,
   ComponentTemplateInfo,
   ComponentVariantGroup,
   DataSourceOpExpr,
@@ -529,6 +530,15 @@ export function cloneComponentDataQuery(query: ComponentDataQuery) {
   return cloned;
 }
 
+function cloneComponentServerQuery(query: ComponentServerQuery) {
+  const cloned = new ComponentServerQuery({
+    uuid: mkShortId(),
+    name: query.name,
+    op: query.op ? cloneExpr(query.op) : query.op,
+  });
+  return cloned;
+}
+
 export function cloneQueryRef(queryRef: QueryRef) {
   return new QueryRef({ ref: queryRef.ref });
 }
@@ -737,7 +747,7 @@ export function cloneComponent(
       oldToNewComponentQuery.set(componentDataQuery, cloned);
       return cloned;
     }),
-    serverQueries: fromComponent.serverQueries,
+    serverQueries: fromComponent.serverQueries.map(cloneComponentServerQuery),
     figmaMappings: fromComponent.figmaMappings.map(
       (c) => new FigmaComponentMapping({ ...c })
     ),
@@ -1663,7 +1673,6 @@ export function isCodeComponent(
 export function isCodeComponentTpl(tpl: TplNode): tpl is TplComponent {
   return isTplComponent(tpl) && isCodeComponent(tpl.component);
 }
-
 export interface ContextCodeComponent extends CodeComponent {
   isContext: true;
 }
@@ -1794,6 +1803,12 @@ export function allCodeComponentVariants(component: Component) {
 
 export function allStyleOrCodeComponentVariants(component: Component) {
   return component.variants.filter(isStyleOrCodeComponentVariant);
+}
+
+export function allComponentStyleOrCodeComponentVariants(component: Component) {
+  return component.variants.filter(
+    (v) => isComponentStyleVariant(v) || isCodeComponentVariant(v)
+  );
 }
 
 export function allPrivateStyleVariants(component: Component, tpl: TplNode) {

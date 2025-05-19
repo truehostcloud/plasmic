@@ -48,6 +48,7 @@ export type CmsRowId = Opaque<string, "CmsRowId">;
 export type CmsRowRevisionId = Opaque<string, "CmsRowRevisionId">;
 export type CommentId = Opaque<string, "CommentId">;
 export type CommentReactionId = Opaque<string, "CommentReactionId">;
+export type ThreadHistoryId = Opaque<string, "ThreadHistoryId">;
 export type SsoConfigId = Opaque<string, "SsoConfigId">;
 export type TutorialDbId = Opaque<string, "TutorialDbId">;
 export type DataSourceId = Opaque<string, "DataSourceId">;
@@ -655,6 +656,14 @@ export const arenaTypes = ["custom", "page", "component"] as const;
 
 export type ArenaType = (typeof arenaTypes)[number];
 
+export function isArenaType(x: string | null | undefined): x is ArenaType {
+  if (!x) {
+    return false;
+  } else {
+    return (arenaTypes as readonly string[]).includes(x);
+  }
+}
+
 export interface PlayerViewInfo {
   branchId?: BranchId;
   arenaInfo?: ArenaInfo;
@@ -874,6 +883,8 @@ export interface TryMergeRequest {
   pretend: boolean;
   resolution?: MergeResolution;
   autoCommitOnToBranch?: boolean;
+  description?: string;
+  tags?: string[];
 }
 
 export type TryMergeResponse = MergeResult;
@@ -1237,6 +1248,7 @@ export interface CmsBaseType<T> {
   required: boolean;
   hidden: boolean;
   localized: boolean;
+  unique: boolean;
   /** The empty string "" locale is the default locale. */
   defaultValueByLocale: Dict<T>;
 }
@@ -1392,8 +1404,9 @@ export const cmsFieldMetaDefaults: CmsBaseType<unknown> = {
   required: false,
   hidden: false,
   localized: false,
+  unique: false,
   defaultValueByLocale: {},
-} as const;
+};
 
 export interface CmsDatabaseExtraData {
   /** The additional non-default locales available in this database. Does not include the default ("") locale. */
@@ -1444,8 +1457,8 @@ export interface ApiCmsWriteRow extends ApiEntityBase<CmsRowId> {
 export interface ApiCmseRow extends ApiEntityBase<CmsRowId> {
   tableId: string;
   identifier: string | null;
-  data: Dict<Dict<unknown>> | null;
-  draftData: Dict<Dict<unknown>> | null;
+  data: CmsRowData | null;
+  draftData: CmsRowData | null;
   revision: number | null;
 }
 
@@ -1456,7 +1469,7 @@ export interface ApiCmseRowRevisionMeta
 }
 
 export interface ApiCmseRowRevision extends ApiCmseRowRevisionMeta {
-  data: Dict<Dict<unknown>>;
+  data: CmsRowData;
 }
 
 export interface ApiCmsQuery {
@@ -1544,11 +1557,14 @@ export type CommentLocation = {
 
 // Comment data is already branch specific
 export type RootCommentData = {
+  commentThreadId: CommentThreadId;
+  commentId: CommentId;
   body: string;
   location: CommentLocation;
 };
 
 export type ThreadCommentData = {
+  id: CommentId;
   body: string;
 };
 
@@ -1560,6 +1576,13 @@ export interface ApiCommentThread extends ApiEntityBase<CommentThreadId> {
   location: CommentLocation;
   resolved: boolean;
   comments: ApiComment[];
+  commentThreadHistories: ApiCommentThreadHistory[];
+}
+
+export interface ApiCommentThreadHistory
+  extends ApiEntityBase<ThreadHistoryId> {
+  resolved: boolean;
+  commentThreadId: CommentThreadId;
 }
 
 export interface ApiComment extends ApiEntityBase<CommentId> {
@@ -1589,6 +1612,7 @@ export interface EditCommentRequest {
   body: string;
 }
 export interface ResolveThreadRequest {
+  id: ThreadHistoryId;
   resolved: boolean;
 }
 
@@ -1607,6 +1631,7 @@ export interface DomainsForProjectResponse {
 }
 
 export interface AddCommentReactionRequest {
+  id: CommentReactionId;
   data: CommentReactionData;
 }
 
@@ -1994,11 +2019,26 @@ export interface QueryCopilotDebugRequest extends QueryCopilotResquestBase {
   dataSourcesDebug?: true;
 }
 
+export const copilotImageTypes = ["png", "jpeg", "jpg", "gif", "webp"] as const;
+export type CopilotImageType = (typeof copilotImageTypes)[number];
+
+export type CopilotImage = {
+  type: CopilotImageType;
+  base64: string;
+};
+
+export interface QueryCopilotUiRequest extends QueryCopilotResquestBase {
+  type: "ui";
+  images: Array<CopilotImage>;
+  goal: string;
+}
+
 export type QueryCopilotRequest =
   | QueryCopilotChatRequest
   | QueryCopilotCodeRequest
   | QueryCopilotSqlCodeRequest
-  | QueryCopilotDebugRequest;
+  | QueryCopilotDebugRequest
+  | QueryCopilotUiRequest;
 
 export interface QueryCopilotResponse {
   dataSourcesDebug?: string;
@@ -2006,9 +2046,11 @@ export interface QueryCopilotResponse {
   response: string;
   typeDebug?: string;
 }
-export interface CopilotResponseData extends WholeChatCompletionResponse {
+
+export type CopilotResponseData = {
+  data: WholeChatCompletionResponse;
   copilotInteractionId: CopilotInteractionId;
-}
+};
 
 export interface SendCopilotFeedbackRequest {
   id: CopilotInteractionId;
@@ -2087,4 +2129,26 @@ export interface SendEmailsResponse {
 
 export enum StudioRoomMessageTypes {
   commentsUpdate = "commentsUpdate",
+}
+
+export interface UniqueFieldCheck {
+  fieldIdentifier: string;
+  value: unknown;
+  /** The ID of the conflicting row, if any. */
+  conflictRowId: CmsRowId | null;
+}
+
+/**
+ * CMS row data is the mapping of locale to data.
+ *
+ * Locale is defined in the database, and data schema is defined in the table.
+ * The mapping always includes the default locale, represented with an empty string ("") key.
+ * Other locales are optional.
+ *
+ * This data type represents what's stored in the database, not what's output by the API.
+ * In the API, the locales that are missing a value falls back to the default locale's value.
+ */
+export interface CmsRowData {
+  [""]: Dict<unknown>;
+  [locale: string]: Dict<unknown>;
 }

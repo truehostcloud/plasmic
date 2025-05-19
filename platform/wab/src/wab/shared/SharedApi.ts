@@ -58,6 +58,7 @@ import {
   CloneProjectResponse,
   CmsDatabaseId,
   CmsFileUploadResponse,
+  CmsRowData,
   CmsRowId,
   CmsRowRevisionId,
   CmsTableId,
@@ -167,9 +168,11 @@ import {
   TeamId,
   TeamWhiteLabelInfo,
   ThreadCommentData,
+  ThreadHistoryId,
   TrustedHostsListResponse,
   TryMergeRequest,
   TryMergeResponse,
+  UniqueFieldCheck,
   UpdateHostUrlRequest,
   UpdateHostUrlResponse,
   UpdateNotificationSettingsRequest,
@@ -193,7 +196,6 @@ import {
   omitNils,
 } from "@/wab/shared/common";
 import { OperationTemplate } from "@/wab/shared/data-sources-meta/data-sources";
-import { CodeSandboxInfo } from "@/wab/shared/db-json-blobs";
 import { GrantableAccessLevel } from "@/wab/shared/EntUtil";
 import { LowerHttpMethod } from "@/wab/shared/HttpClientUtil";
 import { modelSchemaHash } from "@/wab/shared/model/classes-metas";
@@ -215,7 +217,6 @@ export interface SiteInfo {
   inviteOnly: boolean;
   hostUrl: string | null;
   defaultAccessLevel: GrantableAccessLevel;
-  codeSandboxInfos?: CodeSandboxInfo[];
   clonedFromProjectId: ProjectId | null;
   projectApiToken: string | null;
   workspaceId: WorkspaceId | null;
@@ -291,7 +292,7 @@ export abstract class SharedApi {
     url: string,
     data?: {},
     opts?: {
-      headers: { [name: string]: string | undefined };
+      headers: { [name: string]: string };
     },
     hideDataOnError?: boolean,
     noErrorTransform?: boolean
@@ -299,9 +300,8 @@ export abstract class SharedApi {
 
   async get(url: string, data?: {}, extraHeaders?: {}) {
     return this.req("get", url, data, {
-      ...this._opts(),
       headers: {
-        ...this._opts().headers,
+        ...this._headers(),
         ...(extraHeaders ?? {}),
       },
     });
@@ -319,9 +319,8 @@ export abstract class SharedApi {
       url,
       data,
       {
-        ...this._opts(),
         headers: {
-          ...this._opts().headers,
+          ...this._headers(),
           ...(extraHeaders ?? {}),
         },
       },
@@ -341,9 +340,8 @@ export abstract class SharedApi {
       url,
       data,
       {
-        ...this._opts(),
         headers: {
-          ...this._opts().headers,
+          ...this._headers(),
           ...(extraHeaders ?? {}),
         },
       },
@@ -353,9 +351,8 @@ export abstract class SharedApi {
 
   async delete(url: string, data?: {}, extraHeaders?: {}) {
     return this.req("delete", url, data, {
-      ...this._opts(),
       headers: {
-        ...this._opts().headers,
+        ...this._headers(),
         ...(extraHeaders ?? {}),
       },
     });
@@ -586,35 +583,6 @@ export abstract class SharedApi {
     return res;
   }
 
-  async publishCodeSandbox(
-    projectId: string,
-    opts: Partial<CodeSandboxInfo>
-  ): Promise<{ id: string }> {
-    return this.post(
-      `/projects/${projectId}/publish-codesandbox`,
-      opts
-    ) as Promise<{
-      id: string;
-    }>;
-  }
-
-  async shareCodeSandbox(
-    projectId: string,
-    sandboxId: string,
-    email: string
-  ): Promise<{}> {
-    return this.post(`/projects/${projectId}/share-codesandbox`, {
-      email,
-      sandboxId,
-    }) as Promise<{}>;
-  }
-
-  async detachCodeSandbox(projectId: string, sandboxId: string): Promise<{}> {
-    return this.post(`/projects/${projectId}/detach-codesandbox`, {
-      sandboxId,
-    }) as Promise<{}>;
-  }
-
   async signUp(data: SignUpRequest): Promise<SignUpResponse> {
     const res: LoginResponse = await this.post("/auth/sign-up", data);
     if (res.status) {
@@ -812,15 +780,15 @@ export abstract class SharedApi {
 
   protected _csrf?: string;
 
-  protected _opts() {
+  protected _headers(): { [key: string]: string } {
     if (this.expectFailure) {
       return {
-        headers: {
-          "x-expect-failure": "true",
-        },
+        "x-expect-failure": "true",
       };
+    } else if (this._csrf) {
+      return { "X-CSRF-Token": this._csrf };
     } else {
-      return { headers: { "X-CSRF-Token": this._csrf } };
+      return {};
     }
   }
 
@@ -1698,8 +1666,8 @@ export abstract class SharedApi {
     tableId: CmsTableId,
     opts: {
       identifier?: string;
-      data: Dict<Dict<unknown>> | null;
-      draftData: Dict<Dict<unknown>> | null;
+      data: CmsRowData | null;
+      draftData: CmsRowData | null;
     }
   ) {
     const { rows } = await this.createCmsRows(tableId, [opts]);
@@ -1710,8 +1678,8 @@ export abstract class SharedApi {
     tableId: CmsTableId,
     rowInputs: {
       identifier?: string;
-      data: Dict<Dict<unknown>> | null;
-      draftData: Dict<Dict<unknown>> | null;
+      data: CmsRowData | null;
+      draftData: CmsRowData | null;
     }[]
   ): Promise<ApiCreateCmsRowsResponse> {
     return await this.post(`/cmse/tables/${tableId}/rows`, {
@@ -1727,8 +1695,8 @@ export abstract class SharedApi {
     rowId: CmsRowId,
     opts: {
       identifier?: string;
-      data?: Dict<Dict<unknown>> | null;
-      draftData?: Dict<Dict<unknown>> | null;
+      data?: CmsRowData | null;
+      draftData?: CmsRowData | null;
       revision?: number | null;
       noMerge?: boolean;
     }
@@ -1743,6 +1711,13 @@ export abstract class SharedApi {
     }
   ) {
     return (await this.post(`/cmse/rows/${rowId}/clone`, opts)) as ApiCmseRow;
+  }
+
+  async checkUniqueFields(
+    tableId: CmsTableId,
+    opts: { rowId: CmsRowId; uniqueFieldsData: Dict<unknown> }
+  ): Promise<UniqueFieldCheck[]> {
+    return await this.post(`/cmse/tables/${tableId}/check-unique-fields`, opts);
   }
 
   async deleteCmsRow(rowId: CmsRowId) {
@@ -1902,6 +1877,7 @@ export abstract class SharedApi {
     branchId: BranchId | undefined,
     commentThreadId: CommentThreadId,
     data: {
+      id: ThreadHistoryId;
       resolved: boolean;
     }
   ): Promise<{}> {
@@ -1945,6 +1921,7 @@ export abstract class SharedApi {
   }
 
   async addReactionToComment(
+    id: CommentReactionId,
     projectId: ProjectId,
     branchId: BranchId | undefined,
     commentId: CommentId,
@@ -1955,7 +1932,7 @@ export abstract class SharedApi {
       `/comments/${projectBranchId}/comment/${encodeURIComponent(
         commentId
       )}/reactions`,
-      ensureType<AddCommentReactionRequest>({ data })
+      ensureType<AddCommentReactionRequest>({ id, data })
     );
   }
 

@@ -1,5 +1,7 @@
 import { AppCtx } from "@/wab/client/app-ctx";
+import { hasLayoutBox } from "@/wab/client/dom";
 import { getImageSize } from "@/wab/client/image/metadata";
+import { useForceUpdate } from "@/wab/client/useForceUpdate";
 import { ensure, ensureHTMLElt, ensureString } from "@/wab/shared/common";
 import {
   ImageBackground,
@@ -185,8 +187,8 @@ export const isDescendant = ({
   parent,
   child,
 }: {
-  parent: HTMLElement;
-  child: HTMLElement;
+  parent: Element;
+  child: Element;
 }) => {
   let node = child.parentNode;
 
@@ -201,21 +203,18 @@ export const isDescendant = ({
   return false;
 };
 
-export const isContextMenuDescendant = (child: HTMLElement) => {
+export const isContextMenuDescendant = (child: Element) => {
   let node = child.parentNode;
 
   const canvasEditorEl = document.querySelector(".canvas-editor");
 
   // Not a context menu item, as it's located inside the canvas-editor
-  if (
-    canvasEditorEl &&
-    isDescendant({ parent: canvasEditorEl as HTMLElement, child })
-  ) {
+  if (canvasEditorEl && isDescendant({ parent: canvasEditorEl, child })) {
     return false;
   }
 
   while (node !== null) {
-    if ((node as HTMLElement).getAttribute?.("role") === "menu") {
+    if (node instanceof HTMLElement && node.getAttribute?.("role") === "menu") {
       return true;
     }
 
@@ -772,4 +771,30 @@ export async function untilClosed(popup: Window) {
       }
     }, 1000);
   });
+}
+
+/* This hook is needed in cases where a particular component such as (CanvasTransformedBox)
+ * tries to render a component such as (CanvasCommentMarker) with absolute position w.r.t an user body element.
+ * in Canvas but user body element is not yet visible in the Canvas.
+ *
+ * When a user switches arena, CanvasTransformedBox is rendered for the new arena
+ * before the target element is connected to DOM. Hence, we need to attach an
+ * observer to return the element when it's connected to DOM and has valid layout.
+ */
+export function useElementHasLayout(elt: HTMLElement | null) {
+  const forceUpdate = useForceUpdate();
+  const element = elt?.isConnected && hasLayoutBox(elt) ? elt : null;
+
+  React.useEffect(() => {
+    if (!elt) {
+      return;
+    }
+
+    const eltObserver = new ResizeObserver(forceUpdate);
+
+    eltObserver.observe(elt);
+    return () => eltObserver.disconnect();
+  }, [elt]);
+
+  return element;
 }

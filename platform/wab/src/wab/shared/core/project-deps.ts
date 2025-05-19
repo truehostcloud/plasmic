@@ -12,6 +12,7 @@ import {
   isPageArena,
 } from "@/wab/shared/Arenas";
 import { flattenComponent } from "@/wab/shared/cached-selectors";
+import { ensureOnlyValidCodeComponentVariantsInComponent } from "@/wab/shared/code-components/variants";
 import {
   collectUsedIconAssetsForTpl,
   collectUsedPictureAssetsForTpl,
@@ -39,6 +40,11 @@ import {
   PageComponent,
   removeComponentParam,
 } from "@/wab/shared/core/components";
+import {
+  fixCustomFunctionExpr,
+  fixCustomFunctionsInTpl,
+  getOldToNewCustomFunctions,
+} from "@/wab/shared/core/custom-functions";
 import { isFallbackableExpr, isFallbackSet } from "@/wab/shared/core/exprs";
 import { ImageAssetType } from "@/wab/shared/core/image-asset-type";
 import {
@@ -582,6 +588,7 @@ function upgradeProjectDep(
   const oldToNewParam = new Map<Param, Param | undefined>();
   const oldToNewState = new Map<State, State | undefined>();
   const oldToNewPage = new Map<PageComponent, PageComponent | undefined>();
+  const oldToNewCustomFunctions = getOldToNewCustomFunctions(oldDep, newDep);
 
   const mapParams = (oldComp: Component, newComp: Component) => {
     for (const oldParam of oldComp.params) {
@@ -987,6 +994,8 @@ function upgradeProjectDep(
           }
         }
       }
+    } else if (isFallbackableExpr(expr) && expr.fallback) {
+      return shouldDeletePageHRef(expr.fallback);
     }
     return false;
   };
@@ -1198,6 +1207,8 @@ function upgradeProjectDep(
         ensureCorrectImplicitStates(site, owner, tpl);
       }
 
+      fixCustomFunctionsInTpl(oldToNewCustomFunctions, tpl);
+
       for (const vs of tpl.vsettings) {
         for (const arg of [...vs.args]) {
           const oldParam = arg.param;
@@ -1329,9 +1340,14 @@ function upgradeProjectDep(
         }
       }
     }
+
     for (const tpl of flattenTpls(component.tplTree)) {
       fixTpl(tpl, component);
     }
+
+    // We need to ensure the code component variants only after we've fixed all the tpls
+    // so that we ensure with the upgraded version of the component
+    ensureOnlyValidCodeComponentVariantsInComponent(site, component);
 
     // Check if the remainin tree has references to removed states
     for (const state of removedStates) {
@@ -1355,6 +1371,14 @@ function upgradeProjectDep(
           fixAssetRefForExpr(tplMgr, param.defaultExpr, oldToNewAsset);
         }
       }
+    });
+
+    component.serverQueries.forEach((serverQuery) => {
+      const op = serverQuery.op;
+      if (!op) {
+        return;
+      }
+      serverQuery.op = fixCustomFunctionExpr(oldToNewCustomFunctions, op);
     });
   };
 

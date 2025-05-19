@@ -7,7 +7,6 @@ import {
   FrameViewMode,
   isDuplicatableFrame,
   isMixedArena,
-  isPositionManagedFrame,
 } from "@/wab/shared/Arenas";
 import { toVarName } from "@/wab/shared/codegen/util";
 import {
@@ -131,10 +130,6 @@ import pluralize from "pluralize";
 import React from "react";
 
 import {
-  getEventDataForTplComponent,
-  trackInsertItem,
-} from "@/wab/client/analytics/events/insert-item";
-import {
   FrameClip,
   isStyleClip,
   StyleClip,
@@ -167,6 +162,10 @@ import { getBackgroundImageProps } from "@/wab/client/dom-utils";
 import { showError } from "@/wab/client/ErrorNotifications";
 import { FocusHeuristics } from "@/wab/client/focus-heuristics";
 import { renderCantAddMsg } from "@/wab/client/messages/parenting-msgs";
+import {
+  getEventDataForTplComponent,
+  trackInsertItem,
+} from "@/wab/client/observability/events/insert-item";
 import { promptComponentName, promptPageName } from "@/wab/client/prompts";
 import { getComboForAction } from "@/wab/client/shortcuts/studio/studio-shortcuts";
 import { ComponentCtx } from "@/wab/client/studio-ctx/component-ctx";
@@ -261,6 +260,7 @@ import {
   isBaseVariant,
   isGlobalVariant,
   isPrivateStyleVariant,
+  toVariantKey,
   tryGetBaseVariantSetting,
   tryGetPrivateStyleVariant,
   VariantCombo,
@@ -583,7 +583,7 @@ export class ViewOps {
     // changes made to frame's top and left props,
     // to make sure we have a smooth resizing,
     // we directly update them here
-    if (isPositionManagedFrame(this.studioCtx(), frame)) {
+    if (this.studioCtx().isPositionManagedFrame(frame)) {
       const domElt = this.viewCtx().canvasCtx.viewportContainer();
       domElt.style.setProperty("width", `${rect.width}px`);
       domElt.style.setProperty("height", `${rect.height}px`);
@@ -594,7 +594,7 @@ export class ViewOps {
 
     window.requestAnimationFrame(() => {
       this.change(() => {
-        if (isPositionManagedFrame(this.studioCtx(), frame)) {
+        if (this.studioCtx().isPositionManagedFrame(frame)) {
           frame.top = rect.top;
           frame.left = rect.left;
         }
@@ -2625,6 +2625,7 @@ export class ViewOps {
         common.assert(!!base && base.variants[0] === component.variants[0]);
 
         // fix private style variant by cloning.
+        const clonedPrivateStyleVariants = new Map<string, Variant>();
         newNode.vsettings.forEach((vs) => {
           const privateSV = tryGetPrivateStyleVariant(vs.variants);
           if (privateSV) {
@@ -2633,10 +2634,21 @@ export class ViewOps {
               index !== -1,
               "Unexpected not found privateSV in variant list"
             );
+            const privateSVKey = toVariantKey(privateSV);
+            // Reuse the cloned version if it already exists.
+            const variant = clonedPrivateStyleVariants.get(privateSVKey)!;
+            if (variant) {
+              vs.variants[index] = variant;
+              return;
+            }
             const clonedPrivateSV = cloneVariant(privateSV);
             clonedPrivateSV.forTpl = newNode;
-            vs.variants[index] = clonedPrivateSV;
             component.variants.push(clonedPrivateSV);
+            clonedPrivateStyleVariants.set(
+              toVariantKey(privateSV),
+              clonedPrivateSV
+            );
+            vs.variants[index] = clonedPrivateSV;
           }
         });
       }
@@ -3340,11 +3352,6 @@ export class ViewOps {
       }
 
       for (const item of uniqAdoptees) {
-        const itemRect = item.domBox.rect();
-        const parentOffset = new Pt(
-          itemRect.left - parentRect.left,
-          itemRect.top - parentRect.top
-        );
         const opts = isStack ? { keepFree: false } : undefined;
         this.insertAsChild(item.val.tpl, cmptTpl, opts);
       }
@@ -4622,7 +4629,7 @@ export class ViewOps {
           imageUri = mkImageAssetRef(asset);
         }
       } else {
-        imageUri = exprs.tryExtractLit(srcAttr);
+        imageUri = exprs.tryExtractString(srcAttr);
       }
 
       if (!imageUri) {
@@ -4710,6 +4717,11 @@ export class ViewOps {
       .variantTplMgr()
       .getTargetVariantComboForNode(tpl, { forVisibility: true });
     setTplVisibility(tpl, combo, visibility);
+    if (visibility === TplVisibility.Visible) {
+      this.viewCtx().resetAutoOpenState();
+    } else {
+      this.viewCtx().disabledAutoOpenUuid = tpl.uuid;
+    }
   };
 
   setDataCond = (tpl: TplNode, cond: CustomCode | ObjectPath) => {
@@ -5051,7 +5063,7 @@ export function getMergedTextArg(tpl: TplComponent) {
     return slotParams[0][1];
   } else {
     const childrenSlot = slotParams.find(
-      ([p, t]) => p.variable.name === "children"
+      ([p, _t]) => p.variable.name === "children"
     );
     if (childrenSlot) {
       return childrenSlot[1];

@@ -1,7 +1,9 @@
 import CommentPost from "@/wab/client/components/comments/CommentPost";
 import { TplCommentThread } from "@/wab/client/components/comments/utils";
 import { useStudioCtx } from "@/wab/client/studio-ctx/StudioCtx";
+import { ViewCtx } from "@/wab/client/studio-ctx/view-ctx";
 import { CommentThreadId } from "@/wab/shared/ApiSchema";
+import { assert } from "@/wab/shared/common";
 import { observer } from "mobx-react";
 import * as React from "react";
 
@@ -10,7 +12,7 @@ export default observer(function RootComment({
   onThreadSelect,
 }: {
   commentThread: TplCommentThread;
-  onThreadSelect: (threadId: CommentThreadId) => void;
+  onThreadSelect: (threadId: CommentThreadId, viewCtx: ViewCtx) => void;
 }) {
   const studioCtx = useStudioCtx();
   const [comment] = commentThread.comments;
@@ -22,7 +24,6 @@ export default observer(function RootComment({
       commentThread={commentThread}
       subjectLabel={commentThread.label}
       isThread
-      isRootComment
       repliesLinkLabel={
         commentThread.comments.length > 1
           ? `${commentThread.comments.length - 1} replies`
@@ -32,14 +33,22 @@ export default observer(function RootComment({
         const ownerComponent = studioCtx
           .tplMgr()
           .findComponentContainingTpl(commentThread.subject);
-        if (ownerComponent) {
-          await studioCtx.setStudioFocusOnTpl(
-            ownerComponent,
-            commentThread.subject
-          );
-          studioCtx.centerFocusedFrame(1);
+
+        assert(
+          ownerComponent,
+          () => `No owningComponent found for Tpl ${commentThread.subject.uuid}`
+        );
+        await studioCtx.setStudioFocusOnTpl(
+          ownerComponent,
+          commentThread.subject,
+          commentThread.variants
+        );
+
+        const focusedViewCtx = studioCtx.focusedViewCtx();
+        if (focusedViewCtx) {
+          onThreadSelect(threadId, focusedViewCtx);
         }
-        onThreadSelect(threadId);
+        studioCtx.tryZoomToFitSelection();
       }}
     />
   );

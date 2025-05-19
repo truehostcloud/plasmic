@@ -1,3 +1,8 @@
+import {
+  UniqueViolationError,
+  isUniqueViolationError,
+} from "@/wab/shared/ApiErrors/cms-errors";
+
 export abstract class ApiError extends Error {
   name = "ApiError";
   statusCode = 400;
@@ -77,8 +82,7 @@ export class LoaderBundlingError extends ApiError {
 export class LoaderDeprecatedVersionError extends ApiError {
   name = "LoaderDeprecatedVersionError";
   statusCode = 412;
-  message =
-    "An internal error occurred. Please upgrade your @plasmicapp/* packages.";
+  message = "Please upgrade your @plasmicapp/* packages.";
 }
 
 // This is not an ApiError by design, so that we consider it an unhandled error
@@ -126,6 +130,9 @@ export function transformErrors(err: Error): Error {
   const transformedErrType = errorNameRegistry[err.name];
   if (transformedErrType) {
     err = new transformedErrType(err.message);
+  }
+  if (isUniqueViolationError(err)) {
+    err = new UniqueViolationError(err.violations);
   }
   return err;
 }

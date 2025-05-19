@@ -1,40 +1,27 @@
 import { PlasmicCanvasContext } from "@plasmicapp/host";
 import type { Meta, StoryObj } from "@storybook/react";
-import { expect, fn, userEvent, waitFor, within } from "@storybook/test";
+import { expect, fn, spyOn, userEvent, waitFor, within } from "@storybook/test";
 import React, { useEffect, useState } from "react";
 import { BaseButton } from "./registerButton";
 import { BaseDialog } from "./registerDialog";
 import { BaseDialogTrigger } from "./registerDialogTrigger";
-import { BaseModal } from "./registerModal";
-import { BasePopover } from "./registerPopover";
+import { BaseModal, BaseModalProps } from "./registerModal";
+import { BasePopover, BasePopoverProps } from "./registerPopover";
 
 const meta: Meta<typeof BaseDialogTrigger> = {
   title: "Components/BaseDialogTrigger",
   component: BaseDialogTrigger,
   args: {
+    trigger: <span>Open popover</span>, // react-aria requires a trigger prop, otherwise it will throw a warning from the PressResponder
     defaultOpen: false,
     onOpenChange: fn(),
-  },
-  // TODO: Currently, BaseDialogTrigger can't be controlled because a isOpen is never undefined - its given a default false.
-  // Using the render to use it as a controlled component.
-  // Remove this render function in the PR that fixes the uncontrolled behaviour of BaseDialogTrigger
-  render: ({ isOpen, onOpenChange, ...args }) => {
-    const [open, setOpen] = useState(isOpen);
-    return (
-      <BaseDialogTrigger
-        isOpen={open}
-        onOpenChange={(newValue) => {
-          setOpen(newValue);
-          onOpenChange?.(newValue);
-        }}
-        {...args}
-      />
-    );
   },
 };
 
 export default meta;
 type Story = StoryObj<typeof BaseDialogTrigger>;
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const DefaultContent = () => (
   <div data-testid="dialog-content">
@@ -43,27 +30,45 @@ const DefaultContent = () => (
   </div>
 );
 
+const DefaultPopoverContent = (props: BasePopoverProps) => (
+  <BasePopover {...props}>
+    <BaseDialog>
+      <DefaultContent />
+    </BaseDialog>
+  </BasePopover>
+);
+
+const DefaultModalContent = (props: BaseModalProps) => (
+  <BaseModal {...props}>
+    <BaseDialog>
+      <DefaultContent />
+    </BaseDialog>
+  </BaseModal>
+);
+
 export const WithModal: Story = {
   args: {
-    trigger: <BaseButton>Open modal</BaseButton>,
+    trigger: <span tabIndex={0}>Open modal</span>, // anything can be used as a trigger
     dialog: (
-      <BaseModal isDismissable={true} isKeyboardDismissDisabled={false}>
-        <BaseDialog>
-          <DefaultContent />
-        </BaseDialog>
-      </BaseModal>
+      <DefaultModalContent
+        // The test ensures that isOpen and defaultOpen are disregarded when inside a dialog trigger
+        defaultOpen={true}
+        isOpen={true}
+        isDismissable={true}
+        isKeyboardDismissDisabled={false}
+      />
     ),
   },
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement);
     const doc = within(document.body);
-    const button = canvas.getByText("Open modal");
+    const trigger = canvas.getByText("Open modal");
 
     await waitFor(() => {
       expect(doc.queryByTestId("dialog-content")).not.toBeInTheDocument();
     });
 
-    await userEvent.click(button);
+    await userEvent.click(trigger);
 
     await waitFor(() => {
       expect(doc.queryByTestId("dialog-content")).toBeInTheDocument();
@@ -76,13 +81,22 @@ export const WithModal: Story = {
       expect(doc.queryByTestId("dialog-content")).not.toBeInTheDocument();
     });
 
-    // With keyboard navigation, press Escape to dismiss
-    await userEvent.click(button);
+    // With keyboard navigation
+    await userEvent.tab();
+    expect(trigger).toHaveFocus();
+
+    // Still not open because a click/press is required
+    await waitFor(() => {
+      expect(doc.queryByTestId("dialog-content")).not.toBeInTheDocument();
+    });
+
+    await userEvent.keyboard("[Space]");
 
     await waitFor(() => {
       expect(doc.queryByTestId("dialog-content")).toBeInTheDocument();
     });
 
+    // press Escape to dismiss
     await userEvent.keyboard("{Escape}");
     // dialog should close
     await waitFor(() => {
@@ -93,27 +107,144 @@ export const WithModal: Story = {
   },
 };
 
-export const WithPopover: Story = {
+// Ensures that any custom event handlers on the trigger are called, and any custom props passed to it are passed through.
+export const TriggerWithCustomEventHandler: Story = {
   args: {
-    trigger: <BaseButton>Open popover</BaseButton>,
     dialog: (
-      <BasePopover isKeyboardDismissDisabled={false}>
-        <BaseDialog>
-          <DefaultContent />
-        </BaseDialog>
-      </BasePopover>
+      <DefaultModalContent
+        isDismissable={true}
+        isKeyboardDismissDisabled={false}
+      />
     ),
   },
-  play: async ({ canvasElement, args }) => {
+  parameters: {
+    customOnClick: fn(),
+  },
+  render: (args, { parameters }) => {
+    return (
+      <BaseDialogTrigger
+        {...args}
+        trigger={
+          <span className="custom-class" onClick={parameters.customOnClick}>
+            Open modal
+          </span>
+        }
+      />
+    );
+  },
+  play: async ({ canvasElement, args, parameters }) => {
     const canvas = within(canvasElement);
     const doc = within(document.body);
-    const button = canvas.getByText("Open popover");
+    const trigger = canvas.getByText("Open modal");
 
     await waitFor(() => {
       expect(doc.queryByTestId("dialog-content")).not.toBeInTheDocument();
     });
 
-    await userEvent.click(button);
+    expect(trigger).toHaveClass("custom-class");
+
+    expect(parameters.customOnClick).toHaveBeenCalledTimes(0);
+    await userEvent.click(trigger);
+    expect(parameters.customOnClick).toHaveBeenCalledTimes(1);
+
+    await waitFor(() => {
+      expect(doc.queryByTestId("dialog-content")).toBeInTheDocument();
+    });
+
+    await userEvent.click(document.body);
+
+    // Modal should close
+    await waitFor(() => {
+      expect(doc.queryByTestId("dialog-content")).not.toBeInTheDocument();
+    });
+
+    expect(args.onOpenChange).toHaveBeenCalledTimes(2);
+  },
+};
+
+// tests that a trigger that's nested in a div (e.g. a <span>) can trigger open the dialog on click
+// Also tests that either of nested triggers can be made non-triggerable via e.stopPropagation
+export const WithNestedTrigger: Story = {
+  args: {
+    dialog: (
+      <DefaultModalContent
+        isDismissable={true}
+        isKeyboardDismissDisabled={false}
+      />
+    ),
+    trigger: (
+      <div>
+        <span tabIndex={0}>Open modal</span>
+        <span tabIndex={0} onClick={(e) => e.stopPropagation()}>
+          Open modal
+        </span>
+        <span tabIndex={0}>Open modal</span>
+      </div>
+    ),
+  },
+  play: async ({ canvasElement, args }) => {
+    const canvas = within(canvasElement);
+    const doc = within(document.body);
+    const triggers = canvas.getAllByText("Open modal");
+
+    await waitFor(() => {
+      expect(doc.queryByTestId("dialog-content")).not.toBeInTheDocument();
+    });
+
+    await userEvent.click(triggers[0]);
+
+    await waitFor(() => {
+      expect(doc.queryByTestId("dialog-content")).toBeInTheDocument();
+    });
+
+    // Click again to dismiss
+    await userEvent.click(triggers[0]);
+
+    // Modal should close
+    await waitFor(() => {
+      expect(doc.queryByTestId("dialog-content")).not.toBeInTheDocument();
+    });
+
+    expect(args.onOpenChange).toHaveBeenCalledTimes(2);
+
+    await userEvent.click(triggers[1]);
+
+    // trigger # 2 stops propagation via e.stopPropagation. So, clicking on trigger # 2 should not open the dialog
+    await waitFor(() => {
+      expect(doc.queryByTestId("dialog-content")).not.toBeInTheDocument();
+    });
+
+    expect(args.onOpenChange).toHaveBeenCalledTimes(2); // not changed
+
+    await userEvent.click(triggers[2]);
+
+    await waitFor(() => {
+      expect(doc.queryByTestId("dialog-content")).toBeInTheDocument();
+    });
+    expect(args.onOpenChange).toHaveBeenCalledTimes(3);
+
+    await userEvent.keyboard("{Escape}");
+    expect(args.onOpenChange).toHaveBeenCalledTimes(4);
+    await userEvent.click(triggers[2]);
+    expect(args.onOpenChange).toHaveBeenCalledTimes(5);
+  },
+};
+
+export const WithPopover: Story = {
+  args: {
+    trigger: <span tabIndex={0}>Open popover</span>, // anything can be used as a trigger
+    dialog: <DefaultPopoverContent isKeyboardDismissDisabled={false} />,
+  },
+  play: async ({ canvasElement, args }) => {
+    const canvas = within(canvasElement);
+    const doc = within(document.body);
+    const trigger = canvas.getByText("Open popover");
+
+    await waitFor(() => {
+      expect(doc.queryByTestId("dialog-content")).not.toBeInTheDocument();
+    });
+
+    await userEvent.click(trigger);
 
     await waitFor(() => {
       expect(doc.queryByTestId("dialog-content")).toBeInTheDocument();
@@ -126,8 +257,10 @@ export const WithPopover: Story = {
       expect(doc.queryByTestId("dialog-content")).not.toBeInTheDocument();
     });
 
-    // With keyboard navigation, press Escape to dismiss
-    await userEvent.click(button);
+    // With keyboard navigation, press Space to open and Escape to dismiss
+    await userEvent.tab();
+    await expect(trigger).toHaveFocus();
+    await userEvent.keyboard("[Space]");
 
     await waitFor(() => {
       expect(doc.queryByTestId("dialog-content")).toBeInTheDocument();
@@ -145,25 +278,24 @@ export const WithPopover: Story = {
 
 export const WithPopoverNonModal: Story = {
   args: {
-    trigger: <BaseButton>Open popover</BaseButton>,
+    trigger: <span>Open popover</span>, // anything can be used as a trigger
     dialog: (
-      <BasePopover isNonModal={true} isKeyboardDismissDisabled={false}>
-        <BaseDialog>
-          <DefaultContent />
-        </BaseDialog>
-      </BasePopover>
+      <DefaultPopoverContent
+        isNonModal={true}
+        isKeyboardDismissDisabled={false}
+      />
     ),
   },
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement);
     const doc = within(document.body);
-    const button = canvas.getByText("Open popover");
+    const trigger = canvas.getByText("Open popover");
 
     await waitFor(() => {
       expect(doc.queryByTestId("dialog-content")).not.toBeInTheDocument();
     });
 
-    await userEvent.click(button);
+    await userEvent.click(trigger);
 
     await waitFor(() => {
       expect(doc.queryByTestId("dialog-content")).toBeInTheDocument();
@@ -171,7 +303,7 @@ export const WithPopoverNonModal: Story = {
 
     await userEvent.click(document.body);
 
-    // popover should close
+    // popover should NOT close, because the outside can be interacted with without affecting the popover's open state
     await waitFor(() => {
       expect(doc.queryByTestId("dialog-content")).toBeInTheDocument();
     });
@@ -186,16 +318,83 @@ export const WithPopoverNonModal: Story = {
   },
 };
 
+export const ControlledDialog: Story = {
+  args: {
+    dialog: <DefaultPopoverContent />,
+    isOpen: false,
+  },
+  render: ({ isOpen, dialog, trigger }) => {
+    const [open, setOpen] = useState(isOpen);
+    return (
+      <>
+        <span onClick={() => setOpen((prev) => !prev)}>Toggle</span>
+        <BaseDialogTrigger
+          isOpen={open}
+          trigger={trigger}
+          onOpenChange={setOpen}
+          dialog={dialog}
+        />
+      </>
+    );
+  },
+  play: async ({ canvasElement }) => {
+    // popovers are rendered outside canvas, so we need to use document.body
+    const doc = within(document.body);
+    const canvas = within(canvasElement);
+    const trigger = canvas.getByText("Toggle");
+
+    await waitFor(() => {
+      expect(doc.queryByTestId("dialog-content")).not.toBeInTheDocument();
+    });
+
+    await trigger.click();
+
+    await waitFor(() => {
+      expect(doc.queryByTestId("dialog-content")).toBeInTheDocument();
+    });
+
+    await trigger.click();
+
+    await waitFor(() => {
+      expect(doc.queryByTestId("dialog-content")).not.toBeInTheDocument();
+    });
+  },
+};
+
+export const AriaButtonTrigger: Story = {
+  args: {
+    dialog: <DefaultModalContent isDismissable={true} />,
+    trigger: <BaseButton>Open modal</BaseButton>,
+  },
+  play: async ({ canvasElement, args }) => {
+    const canvas = within(canvasElement);
+    const doc = within(document.body);
+    const trigger = canvas.getByText("Open modal");
+
+    await waitFor(() => {
+      expect(doc.queryByTestId("dialog-content")).not.toBeInTheDocument();
+    });
+
+    await userEvent.click(trigger);
+
+    await waitFor(() => {
+      expect(doc.queryByTestId("dialog-content")).toBeInTheDocument();
+    });
+
+    await userEvent.click(document.body);
+
+    // Modal should close
+    await waitFor(() => {
+      expect(doc.queryByTestId("dialog-content")).not.toBeInTheDocument();
+    });
+
+    expect(args.onOpenChange).toHaveBeenCalledTimes(2);
+  },
+};
+
 export const SelectedInCanvas: Story = {
   args: {
-    trigger: <BaseButton>Open popover</BaseButton>,
-    dialog: (
-      <BasePopover isNonModal={true} isKeyboardDismissDisabled={false}>
-        <BaseDialog>
-          <DefaultContent />
-        </BaseDialog>
-      </BasePopover>
-    ),
+    dialog: <DefaultPopoverContent isKeyboardDismissDisabled={false} />,
   },
   render: ({ __plasmic_selection_prop__, ...args }) => {
     const [selected, setSelected] = useState(false);
@@ -230,6 +429,8 @@ export const SelectedInCanvas: Story = {
     );
   },
   play: async () => {
+    const consoleWarnSpy = spyOn(console, "warn").mockImplementation(() => {});
+
     // popovers are rendered outside canvas, so we need to use document.body
     const doc = within(document.body);
 
@@ -250,5 +451,85 @@ export const SelectedInCanvas: Story = {
       },
       { timeout: 1100 }
     ); // the slot selected is trigger, so the popover should close
+
+    // This is to ensure that the warning "A component changed from controlled to uncontrolled" is not logged
+    expect(consoleWarnSpy).not.toHaveBeenCalled();
+  },
+};
+
+export const PopoverPosition: Story = {
+  args: {
+    trigger: <span>Open popover</span>, // anything can be used as a trigger
+    dialog: <DefaultPopoverContent />,
+  },
+  render: (args) => {
+    const [className, setClassName] = useState<string | undefined>("popover");
+    useEffect(() => {
+      setTimeout(() => {
+        setClassName((prev) => `${prev} popover-right`);
+      }, 1000);
+    }, []);
+
+    return (
+      <>
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `
+              .popover {
+                display: inline-block;
+              }
+              .popover-right {
+                position: absolute;
+                right: 0;
+              }
+            `,
+          }}
+        />
+        <BaseDialogTrigger {...args} className={className} />
+      </>
+    );
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const doc = within(document.body);
+    const trigger = canvas.getByText("Open popover");
+
+    await waitFor(() => {
+      expect(doc.queryByTestId("dialog-content")).not.toBeInTheDocument();
+    });
+
+    await userEvent.click(trigger);
+
+    let initialPopoverLeftPosition: number;
+
+    // Check that tooltip appears
+    await waitFor(() => {
+      const popover = doc.getByTestId("dialog-content");
+      initialPopoverLeftPosition = popover.getBoundingClientRect().left;
+    });
+
+    await userEvent.click(trigger); // toggle close
+
+    await sleep(500);
+    await userEvent.click(trigger);
+
+    await waitFor(async () => {
+      const popover = doc.getByTestId("dialog-content");
+      expect(initialPopoverLeftPosition).toEqual(
+        popover.getBoundingClientRect().left
+      ); // opens again at exactly the same position
+    });
+
+    await userEvent.click(trigger); // toggle close
+
+    await sleep(500);
+    await userEvent.click(trigger);
+
+    await waitFor(() => {
+      const popover = doc.getByTestId("dialog-content");
+      expect(initialPopoverLeftPosition).not.toEqual(
+        popover.getBoundingClientRect().left
+      ); // opens at a different position because the position of the trigger changed
+    });
   },
 };

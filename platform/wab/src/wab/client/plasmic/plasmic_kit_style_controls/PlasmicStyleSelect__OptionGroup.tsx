@@ -31,10 +31,10 @@ import StyleSelect__Option from "../../components/style-controls/StyleSelect__Op
 
 import "@plasmicapp/react-web/lib/plasmic.css";
 
-import plasmic_plasmic_kit_design_system_deprecated_css from "../PP__plasmickit_design_system.module.css"; // plasmic-import: tXkSR39sgCDWSitZxC5xFV/projectcss
 import plasmic_plasmic_kit_color_tokens_css from "../plasmic_kit_q_4_color_tokens/plasmic_plasmic_kit_q_4_color_tokens.module.css"; // plasmic-import: 95xp9cYcv7HrNWpFWWhbcv/projectcss
-import sty from "./PlasmicStyleSelect__OptionGroup.module.css"; // plasmic-import: pQfj4ZYSnAW/css
+import plasmic_plasmic_kit_design_system_deprecated_css from "../PP__plasmickit_design_system.module.css"; // plasmic-import: tXkSR39sgCDWSitZxC5xFV/projectcss
 import projectcss from "./plasmic_plasmic_kit_styles_pane.module.css"; // plasmic-import: gYEVvAzCcLMHDVPvuYxkFh/projectcss
+import sty from "./PlasmicStyleSelect__OptionGroup.module.css"; // plasmic-import: pQfj4ZYSnAW/css
 
 import SUPER__PlasmicStyleSelect from "./PlasmicStyleSelect"; // plasmic-import: E0bKgamUEin/render
 

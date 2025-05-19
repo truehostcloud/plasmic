@@ -2,7 +2,6 @@ import {
   getPreferredInsertLocs,
   InsertRelLoc,
 } from "@/wab/client/components/canvas/view-ops";
-import { useCommentsCtx } from "@/wab/client/components/comments/CommentsProvider";
 import { maybeShowContextMenu } from "@/wab/client/components/ContextMenu";
 import { PlumyIcon } from "@/wab/client/components/plume/plume-markers";
 import {
@@ -43,8 +42,15 @@ import LockIcon from "@/wab/client/plasmic/plasmic_kit_design_system/PlasmicIcon
 import UnlockIcon from "@/wab/client/plasmic/plasmic_kit_design_system/PlasmicIcon__Unlock";
 import VerticalDashIcon from "@/wab/client/plasmic/plasmic_kit_design_system/PlasmicIcon__VerticalDash";
 import RepeatingsvgIcon from "@/wab/client/plasmic/plasmic_kit_icons/icons/PlasmicIcon__RepeatingSvg";
-import { DragInsertState, StudioCtx } from "@/wab/client/studio-ctx/StudioCtx";
-import { ViewCtx } from "@/wab/client/studio-ctx/view-ctx";
+import {
+  DragInsertState,
+  StudioCtx,
+  useStudioCtx,
+} from "@/wab/client/studio-ctx/StudioCtx";
+import {
+  getSetOfVariantsForViewCtx,
+  ViewCtx,
+} from "@/wab/client/studio-ctx/view-ctx";
 import { TutorialEventsType } from "@/wab/client/tours/tutorials/tutorials-events";
 import {
   canSetDisplayNone,
@@ -56,11 +62,11 @@ import {
   useForwardedRef,
 } from "@/wab/commons/components/ReactUtil";
 import { AnyArena } from "@/wab/shared/Arenas";
-import { assert, ensure, maybe, unexpected } from "@/wab/shared/common";
+import { assert, ensure, maybe, spawn, unexpected } from "@/wab/shared/common";
 import { isCodeComponent } from "@/wab/shared/core/components";
 import { tryExtractLit } from "@/wab/shared/core/exprs";
 import { Selectable } from "@/wab/shared/core/selection";
-import { SlotSelection } from "@/wab/shared/core/slots";
+import { isSlotSelection, SlotSelection } from "@/wab/shared/core/slots";
 import * as Tpls from "@/wab/shared/core/tpls";
 import {
   clone,
@@ -124,7 +130,9 @@ import * as React from "react";
 import { FixedSizeList } from "react-window";
 
 import { TplClip } from "@/wab/client/clipboard/local";
-import { getElementCommentsStats } from "@/wab/client/components/comments/utils";
+import { COMMANDS } from "@/wab/client/commands/command";
+import CommentIndicatorIcon from "@/wab/client/components/comments/CommentIndicatorIcon";
+import { getSubjectVariantsKey } from "@/wab/client/components/comments/utils";
 import {
   getNodeSummary,
   OutlineCtx,
@@ -133,7 +141,6 @@ import {
   OutlineNodeKey,
 } from "@/wab/client/components/sidebar-tabs/OutlineCtx";
 import BoltIcon from "@/wab/client/plasmic/plasmic_kit/PlasmicIcon__Bolt";
-import SpeechBubblesvgIcon from "@/wab/client/plasmic/plasmic_kit_icons/icons/PlasmicIcon__SpeechBubbleSvg";
 import { INTERACTIVE_CAP, REPEATED_CAP } from "@/wab/shared/Labels";
 
 function RepIcon() {
@@ -148,24 +155,6 @@ function ActionIcon() {
   return (
     <Tooltip title={`${INTERACTIVE_CAP} element`}>
       <Icon icon={BoltIcon} />
-    </Tooltip>
-  );
-}
-
-function CommentIcon({
-  commentCount,
-  replyCount,
-}: {
-  commentCount: number;
-  replyCount: number;
-}) {
-  let title = `${commentCount} ${commentCount > 1 ? "comments" : "comment"}`;
-  if (replyCount > 0) {
-    title += ` and ${replyCount} ${replyCount > 1 ? "replies" : "reply"}`;
-  }
-  return (
-    <Tooltip title={title}>
-      <Icon icon={SpeechBubblesvgIcon} />
     </Tooltip>
   );
 }
@@ -203,7 +192,7 @@ const TplTreeNode = observer(function TplTreeNode(props: {
     isDropParent,
   } = props;
 
-  const commentsCtx = useCommentsCtx();
+  const commentsCtx = useStudioCtx().commentsCtx;
   const component = $$$(item).owningComponent();
   const isInFrame = !!viewCtx
     .componentStackFrames()
@@ -407,16 +396,6 @@ const TplTreeNode = observer(function TplTreeNode(props: {
     }
   ).get();
 
-  const getCommentsStats = () => {
-    if (!isKnownTplNode(item)) {
-      return {
-        commentCount: 0,
-        replyCount: 0,
-      };
-    }
-    return getElementCommentsStats(commentsCtx, item);
-  };
-
   const visibilityDataCond = effectiveVs.get()?.dataCond;
   const canvasEnv = isKnownTplNode(item)
     ? viewCtx.getCanvasEnvForTpl(item)
@@ -469,7 +448,7 @@ const TplTreeNode = observer(function TplTreeNode(props: {
         </Tooltip>
       );
     }
-    if (!Tpls.canToggleVisibility(item, viewCtx)) {
+    if (isSlotSelection(item) || !Tpls.canToggleVisibility(item, viewCtx)) {
       // Can only toggle visibility for tags, components.  But we still want to
       // take up space here so things line up vertically.
       return (
@@ -608,21 +587,6 @@ const TplTreeNode = observer(function TplTreeNode(props: {
     return null;
   };
 
-  const renderCommentIcon = () => {
-    const commentsStats = getCommentsStats();
-    if (commentsStats.commentCount > 0) {
-      return (
-        <IconWrapper>
-          <CommentIcon
-            commentCount={commentsStats.commentCount}
-            replyCount={commentsStats.replyCount}
-          />
-        </IconWrapper>
-      );
-    }
-    return null;
-  };
-
   const customLabel = computed(
     () => {
       if (Tpls.isTplCodeComponent(item) && canvasEnv) {
@@ -667,9 +631,18 @@ const TplTreeNode = observer(function TplTreeNode(props: {
           key={`${defaultEditing}`}
           onAbort={() => viewCtx.studioCtx.endRenamingOnPanel()}
           onEdit={(name) => {
-            viewCtx.change(() => {
-              viewCtx.getViewOps().renameTpl(name, item);
-            });
+            spawn(
+              COMMANDS.element.rename.execute(
+                viewCtx.studioCtx,
+                {
+                  name,
+                },
+                {
+                  tpl: item,
+                  viewCtx,
+                }
+              )
+            );
             viewCtx.studioCtx.endRenamingOnPanel();
           }}
           inputBoxPlaceholder="Element name"
@@ -727,8 +700,55 @@ const TplTreeNode = observer(function TplTreeNode(props: {
     ? getPlumeElementDef(component, item)
     : undefined;
 
+  const getCommentStatsForTpl = (tpl: TplNode) => {
+    const commentStatsBySubject = commentsCtx
+      .computedData()
+      .commentStatsBySubject.get(tpl.uuid);
+
+    if (!commentStatsBySubject) {
+      return null;
+    }
+
+    const result = {
+      commentCount: commentStatsBySubject.commentCount,
+      replyCount: commentStatsBySubject.replyCount,
+      otherVariantsCount: 0,
+    };
+
+    if (viewCtx.studioCtx.focusedMode) {
+      const variants = getSetOfVariantsForViewCtx(viewCtx, viewCtx.bundler());
+      const commentStatsByVariant = commentsCtx
+        .computedData()
+        .commentStatsByVariant.get(getSubjectVariantsKey(tpl, variants));
+
+      if (!commentStatsByVariant) {
+        return null;
+      }
+
+      result.commentCount = commentStatsByVariant.commentCount;
+      result.replyCount = commentStatsByVariant.replyCount;
+      result.otherVariantsCount =
+        commentStatsBySubject.commentCount - commentStatsByVariant.commentCount;
+    }
+
+    return result;
+  };
+
   const icon = computed(
     () => {
+      if (isKnownTplNode(item) && viewCtx.studioCtx.showCommentsPanel) {
+        const commentStats = getCommentStatsForTpl(item);
+        if (commentStats) {
+          return (
+            <CommentIndicatorIcon
+              commentCount={commentStats.commentCount}
+              replyCount={commentStats.replyCount}
+              otherVariantsCount={commentStats.otherVariantsCount}
+            />
+          );
+        }
+      }
+
       const node = createNodeIcon(item, effectiveVs.get());
       if (plumeDef) {
         return <PlumyIcon def={plumeDef}>{node}</PlumyIcon>;
@@ -890,7 +910,6 @@ const TplTreeNode = observer(function TplTreeNode(props: {
         >
           {icon}
         </div>
-        {renderCommentIcon()}
         {!codeComponentRoot && !codeComponentSlot && (
           <>
             {renderRep()}

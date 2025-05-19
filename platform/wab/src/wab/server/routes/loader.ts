@@ -298,7 +298,6 @@ export function makeGenPublishedLoaderCodeBundleOpts(opts: {
     i18nTagPrefix: i18n.tagPrefix,
     loaderVersion,
     browserOnly,
-    preferEsbuild: true,
     skipHead,
   };
 }
@@ -390,8 +389,6 @@ export async function buildLatestLoaderAssets(req: Request, res: Response) {
     browserOnly,
     i18nKeyScheme,
     i18nTagPrefix,
-    // always use esbuild for preview builds
-    preferEsbuild: true,
     skipHead,
   });
 

@@ -1,4 +1,3 @@
-import { methodForwarder } from "@/wab/commons/methodForwarder";
 import * as Sentry from "@sentry/node";
 import * as Tracing from "@sentry/tracing";
 import * as bodyParser from "body-parser";
@@ -20,7 +19,6 @@ import * as path from "path";
 import { getConnection } from "typeorm";
 import v8 from "v8";
 // API keys and Passport configuration
-import { initAmplitudeNode } from "@/wab/server/analytics/amplitude-node";
 import { setupPassport } from "@/wab/server/auth/passport-cfg";
 import * as authRoutes from "@/wab/server/auth/routes";
 import { apiAuth } from "@/wab/server/auth/routes";
@@ -31,6 +29,7 @@ import { getDevFlagsMergedWithOverrides } from "@/wab/server/db/appconfig";
 import { createMailer } from "@/wab/server/emails/Mailer";
 import { ExpressSession } from "@/wab/server/entities/Entities";
 import "@/wab/server/extensions";
+import { initAnalyticsFactory } from "@/wab/server/observability";
 import { WabPromStats, trackPostgresPool } from "@/wab/server/promstats";
 import * as adminRoutes from "@/wab/server/routes/admin";
 import {
@@ -59,6 +58,7 @@ import {
   upsertDatabaseTables,
 } from "@/wab/server/routes/cms";
 import {
+  checkUniqueFields,
   cloneDatabase,
   cloneRow,
   cmsFileUpload,
@@ -288,7 +288,6 @@ import {
   isApiError,
   transformErrors,
 } from "@/wab/shared/ApiErrors/errors";
-import { ConsoleLogAnalytics } from "@/wab/shared/analytics/ConsoleLogAnalytics";
 import { Bundler } from "@/wab/shared/bundler";
 import { mkShortId, safeCast, spawn } from "@/wab/shared/common";
 import { isAdminTeamEmail } from "@/wab/shared/devflag-utils";
@@ -495,13 +494,12 @@ function addMiddlewares(
     console.log("Skipping session store setup...");
   }
 
-  const newRequestScopedAnalytics = initAmplitudeNode();
+  const analyticsFactory = initAnalyticsFactory({
+    production: config.production,
+  });
   app.use(
     safeCast<RequestHandler>(async (req, res, next) => {
-      const analytics = newRequestScopedAnalytics();
-      req.analytics = config.production
-        ? analytics
-        : methodForwarder(new ConsoleLogAnalytics(), analytics);
+      req.analytics = analyticsFactory();
       req.analytics.appendBaseEventProperties({
         host: config.host,
         production: config.production,
@@ -832,6 +830,10 @@ export function addCmsEditorRoutes(app: express.Application) {
   app.put("/api/v1/cmse/rows/:rowId", withNext(updateRow));
   app.delete("/api/v1/cmse/rows/:rowId", withNext(deleteRow));
   app.post("/api/v1/cmse/rows/:rowId/clone", withNext(cloneRow));
+  app.post(
+    "/api/v1/cmse/tables/:tableId/check-unique-fields",
+    withNext(checkUniqueFields)
+  );
   app.get("/api/v1/cmse/row-revisions/:revId", withNext(getRowRevision));
 
   app.post(
@@ -2147,14 +2149,17 @@ function corsPreflight() {
     allowedHeaders: "*",
   });
 
-  const handler: express.RequestHandler = (req, res, next) => {
-    // cors response should be very cacheable by Cloudfront
-    res.set(
-      "Cache-Control",
-      `max-age=${30 * 24 * 60 * 60}, s-maxage=${30 * 24 * 60 * 60}`
-    );
-    corsHandler(req, res, next);
-  };
+  const handler: express.RequestHandler = safeCast<RequestHandler>(
+    async (req, res, next) => {
+      // cors response should be very cacheable by Cloudfront
+      await req.resolveTransaction();
+      res.set(
+        "Cache-Control",
+        `max-age=${30 * 24 * 60 * 60}, s-maxage=${30 * 24 * 60 * 60}`
+      );
+      corsHandler(req, res, next);
+    }
+  );
   return handler;
 }
 

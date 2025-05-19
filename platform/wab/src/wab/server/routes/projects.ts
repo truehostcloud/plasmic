@@ -219,7 +219,7 @@ export async function listProjects(req: Request, res: Response) {
     .map((project) => project.id);
   const perms = (await mgr.getPermissionsForProjects(privateProjsIds)).concat(
     (await mgr.getPermissionsForProjects(publicProjsIds)).filter((perm) => {
-      return accessLevelRank(perm.accessLevel) >= accessLevelRank("content");
+      return accessLevelRank(perm.accessLevel) >= accessLevelRank("commenter");
     })
   );
 
@@ -1139,8 +1139,14 @@ async function ensureSchemaIsUpToDate(req: Request) {
 export async function tryMergeBranch(req: Request, res: Response) {
   const mgr = userDbMgr(req);
   const { projectId } = req.params;
-  const { subject, pretend, resolution, autoCommitOnToBranch } =
-    req.body as TryMergeRequest;
+  const {
+    subject,
+    pretend,
+    resolution,
+    autoCommitOnToBranch,
+    description,
+    tags,
+  } = req.body as TryMergeRequest;
   const mergeResult = pretend
     ? await mgr.previewMergeBranch({
         ...subject,
@@ -1152,6 +1158,8 @@ export async function tryMergeBranch(req: Request, res: Response) {
         ...subject,
         resolution,
         autoCommitOnToBranch,
+        description,
+        tags,
         excludeMergeStepFromResult: true,
       });
   // Prevent attempting to serialize MergeStep (not serializable)
@@ -1412,7 +1420,9 @@ export async function getProjectRev(req: Request, res: Response) {
       : await mgr.getLatestProjectRev(projectId, { branchId });
   const perms = project.readableByPublic
     ? (await mgr.getPermissionsForProject(projectId)).filter((perm) => {
-        return accessLevelRank(perm.accessLevel) >= accessLevelRank("content");
+        return (
+          accessLevelRank(perm.accessLevel) >= accessLevelRank("commenter")
+        );
       })
     : await mgr.getPermissionsForProject(projectId);
   const depPkgs = await loadDepPackages(
@@ -1501,7 +1511,9 @@ export async function getProjectRevWithoutData(req: Request, res: Response) {
   );
   const perms = project.readableByPublic
     ? (await mgr.getPermissionsForProject(projectId)).filter((perm) => {
-        return accessLevelRank(perm.accessLevel) >= accessLevelRank("content");
+        return (
+          accessLevelRank(perm.accessLevel) >= accessLevelRank("commenter")
+        );
       })
     : await mgr.getPermissionsForProject(projectId);
   res.json(
@@ -1582,7 +1594,9 @@ export async function updateProject(req: Request, res: Response) {
   const apiProject = mkApiProject(project);
   const perms = project.readableByPublic
     ? (await mgr.getPermissionsForProject(projectId)).filter((perm) => {
-        return accessLevelRank(perm.accessLevel) >= accessLevelRank("content");
+        return (
+          accessLevelRank(perm.accessLevel) >= accessLevelRank("commenter")
+        );
       })
     : await mgr.getPermissionsForProject(projectId);
   const owner = await mgr.tryGetUserById(
@@ -2351,7 +2365,9 @@ export async function genCode(req: Request, res: Response) {
     );
   }
   const platform =
-    req.body.platform === "nextjs" || req.body.platform === "gatsby"
+    req.body.platform === "nextjs" ||
+    req.body.platform === "gatsby" ||
+    req.body.platform === "tanstack"
       ? req.body.platform
       : "react";
   const platformOptions = req.body.platformOptions || {};

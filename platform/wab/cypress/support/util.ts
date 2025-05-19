@@ -260,16 +260,17 @@ export function waitForNewFrame(
   waitStudioLoaded();
   return cy.get(".canvas-editor__canvas-clipper").then(() => {
     return curDocument().then((doc) => {
-      const existingFrames = doc.querySelectorAll(
-        ".canvas-editor__viewport[data-test-frame-uid]"
-      );
+      const existingFrames =
+        doc.querySelectorAll(
+          ".canvas-editor__frames .canvas-editor__viewport[data-test-frame-uid]"
+        ) ?? [];
 
       before();
 
       return cy
         .wait(4000)
         .get(
-          ".canvas-editor__viewport[data-test-frame-uid]" +
+          ".canvas-editor__frames .canvas-editor__viewport[data-test-frame-uid]" +
             withoutNils(
               [...existingFrames.values()].map((e) =>
                 e.getAttribute("data-test-frame-uid")
@@ -387,6 +388,24 @@ export function turnOffDesignMode() {
   cy.contains("Turn off design mode").click();
 }
 
+export function turnOffAutoOpenMode() {
+  cy.get("#view-menu").click();
+  cy.contains("Turn off auto-open mode").click();
+}
+
+export function turnOnAutoOpenMode() {
+  cy.get("#view-menu").click();
+  cy.contains("Turn on auto-open mode").click();
+}
+
+export function hideAutoOpen() {
+  cy.autoOpenBanner()
+    .parents(".banner-bottom")
+    .find("button")
+    .contains("Hide")
+    .click();
+}
+
 export function refreshFocusedArena() {
   cy.get("#refresh-canvas-btn").click();
   cy.wait(1000);
@@ -405,6 +424,73 @@ export function linkNewProp(propName?: string, defaultValue?: string) {
     cy.get(`input[data-plasmic-prop="default-value"]`).type(defaultValue);
   }
   cy.get(`button[data-test-id="prop-submit"]`).click();
+}
+
+/**
+ * Add a component prop to the current component.
+ * defaultValue and previewValue only work for typeable values like "string" or "number"
+ */
+export function createComponentProp(opts: {
+  propName: string;
+  propType: string;
+  defaultValue?: string;
+  previewValue?: string;
+}) {
+  cy.switchToComponentDataTab();
+  cy.get(`[data-test-id="add-prop-btn"]`).click();
+  cy.selectPropOption(`[data-test-id="prop-type"]`, { key: opts.propType });
+  cy.get(`[data-test-id="prop-name"]`).type(opts.propName);
+
+  if (opts.defaultValue) {
+    cy.get(`input[data-plasmic-prop="default-value"]`).type(opts.defaultValue);
+  }
+
+  if (opts.previewValue) {
+    cy.get(`input[data-plasmic-prop="preview-value"]`).type(opts.previewValue);
+  }
+
+  cy.get(`button[data-test-id="prop-submit"]`).click();
+  cy.wait(500);
+}
+
+export function openComponentPropModal(propName: string) {
+  cy.switchToComponentDataTab();
+  cy.contains(propName).rightclick();
+  cy.contains("Configure prop").click();
+}
+
+export function setComponentPropDefaultValue(
+  propName: string,
+  defaultValue: string | undefined
+) {
+  cy.openComponentPropModal(propName);
+  if (defaultValue !== undefined) {
+    cy.get(`input[data-plasmic-prop="default-value"]`).type(
+      "{selectall}{backspace}" + defaultValue
+    );
+  } else {
+    cy.get(`button[data-test-id="default-value-menu-btn"]`).click();
+    cy.contains("Unset").click();
+  }
+  cy.get(`button[data-test-id="prop-submit"]`).click();
+  cy.wait(500);
+}
+
+export function setComponentPropPreviewValue(
+  propName: string,
+  previewValue: string | undefined
+) {
+  cy.openComponentPropModal(propName);
+  if (previewValue !== undefined) {
+    cy.get(`input[data-plasmic-prop="preview-value"]`).type(
+      "{selectall}{backspace}" + previewValue
+    );
+  } else {
+    cy.get(`button[data-test-id="preview-value-menu-btn"]`).click();
+    cy.contains("Unset").click();
+  }
+  cy.get(`button[data-test-id="prop-submit"]`).click();
+  cy.wait(500);
 }
 
 export function createNewEventHandler(
@@ -545,6 +631,10 @@ export class Framed {
 }
 
 export function justType(key: string) {
+  if (!key) {
+    return;
+  }
+
   cy.wait(500);
   if (PLATFORM !== "osx") {
     key = key.replace(/cmd/g, "ctrl");
@@ -607,6 +697,11 @@ export function waitAllEval() {
   });
 }
 
+export function waitLoadingComplete() {
+  cy.wait(200);
+  cy.get(".ScreenDimmer", { timeout: 10000 }).should("not.exist");
+}
+
 export function waitForFrameToLoad() {
   cy.wait(1000);
   cy.waitAllEval();
@@ -647,6 +742,34 @@ export function extractComponentNamed(name: string) {
   cy.get(
     `form[data-test-id="extract-component-form"] button[type="submit"]`
   ).click();
+}
+
+export function getVariantFrame(index: number) {
+  return cy
+    .get(`.canvas-editor__frames .canvas-editor__viewport[data-test-frame-uid]`)
+    .eq(index);
+}
+
+export function getBaseFrame() {
+  return getVariantFrame(0);
+}
+
+export function selectRootNode() {
+  cy.switchToTreeTab();
+  return cy
+    .get(`.tpltree__nodeLabel__summary`)
+    .eq(0)
+    .invoke("text")
+    .then((text) => {
+      selectTreeNode([text]);
+    });
+}
+
+export function focusBaseFrame() {
+  return getBaseFrame().then((frame) => {
+    frame.click();
+    return new Framed(frame[0] as HTMLIFrameElement);
+  });
 }
 
 export function getSelectedElt() {
@@ -695,11 +818,71 @@ export function undoAndRedo() {
   undo();
 }
 
+/**
+ * Performs an undo operation in the editor.
+ * @param times - Number of times to perform the undo operation (default: 1)
+ */
+export function undoTimes(times = 1) {
+  for (let i = 0; i < times; i++) {
+    cy.waitAllEval();
+    justType(`{cmd}z`);
+  }
+}
+
 export function getFontInput() {
   cy.switchToDesignTab();
   return cy.get(
     `.canvas-editor__right-pane [data-test-id="font-family-selector"]`
   );
+}
+
+export function underlineText() {
+  cy.switchToDesignTab();
+  return cy
+    .get(
+      `.canvas-editor__right-pane [data-test-id="text-decoration-selector"] [class*="PlasmicStyleToggleButtonGroup"] button:first-child svg`
+    )
+    .click();
+}
+
+export function setVisible() {
+  cy.get('[data-plasmic-prop="display-visible"]').click();
+}
+
+export function getVisibilityToggle(nodeName: string) {
+  return (
+    cy
+      .getTreeNode([nodeName])
+      // hover to show the eye icon
+      .realHover()
+      .find('[class*="tpltree__label__visibility"]')
+  );
+}
+
+/**
+ * Toggles the visibility of a node in the outline tab.
+ * @param nodeName - The name of the node to toggle visibility for.
+ */
+export function toggleVisiblity(nodeName: string) {
+  getVisibilityToggle(nodeName)
+    // click the eye icon in the tpl tree node
+    .click();
+}
+
+export function setDisplayNone() {
+  cy.get('[data-plasmic-prop="display-not-visible"]').click();
+}
+
+export function setNotRendered() {
+  cy.get('[data-plasmic-prop="display-visible"]').rightclick();
+  cy.contains("Not rendered").click();
+}
+
+export function setDynamicVisibility(customCode: string) {
+  cy.get('[data-plasmic-prop="display-visible"]').rightclick();
+  cy.contains("Use dynamic value").click();
+  cy.wait(500);
+  cy.enterCustomCodeInDataPicker(customCode);
 }
 
 export function chooseFont(fontName: string) {
@@ -721,13 +904,18 @@ export function getFontSizeInput() {
 
 export function chooseFontSize(fontSize: string) {
   cy.switchToDesignTab();
-  getFontSizeInput().click().focus();
+  getFontSizeInput().eq(0).click().focus();
   justType(fontSize + "{enter}");
 }
 
-export function convertToSlot() {
+export function convertToSlot(slotName?: string) {
   getSelectedElt().rightclick({ force: true });
   cy.contains("Convert to a slot").click({ force: true });
+  if (slotName) {
+    cy.get(`[data-test-class="simple-text-box"]`).type(
+      `{selectall}${slotName}`
+    );
+  }
 }
 
 export function getSelectedTreeNode() {
@@ -887,6 +1075,10 @@ export function switchToTreeTab() {
   switchToLeftTab("outline");
 }
 
+export function switchToStyleTokensTab() {
+  switchToLeftTab("tokens");
+}
+
 export function switchToComponentsTab() {
   switchToLeftTab("components");
 }
@@ -949,8 +1141,9 @@ export function setImageSource(url: string) {
 }
 
 export function changeTagType(tag: string) {
-  cy.get(`[data-test-class="tpl-tag-select"]`).click();
-  cy.contains(tag).click();
+  cy.get(`[data-test-class="tpl-tag-select"] input`).type(`${tag}{enter}`, {
+    force: true,
+  });
 }
 
 export function clearNotifications() {
@@ -968,13 +1161,38 @@ export function treeTab() {
   return cy.get(".outline-tab");
 }
 
-export function projectPanel() {
-  switchToTreeTab();
+export function openProjectPanel() {
   cy.get("#proj-nav-button").click();
-  cy.wait(500);
+}
+
+export function expandAllProjectPanel() {
   cy.get(`[data-test-id="nav-dropdown-expand-all"]`).click();
-  cy.wait(500);
+}
+
+export function getProjectPanelContents() {
   return cy.get(testIds.projectPanel.selector);
+}
+
+export function projectPanel() {
+  openProjectPanel();
+  cy.wait(200);
+  expandAllProjectPanel();
+  cy.wait(200);
+  return getProjectPanelContents();
+}
+
+export function getComponentsCount() {
+  return getProjectPanelContents()
+    .find(`[class*="sizeContainer"]`)
+    .last()
+    .invoke("text");
+}
+
+export function getArenasCount() {
+  return getProjectPanelContents()
+    .find(`[class*="sizeContainer"]`)
+    .first()
+    .invoke("text");
 }
 
 export function branchPanel() {
@@ -1014,6 +1232,32 @@ export function addVariantToGroup(groupName: string, variantName: string) {
 
 export function addInteractionVariant(selector: string) {
   addVariantToGroup("Interaction Variants", selector);
+  cy.get(`[data-test-id="variant-selector-button"]`).click();
+}
+
+export function addRegisteredVariantFromCanvas(variantName: string) {
+  cy.get(`[aria-label="Add registered variant"]`).click();
+  justType(variantName + "{enter}");
+  cy.get(`[data-test-id="variant-selector-button"]`).click();
+}
+
+export function editRegisteredVariantFromCanvas(newVariantName: string) {
+  cy.get(`[class*="variantsList"]`).rightclick();
+  cy.contains("Change variant selectors").click();
+  cy.justType(`{del}${newVariantName}{enter}`);
+  cy.get(`[data-test-id="variant-selector-button"]`).click();
+}
+
+export function editRegisteredVariantFromVariantsTab(
+  existingVariantName: string,
+  newVariantName: string
+) {
+  cy.doVariantMenuCommand(false, existingVariantName, "Edit registered keys");
+  cy.justType(`{del}${newVariantName}{enter}{enter}`);
+}
+
+export function addRegisteredVariantFromVariantsTab(variantName: string) {
+  addVariantToGroup("Registered Variants", variantName);
   cy.get(`[data-test-id="variant-selector-button"]`).click();
 }
 
@@ -1120,21 +1364,26 @@ export function openArtboardSettings() {
   });
 }
 
-export function addElementInteraction(pseudoSelector: string) {
-  toggleElementStates();
+export function addElementVariant(pseudoSelector: string) {
   cy.get("[data-test-id='add-private-interaction-variant-button']")
     .click()
     .wait(200);
   justType(pseudoSelector + "{enter}");
 }
 
-export function disableElementInteraction() {
+export function stopRecordingElementVariant() {
   cy.get(
     `[data-test-id="private-style-variants-section"] [data-test-class="variant-record-button-stop"]`
   ).click();
 }
 
-function toggleElementStates() {
+export function deactivateElementVariant() {
+  cy.get(
+    `[data-test-id="private-style-variants-section"] [data-test-class="variant-pin-button-deactivate"]`
+  ).click();
+}
+
+export function toggleElementVariants() {
   let isOpened = false;
   cy.document().then((doc) => {
     if (
@@ -1152,7 +1401,7 @@ function toggleElementStates() {
     .click()
     .wait(200)
     .get(".ant-dropdown-menu")
-    .contains("Element states")
+    .contains("Element variants")
     .click()
     .wait(200);
 }
@@ -1226,7 +1475,7 @@ function waitCanvasOrPreviewIframeLoaded(
   );
 }
 
-function addDrawerItem(itemName: string, displayName?: string) {
+export function addDrawerItem(itemName: string, displayName?: string) {
   addDrawer().find("input").click();
   justType(itemName);
   return addDrawer()
@@ -1972,8 +2221,17 @@ export function repeatOnCustomCode(code: string) {
   cy.resetMonacoEditorToCode(code);
 }
 
-export function getPropEditorRow(name: string) {
-  return cy.get('[data-test-id="prop-editor-row-' + name + '"]');
+export function getPropEditorRow(prop: string) {
+  return cy.contains('[data-test-id^="prop-editor-row-"]', prop);
+}
+
+export function removePropValue(prop: string) {
+  cy.getPropEditorRow(prop).rightclick();
+  cy.contains(`Remove ${prop} prop`).click();
+}
+
+export function propAddItem(prop: string) {
+  cy.getPropEditorRow(prop).contains("Add item").click();
 }
 
 export function enterCustomCodeInDataPicker(code: string) {
@@ -2238,7 +2496,7 @@ export function switchInteractiveMode() {
   cy.get(`[data-test-id="interactive-switch"]`).click({ force: true });
 }
 
-export function upsertDevFlags(devFlags: Partial<DevFlagsType>) {
+export function getDevFlags() {
   return cy
     .login("admin@admin.example.com")
     .request({
@@ -2246,21 +2504,18 @@ export function upsertDevFlags(devFlags: Partial<DevFlagsType>) {
       method: "GET",
       log: false,
     })
-    .its("body.data", { log: false })
-    .then((rawDevFlags) => {
-      const newDevFlags = {
-        ...JSON.parse(rawDevFlags || "{}"),
-        ...devFlags,
-      };
-      return cy.request({
-        url: "/api/v1/admin/devflags",
-        method: "PUT",
-        log: false,
-        body: {
-          data: JSON.stringify(newDevFlags),
-        },
-      });
-    });
+    .then((resp) => JSON.parse(resp.body.data) as DevFlagsType);
+}
+
+export function upsertDevFlags(devFlags: Partial<DevFlagsType>) {
+  return cy.login("admin@admin.example.com").request({
+    url: "/api/v1/admin/devflags",
+    method: "PUT",
+    log: false,
+    body: {
+      data: JSON.stringify(devFlags),
+    },
+  });
 }
 
 export function createTutorialDb(type: string) {
@@ -2424,6 +2679,10 @@ export function createFakeDataSource() {
   });
 }
 
+export function autoOpenBanner() {
+  cy.get(".canvas-editor").contains("Auto-showing hidden element.");
+}
+
 export function pressPublishButton() {
   waitForSave();
   cy.get("#topbar-publish-btn").click();
@@ -2443,10 +2702,6 @@ export function showMoreInSidebarModal() {
   cy.get('#object-prop-editor-modal [data-test-id="show-extra-content"]')
     .last()
     .click();
-}
-
-export function addItemDataPlasmicProp(prop: string) {
-  cy.getPropEditorRow(prop).contains("Add item").click();
 }
 
 export const TUTORIAL_DB_TYPE = "northwind";
@@ -2572,4 +2827,31 @@ export function getFormValue(expectedFormItems: ExpectedFormItem[]) {
       .map((formItem) => [formItem.name, formItem.value])
   );
   return JSON.stringify(values, Object.keys(values).sort());
+}
+
+/**
+ * Set up custom app host for testing code components
+ * @param page - the page to host
+ */
+export function configureProjectAppHost(page: string) {
+  cy.wait(500);
+  cy.get(`[data-test-id="project-menu-btn"]`).click({ force: true });
+  cy.wait(500);
+  cy.get(`[data-test-id="configure-project"]`).click({ force: true });
+  cy.withinTopFrame(() => {
+    const plasmicHost = `http://localhost:${
+      Cypress.env("CUSTOM_HOST_PORT") || 3000
+    }/${page}`;
+    cy.get(`[data-test-id="host-url-input"]`).clear().type(plasmicHost);
+    cy.contains("Confirm").click();
+    cy.log(`Please make sure host-test package is running at ${plasmicHost}`);
+    cy.wait(3000);
+    cy.get(
+      `iframe[src^="http://localhost:${
+        Cypress.env("CUSTOM_HOST_PORT") || 3000
+      }/${page}"]`,
+      { timeout: 60000 }
+    );
+    cy.reload({ timeout: 120000 });
+  });
 }

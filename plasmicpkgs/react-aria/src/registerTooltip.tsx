@@ -1,135 +1,179 @@
-import { usePlasmicCanvasComponentInfo } from "@plasmicapp/host";
-import React from "react";
-import { useFocusable } from "react-aria";
-import { Tooltip, TooltipProps, TooltipTrigger } from "react-aria-components";
-import { TooltipTriggerProps } from "react-stately";
+import React, { useCallback, useContext, useId, useRef, useState } from "react";
+import { mergeProps, useFocusWithin, useHover } from "react-aria";
+import {
+  Provider,
+  Tooltip,
+  TooltipProps,
+  TooltipTriggerStateContext,
+} from "react-aria-components";
+import { TooltipTriggerProps, useTooltipTriggerState } from "react-stately";
 import { COMMON_STYLES, getCommonOverlayProps } from "./common";
 import {
   CodeComponentMetaOverrides,
+  PlasmicCanvasProps,
   Registerable,
   registerComponentHelper,
-  WithPlasmicCanvasComponentInfo,
+  useIsOpen,
 } from "./utils";
-import { pickAriaComponentVariants, WithVariants } from "./variant-utils";
-
-/*
-  NOTE: Placement should be managed as variants, not just props.
-  When `shouldFlip` is true, the placement prop may not represent the final position
-  (e.g., if placement is set to "bottom" but lacks space, the tooltip may flip to "top").
-  However, data-selectors will consistently indicate the actual placement of the tooltip.
-*/
-const TOOLTIP_VARIANTS = [
-  "placementTop" as const,
-  "placementBottom" as const,
-  "placementLeft" as const,
-  "placementRight" as const,
-];
 
 export interface BaseTooltipProps
-  extends TooltipTriggerProps,
+  extends Omit<TooltipTriggerProps, "trigger">,
     TooltipProps,
-    WithPlasmicCanvasComponentInfo,
-    WithVariants<typeof TOOLTIP_VARIANTS> {
+    PlasmicCanvasProps {
   children: React.ReactElement<HTMLElement>;
   tooltipContent?: React.ReactElement;
   resetClassName?: string;
-}
-
-interface TriggerWrapperProps {
-  children: React.ReactElement;
+  trigger?: "focus" | "focus and hover" | undefined;
   className?: string;
 }
 
-const { variants, withObservedValues } =
-  pickAriaComponentVariants(TOOLTIP_VARIANTS);
+// In Studio, the tooltip is always controlled because isOpen is attached to the code component's state.
+// In Codegen, the user decides whether the tooltip is controlled or not. So we need to handle both cases.
+export function BaseTooltip(props: BaseTooltipProps) {
+  if (props.isOpen !== undefined) {
+    return <ControlledBaseTooltip {...props} />;
+  } else {
+    return <UncontrolledBaseTooltip {...props} />;
+  }
+}
 
-/*
-
-  React Aria's TooltipTrigger TooltipTrigger requires a focusable element with ref.
-  To make sure that this requirement is fulfilled, wrap everything in a focusable div.
-  https://react-spectrum.adobe.com/react-aria/Tooltip.html#example
-  (In the example, Aria Button works as a trigger because it uses useFocusable behind the scenes)
-
-  Discussion (React-aria-components TooltipTrigger with custom button):
-  https://github.com/adobe/react-spectrum/discussions/5119#discussioncomment-7084661
-
-  */
-function TriggerWrapper({ children, className }: TriggerWrapperProps) {
-  const ref = React.useRef<HTMLDivElement | null>(null);
-  const { focusableProps } = useFocusable({}, ref);
+function UncontrolledBaseTooltip({ onOpenChange, ...props }: BaseTooltipProps) {
+  const [open, setOpen] = useState(props.defaultOpen ?? false);
+  const onOpenChangeMerged = useCallback(
+    (newOpen: boolean) => {
+      setOpen(newOpen);
+      onOpenChange?.(newOpen);
+    },
+    [onOpenChange]
+  );
   return (
-    <div
-      ref={ref}
-      className={className}
-      {...focusableProps}
-      style={COMMON_STYLES}
-    >
-      {children}
-    </div>
+    <ControlledBaseTooltip
+      {...props}
+      isOpen={open}
+      onOpenChange={onOpenChangeMerged}
+    />
   );
 }
 
-export function BaseTooltip(props: BaseTooltipProps) {
+function ControlledBaseTooltip(props: BaseTooltipProps) {
   const {
     children,
-    isDisabled,
+    isDisabled = false,
     delay,
     closeDelay,
     trigger,
     isOpen,
-    defaultOpen,
     tooltipContent,
     resetClassName,
     placement,
     offset,
     crossOffset,
     shouldFlip,
-    onOpenChange,
-    plasmicUpdateVariant,
+    className,
+    onOpenChange = () => {},
   } = props;
 
-  const { isSelected, selectedSlotName } =
-    usePlasmicCanvasComponentInfo?.(props) ?? {};
-  const isAutoOpen = selectedSlotName !== "children" && isSelected;
-  const _isOpen = (isAutoOpen || isOpen) ?? false;
+  const isCanvasAwareOpen = useIsOpen({
+    triggerSlotName: "children",
+    isOpen,
+    props,
+  });
+
+  // The following is a custom implementation of the <TooltipTrigger /> component.
+  // The default <TooltipTrigger /> from react-aria-components automatically manages state changes when a useFocusable element (e.g., an Aria Button) is clicked.
+  // However, in our custom trigger, <TriggerWrapper>, we use useFocusWithin to explicitly handle state changes, allowing any element—not just an Aria Button—to act as a trigger.
+  // However, this results in duplicate state updates when using an Aria Button, as state changes are triggered both by useFocusWithin and useFocusable.
+  // Consequently, onOpenChange is called twice.
+  //
+  // This implementation is adapted from:
+  // https://github.com/adobe/react-spectrum/blob/988096cf3f1dbd59f274d8c552e9fe7d5dcf4f41/packages/react-aria-components/src/Tooltip.tsx#L89
+  // The <FocusableProvider> has been removed, as it handles automatic state updates for the Aria Button.
+  const ref = useRef<any>(null);
+  const tooltipId = useId();
+
+  const state = useTooltipTriggerState({
+    ...props,
+    isOpen: isCanvasAwareOpen,
+    trigger: trigger === "focus" ? trigger : undefined,
+  });
 
   return (
-    <TooltipTrigger
-      isDisabled={isDisabled}
-      delay={delay}
-      closeDelay={closeDelay}
-      trigger={trigger}
-      isOpen={_isOpen}
-      defaultOpen={defaultOpen}
-      onOpenChange={onOpenChange}
-    >
-      <TriggerWrapper className={resetClassName}>{children}</TriggerWrapper>
+    // TooltipTriggerStateContext used by BaseOverlayArrow
+    <Provider values={[[TooltipTriggerStateContext, state]]}>
+      <TriggerWrapper
+        ref={ref}
+        className={className}
+        tooltipId={state.isOpen ? tooltipId : undefined}
+        isDisabled={isDisabled}
+        triggerOnFocusOnly={trigger === "focus"}
+      >
+        {children}
+      </TriggerWrapper>
       <Tooltip
-        isOpen={_isOpen}
+        triggerRef={ref}
+        // @ts-expect-error <Tooltip> is wrongly typed to not have id prop
+        id={tooltipId}
         offset={offset}
+        delay={delay}
+        closeDelay={closeDelay}
         crossOffset={crossOffset}
         shouldFlip={shouldFlip}
-        defaultOpen={defaultOpen}
         className={resetClassName}
         onOpenChange={onOpenChange}
         placement={placement}
       >
-        {({ placement: _placement }) =>
-          withObservedValues(
-            <>{tooltipContent}</>,
-            {
-              placementTop: _placement === "top",
-              placementBottom: _placement === "bottom",
-              placementLeft: _placement === "left",
-              placementRight: _placement === "right",
-            },
-            plasmicUpdateVariant
-          )
-        }
+        {tooltipContent}
       </Tooltip>
-    </TooltipTrigger>
+    </Provider>
   );
 }
+
+interface TriggerWrapperProps {
+  children: React.ReactElement;
+  isDisabled: boolean;
+  triggerOnFocusOnly: boolean;
+  tooltipId?: string;
+  className?: string;
+}
+
+// React Aria's TooltipTrigger requires a focusable element with ref.
+// To make sure that this requirement is fulfilled, wrap everything in a focusable div.
+// https://react-spectrum.adobe.com/react-aria/Tooltip.html#example
+// (In the example, Aria Button works as a trigger because it uses useFocusable behind the scenes)
+//
+// Discussion (React-aria-components TooltipTrigger with custom button):
+// https://github.com/adobe/react-spectrum/discussions/5119#discussioncomment-7084661
+const TriggerWrapper = React.forwardRef<HTMLDivElement, TriggerWrapperProps>(
+  function TriggerWrapper_(
+    { children, isDisabled, triggerOnFocusOnly, tooltipId, className },
+    ref: React.Ref<HTMLDivElement>
+  ) {
+    const state = useContext(TooltipTriggerStateContext)!;
+
+    const { hoverProps } = useHover({
+      isDisabled,
+      onHoverStart: () => !triggerOnFocusOnly && state.open(),
+      onHoverEnd: () => !triggerOnFocusOnly && state.close(),
+    });
+
+    // useFocusWithin captures focus events for all nested focusable elements
+    const { focusWithinProps } = useFocusWithin({
+      isDisabled,
+      onFocusWithin: () => state.open(),
+      onBlurWithin: () => state.close(),
+    });
+
+    const mergedProps = mergeProps(hoverProps, focusWithinProps, {
+      "aria-describedby": tooltipId,
+      // We expose className to allow user control over the wrapper div's styling.
+      className,
+      ref,
+      style: COMMON_STYLES,
+    });
+
+    return <div {...mergedProps}>{children}</div>;
+  }
+);
 
 export function registerTooltip(
   loader?: Registerable,
@@ -144,8 +188,6 @@ export function registerTooltip(
       importPath: "@plasmicpkgs/react-aria/skinny/registerTooltip",
       importName: "BaseTooltip",
       isAttachment: true,
-      styleSections: false,
-      variants,
       props: {
         children: {
           type: "slot",

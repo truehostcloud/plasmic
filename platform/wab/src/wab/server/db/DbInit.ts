@@ -4,17 +4,19 @@ import { DEFAULT_DATABASE_URI } from "@/wab/server/config";
 import { getLastBundleVersion } from "@/wab/server/db/BundleMigrator";
 import { ensureDbConnection } from "@/wab/server/db/DbCon";
 import { initDb } from "@/wab/server/db/DbInitUtil";
-import { DbMgr, normalActor, SUPER_USER } from "@/wab/server/db/DbMgr";
+import {
+  DbMgr,
+  DEFAULT_DEV_PASSWORD,
+  normalActor,
+  SUPER_USER,
+} from "@/wab/server/db/DbMgr";
 import { seedTestFeatureTiers } from "@/wab/server/db/seed/feature-tier";
 import { FeatureTier, Team, User } from "@/wab/server/entities/Entities";
-import {
-  getBundleInfo,
-  getDevflagForInsertableTemplateItem,
-  PkgMgr,
-} from "@/wab/server/pkg-mgr";
+import { getBundleInfo, PkgMgr } from "@/wab/server/pkg-mgr";
 import { initializeGlobals } from "@/wab/server/svr-init";
 import { Bundler } from "@/wab/shared/bundler";
 import { ensureType, spawn } from "@/wab/shared/common";
+import { defaultComponentKinds } from "@/wab/shared/core/components";
 import { createSite } from "@/wab/shared/core/sites";
 import { InsertableTemplatesGroup, Installable } from "@/wab/shared/devflags";
 import {
@@ -22,6 +24,7 @@ import {
   PLEXUS_INSERTABLE_ID,
   PLUME_INSERTABLE_ID,
 } from "@/wab/shared/insertables";
+import { kebabCase, startCase } from "lodash";
 import { EntityManager } from "typeorm";
 
 initializeGlobals();
@@ -41,24 +44,23 @@ async function main() {
 
 export async function seedTestDb(em: EntityManager) {
   const db = new DbMgr(em, SUPER_USER);
-  const bundler = new Bundler();
 
   // admin@admin.example.com is an admin user because of its admin.com domain name
   // (see `isCoreTeamEmail`), meaning it will receive elevated privileges and
   // doesn't behave like normal accounts.
   // AVOID TESTING WITH THIS ACCOUNT.
-  const { user: adminUser } = await seedTestUserAndProjects(em, bundler, {
+  const { user: adminUser } = await seedTestUserAndProjects(em, {
     email: "admin@admin.example.com",
     firstName: "Plasmic",
     lastName: "Admin",
   });
   // user@example.com and user2@example.com behave like normal accounts.
-  const { user: user1 } = await seedTestUserAndProjects(em, bundler, {
+  const { user: user1 } = await seedTestUserAndProjects(em, {
     email: "user@example.com",
     firstName: "Plasmic",
     lastName: "User",
   });
-  const { user: user2 } = await seedTestUserAndProjects(em, bundler, {
+  const { user: user2 } = await seedTestUserAndProjects(em, {
     email: "user2@example.com",
     firstName: "Plasmic",
     lastName: "User 2",
@@ -100,6 +102,8 @@ export async function seedTestDb(em: EntityManager) {
     sysnames.map(async (sysname) => await new PkgMgr(db, sysname).seedPkg())
   );
 
+  const plexusBundleInfo = getBundleInfo(PLEXUS_INSERTABLE_ID);
+
   await db.setDevFlagOverrides(
     JSON.stringify(
       {
@@ -110,20 +114,41 @@ export async function seedTestDb(em: EntityManager) {
             isInstallOnly: true,
             isNew: true,
             name: "Plasmic Design System",
-            projectId: getBundleInfo(PLEXUS_INSERTABLE_ID).projectId,
+            projectId: plexusBundleInfo.projectId,
             imageUrl: "https://static1.plasmic.app/plasmic-logo.png",
             entryPoint: {
               type: "arena",
-              name: "Index",
+              name: "Components",
             },
           },
         ]),
         insertableTemplates: ensureType<InsertableTemplatesGroup | undefined>({
           type: "insertable-templates-group",
           name: "root",
-          items: sysnames
-            .map(getDevflagForInsertableTemplateItem)
-            .filter((insertableGroup) => insertableGroup.items.length > 0),
+          // The below achieves the following for each plexus component:
+          // {
+          //   "type": "insertable-templates-component",
+          //   "projectId": "mSQqkNd8CL5vNdDTXJPXfU",
+          //   "componentName": "Plexus Button",
+          //   "templateName": "plexus/button",
+          //   "imageUrl": "https://static1.plasmic.app/antd_button.svg"
+          // }
+          items: [
+            {
+              type: "insertable-templates-group" as const,
+              name: "Components",
+              items: Object.keys(defaultComponentKinds).map((item) => ({
+                componentName: startCase(item),
+                templateName: `${plexusBundleInfo.sysname}/${kebabCase(item)}`,
+                imageUrl: `https://static1.plasmic.app/insertables/${kebabCase(
+                  item
+                )}.svg`,
+                type: "insertable-templates-component" as const,
+                projectId: plexusBundleInfo.projectId,
+                tokenResolution: "reuse-by-name" as const,
+              })),
+            },
+          ].filter((insertableGroup) => insertableGroup.items.length > 0),
         }),
         insertPanelContent: {
           aliases: {
@@ -132,22 +157,10 @@ export async function seedTestDb(em: EntityManager) {
             pageMeta: "builtincc:hostless-plasmic-head",
 
             // Default components
-            button: "default:button",
-            checkbox: "default:checkbox",
-            checkboxGroup: "default:checkbox-group",
-            combobox: "default:combobox",
-            drawer: "default:drawer",
-            input: "default:text-input",
-            modal: "default:modal",
-            popover: "default:popover",
-            radio: "default:radio",
-            radioGroup: "default:radio-group",
-            rangeSlider: "default:range-slider",
-            select: "default:select",
-            slider: "default:slider",
-            switch: "default:switch",
-            textArea: "default:text-area",
-            tooltip: "default:tooltip",
+            ...Object.keys(defaultComponentKinds).reduce((acc, defaultKind) => {
+              acc[defaultKind] = `default:${defaultKind}`;
+              return acc;
+            }, {}),
           },
           builtinSections: {
             Home: {
@@ -165,25 +178,15 @@ export async function seedTestDb(em: EntityManager) {
                 "image",
                 "icon",
               ],
-              "Starter components": [
-                "button",
-                "input",
-                "select",
-                "switch",
-                "checkbox",
-                "checkbox-group",
-                "radio",
-                "radio-group",
-                "slider",
-                "range-slider",
-                "combobox",
-                "modal",
-                "drawer",
-                "popover",
-                "tooltip",
-              ],
+              // This may use Plexus or Plume depending on the `plexus` devflag
+              "Customizable components": Object.keys(defaultComponentKinds),
               Advanced: ["pageMeta", "dataFetcher"],
             },
+          },
+          // Install all button
+          builtinSectionsInstallables: {
+            // We only need it for Plexus
+            "Customizable components": plexusBundleInfo.projectId,
           },
         },
       },
@@ -193,29 +196,30 @@ export async function seedTestDb(em: EntityManager) {
   );
 }
 
-async function seedTestUserAndProjects(
+export async function seedTestUserAndProjects(
   em: EntityManager,
-  bundler: Bundler,
   userInfo: {
-    firstName: string;
-    lastName: string;
     email: string;
-  }
+    password?: string;
+    firstName?: string;
+    lastName?: string;
+  },
+  numProjects = 2
 ) {
   const db0 = new DbMgr(em, SUPER_USER);
 
   const user = await db0.createUser({
     email: userInfo.email,
-    firstName: userInfo.firstName,
-    lastName: userInfo.lastName,
-    password: "!53kr3tz!",
+    password: userInfo.password || DEFAULT_DEV_PASSWORD,
+    firstName: userInfo.firstName || "Plasmic",
+    lastName: userInfo.lastName || "User",
     needsIntroSplash: false,
     needsSurvey: false,
     needsTeamCreationPrompt: false,
   });
   await db0.markEmailAsVerified(user);
   const db = new DbMgr(em, normalActor(user.id));
-  for (const projectNum of [1, 2]) {
+  for (let projectNum = 1; projectNum <= numProjects; ++projectNum) {
     const { project } = await db.createProject({
       name: `Plasmic Project ${projectNum}`,
     });
@@ -232,7 +236,11 @@ async function seedTestUserAndProjects(
 
     // Need to set this back to the normal placeholder.
     const site = createSite();
-    const siteBundle = bundler.bundle(site, "", await getLastBundleVersion());
+    const siteBundle = new Bundler().bundle(
+      site,
+      "",
+      await getLastBundleVersion()
+    );
     await db.saveProjectRev({
       projectId: project.id,
       data: JSON.stringify(siteBundle),

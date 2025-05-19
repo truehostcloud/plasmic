@@ -1,6 +1,6 @@
-// @ts-nocheck
 /* eslint-disable */
 /* tslint:disable */
+// @ts-nocheck
 /* prettier-ignore-start */
 
 /** @jsxRuntime classic */
@@ -36,9 +36,9 @@ import plasmic_plasmic_kit_color_tokens_css from "./plasmic_kit_q_4_color_tokens
 import sty from "./PlasmicIconButton.module.css"; // plasmic-import: LPry-TF4j22a/css
 import projectcss from "./PP__plasmickit_design_system.module.css"; // plasmic-import: tXkSR39sgCDWSitZxC5xFV/projectcss
 
+import DotsHorizontalIcon from "./plasmic_kit_design_system/PlasmicIcon__DotsHorizontal"; // plasmic-import: GkkhQuMH0/icon
 import ChevronDownSvgIcon from "./plasmic_kit_icons/icons/PlasmicIcon__ChevronDownSvg"; // plasmic-import: xZrB9_0ir/icon
 import PlusSvgIcon from "./plasmic_kit_icons/icons/PlasmicIcon__PlusSvg"; // plasmic-import: sQKgd2GNr/icon
-import WarningTriangleSvgIcon from "./plasmic_kit_icons/icons/PlasmicIcon__WarningTriangleSvg"; // plasmic-import: S0L-xosWD/icon
 
 createPlasmicElementProxy;
 
@@ -60,13 +60,15 @@ export type PlasmicIconButton__VariantMembers = {
     | "green"
     | "blue"
     | "purple"
-    | "secondary";
+    | "secondary"
+    | "black";
   isActive: "isActive";
   showAlert: "showAlert";
   withBackgroundHover: "withBackgroundHover";
   withRedBackgroundHover: "withRedBackgroundHover";
   withGreenBackgroundHover: "withGreenBackgroundHover";
   withDropdown: "withDropdown";
+  isLoading: "isLoading";
 };
 export type PlasmicIconButton__VariantsArgs = {
   disabled?: SingleBooleanChoiceArg<"disabled">;
@@ -87,14 +89,15 @@ export type PlasmicIconButton__VariantsArgs = {
     | "blue"
     | "purple"
     | "secondary"
+    | "black"
   >;
-
   isActive?: SingleBooleanChoiceArg<"isActive">;
   showAlert?: SingleBooleanChoiceArg<"showAlert">;
   withBackgroundHover?: SingleBooleanChoiceArg<"withBackgroundHover">;
   withRedBackgroundHover?: SingleBooleanChoiceArg<"withRedBackgroundHover">;
   withGreenBackgroundHover?: SingleBooleanChoiceArg<"withGreenBackgroundHover">;
   withDropdown?: SingleBooleanChoiceArg<"withDropdown">;
+  isLoading?: SingleBooleanChoiceArg<"isLoading">;
 };
 type VariantPropType = keyof PlasmicIconButton__VariantsArgs;
 export const PlasmicIconButton__VariantProps = new Array<VariantPropType>(
@@ -106,19 +109,20 @@ export const PlasmicIconButton__VariantProps = new Array<VariantPropType>(
   "withBackgroundHover",
   "withRedBackgroundHover",
   "withGreenBackgroundHover",
-  "withDropdown"
+  "withDropdown",
+  "isLoading"
 );
 
 export type PlasmicIconButton__ArgsType = {
+  hoverText?: string;
   children?: React.ReactNode;
   children2?: React.ReactNode;
-  hoverText?: string;
 };
 type ArgPropType = keyof PlasmicIconButton__ArgsType;
 export const PlasmicIconButton__ArgProps = new Array<ArgPropType>(
+  "hoverText",
   "children",
-  "children2",
-  "hoverText"
+  "children2"
 );
 
 export type PlasmicIconButton__OverridesType = {
@@ -127,9 +131,9 @@ export type PlasmicIconButton__OverridesType = {
 };
 
 export interface DefaultIconButtonProps {
+  hoverText?: string;
   children?: React.ReactNode;
   children2?: React.ReactNode;
-  hoverText?: string;
   disabled?: SingleBooleanChoiceArg<"disabled">;
   size?: SingleChoiceArg<"small" | "large" | "vertical" | "medium">;
   type?: MultiChoiceArg<
@@ -148,14 +152,15 @@ export interface DefaultIconButtonProps {
     | "blue"
     | "purple"
     | "secondary"
+    | "black"
   >;
-
   isActive?: SingleBooleanChoiceArg<"isActive">;
   showAlert?: SingleBooleanChoiceArg<"showAlert">;
   withBackgroundHover?: SingleBooleanChoiceArg<"withBackgroundHover">;
   withRedBackgroundHover?: SingleBooleanChoiceArg<"withRedBackgroundHover">;
   withGreenBackgroundHover?: SingleBooleanChoiceArg<"withGreenBackgroundHover">;
   withDropdown?: SingleBooleanChoiceArg<"withDropdown">;
+  isLoading?: SingleBooleanChoiceArg<"isLoading">;
   className?: string;
 }
 
@@ -248,8 +253,13 @@ function PlasmicIconButton__RenderFunc(props: {
         variableType: "variant",
         initFunc: ({ $props, $state, $queries, $ctx }) => $props.withDropdown,
       },
+      {
+        path: "isLoading",
+        type: "private",
+        variableType: "variant",
+        initFunc: ({ $props, $state, $queries, $ctx }) => $props.isLoading,
+      },
     ],
-
     [$props, $ctx, $refs]
   );
   const $state = useDollarState(stateSpecs, {
@@ -298,11 +308,13 @@ function PlasmicIconButton__RenderFunc(props: {
             hasVariant($state, "type", "primary") &&
             hasVariant($state, "type", "dividedRight") &&
             hasVariant($state, "isActive", "isActive"),
+          [sty.rootisLoading]: hasVariant($state, "isLoading", "isLoading"),
           [sty.rootshowAlert]: hasVariant($state, "showAlert", "showAlert"),
           [sty.rootsize_large]: hasVariant($state, "size", "large"),
           [sty.rootsize_medium]: hasVariant($state, "size", "medium"),
           [sty.rootsize_small]: hasVariant($state, "size", "small"),
           [sty.rootsize_vertical]: hasVariant($state, "size", "vertical"),
+          [sty.roottype_black]: hasVariant($state, "type", "black"),
           [sty.roottype_blue]: hasVariant($state, "type", "blue"),
           [sty.roottype_blue_type_purple]:
             hasVariant($state, "type", "purple") &&
@@ -416,6 +428,11 @@ function PlasmicIconButton__RenderFunc(props: {
             hasVariant($state, "type", "primary") &&
             hasVariant($state, "type", "dividedRight") &&
             hasVariant($state, "isActive", "isActive"),
+          [sty.slotTargetChildrenisLoading]: hasVariant(
+            $state,
+            "isLoading",
+            "isLoading"
+          ),
           [sty.slotTargetChildrenshowAlert]: hasVariant(
             $state,
             "showAlert",
@@ -440,6 +457,11 @@ function PlasmicIconButton__RenderFunc(props: {
             $state,
             "size",
             "vertical"
+          ),
+          [sty.slotTargetChildrentype_black]: hasVariant(
+            $state,
+            "type",
+            "black"
           ),
           [sty.slotTargetChildrentype_blue]: hasVariant($state, "type", "blue"),
           [sty.slotTargetChildrentype_clear]: hasVariant(
@@ -625,12 +647,19 @@ function PlasmicIconButton__RenderFunc(props: {
             }),
           })
         : null}
-      {(hasVariant($state, "showAlert", "showAlert") ? true : false) ? (
-        <WarningTriangleSvgIcon
+      {(
+        hasVariant($state, "isLoading", "isLoading")
+          ? true
+          : hasVariant($state, "showAlert", "showAlert")
+          ? true
+          : false
+      ) ? (
+        <DotsHorizontalIcon
           data-plasmic-name={"svg"}
           data-plasmic-override={overrides.svg}
           className={classNames(projectcss.all, sty.svg, {
             [sty.svgisActive]: hasVariant($state, "isActive", "isActive"),
+            [sty.svgisLoading]: hasVariant($state, "isLoading", "isLoading"),
             [sty.svgshowAlert]: hasVariant($state, "showAlert", "showAlert"),
             [sty.svgtype_purple]: hasVariant($state, "type", "purple"),
           })}
@@ -658,7 +687,6 @@ type NodeOverridesType<T extends NodeNameType> = Pick<
   PlasmicIconButton__OverridesType,
   DescendantsType<T>
 >;
-
 type NodeComponentProps<T extends NodeNameType> =
   // Explicitly specify variants, args, and overrides as objects
   {
@@ -666,15 +694,15 @@ type NodeComponentProps<T extends NodeNameType> =
     args?: PlasmicIconButton__ArgsType;
     overrides?: NodeOverridesType<T>;
   } & Omit<PlasmicIconButton__VariantsArgs, ReservedPropsType> & // Specify variants directly as props
-    /* Specify args directly as props*/ Omit<
-      PlasmicIconButton__ArgsType,
-      ReservedPropsType
-    > &
-    /* Specify overrides for each element directly as props*/ Omit<
+    // Specify args directly as props
+    Omit<PlasmicIconButton__ArgsType, ReservedPropsType> &
+    // Specify overrides for each element directly as props
+    Omit<
       NodeOverridesType<T>,
       ReservedPropsType | VariantPropType | ArgPropType
     > &
-    /* Specify props for the root element*/ Omit<
+    // Specify props for the root element
+    Omit<
       Partial<React.ComponentProps<NodeDefaultElementType[T]>>,
       ReservedPropsType | VariantPropType | ArgPropType | DescendantsType<T>
     >;

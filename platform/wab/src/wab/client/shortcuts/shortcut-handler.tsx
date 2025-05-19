@@ -1,4 +1,4 @@
-import { analytics } from "@/wab/client/analytics";
+import { analytics } from "@/wab/client/observability";
 import { Shortcuts } from "@/wab/client/shortcuts/shortcut";
 import Mousetrap, { ExtendedKeyboardEvent } from "mousetrap";
 import { useEffect, useState } from "react";
@@ -133,7 +133,9 @@ export function bindShortcutHandlers<Action extends string>(
         action: shortcut.action,
         combo,
       };
-      analytics().track(eventName, eventProps);
+      analytics().track(eventName, eventProps, {
+        sampleThreshold: 0.1,
+      });
 
       // Mousetrap calls `preventDefault` and `stopPropagation` if `false` is returned.
       // This is a bit confusing, because we return `true` on success.

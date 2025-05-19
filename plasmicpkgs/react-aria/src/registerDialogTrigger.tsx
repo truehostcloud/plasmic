@@ -1,6 +1,7 @@
-import { usePlasmicCanvasComponentInfo } from "@plasmicapp/host";
 import React from "react";
+import { mergeProps, useButton } from "react-aria";
 import { DialogTrigger, DialogTriggerProps } from "react-aria-components";
+import { COMMON_STYLES } from "./common";
 import { PlasmicDialogTriggerContext } from "./contexts";
 import { BUTTON_COMPONENT_NAME } from "./registerButton";
 import { DIALOG_COMPONENT_NAME } from "./registerDialog";
@@ -10,35 +11,70 @@ import {
 } from "./registerModal";
 import {
   CodeComponentMetaOverrides,
+  PlasmicCanvasProps,
   Registerable,
-  WithPlasmicCanvasComponentInfo,
   makeComponentName,
   registerComponentHelper,
+  useIsOpen,
 } from "./utils";
+
+export interface TriggerWrapperProps {
+  children?: React.ReactNode;
+  className?: string;
+}
+
+/*
+  React Aria's DialogTrigger requires a Aria Button as trigger.
+  (Aria Button works as a trigger because it uses useButton behind the scenes).
+  So we use useButton as well for our custom trigger.
+
+  Discussion (React-aria-components DialogTrigger with custom button):
+  https://github.com/adobe/react-spectrum/discussions/5119#discussioncomment-7084661
+
+  */
+export function TriggerWrapper({ children, className }: TriggerWrapperProps) {
+  const ref = React.useRef<HTMLDivElement | null>(null);
+  const { buttonProps } = useButton({}, ref);
+
+  const mergedProps = mergeProps(buttonProps, {
+    ref,
+    // We expose className to allow user control over the wrapper div's styling.
+    className,
+    style: COMMON_STYLES,
+  });
+
+  return <div {...mergedProps}>{children}</div>;
+}
 
 export interface BaseDialogTriggerProps
   extends Omit<DialogTriggerProps, "children">,
-    WithPlasmicCanvasComponentInfo {
+    PlasmicCanvasProps {
   trigger?: React.ReactNode;
   dialog?: React.ReactNode;
+  className?: string;
 }
 
 export function BaseDialogTrigger(props: BaseDialogTriggerProps) {
-  const { trigger, dialog, isOpen, ...rest } = props;
+  const { trigger, dialog, isOpen, className, ...rest } = props;
 
-  const { isSelected, selectedSlotName } =
-    usePlasmicCanvasComponentInfo?.(props) ?? {};
-  const isAutoOpen = selectedSlotName !== "trigger" && isSelected;
+  const canvasAwareIsOpen = useIsOpen({
+    triggerSlotName: "trigger",
+    isOpen,
+    props,
+  });
 
   const mergedProps = {
     ...rest,
-    isOpen: (isAutoOpen || isOpen) ?? false,
+    isOpen: canvasAwareIsOpen,
   };
 
   return (
+    // PlasmicDialogTriggerContext is used by BaseModal
     <PlasmicDialogTriggerContext.Provider value={mergedProps}>
       <DialogTrigger {...mergedProps}>
-        {trigger}
+        {trigger && (
+          <TriggerWrapper className={className}>{trigger}</TriggerWrapper>
+        )}
         {dialog}
       </DialogTrigger>
     </PlasmicDialogTriggerContext.Provider>
@@ -57,7 +93,6 @@ export function registerDialogTrigger(
       displayName: "Aria Dialog Trigger",
       importPath: "@plasmicpkgs/react-aria/skinny/registerDialogTrigger",
       importName: "BaseDialogTrigger",
-      styleSections: false,
       props: {
         trigger: {
           type: "slot",

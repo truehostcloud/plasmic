@@ -31,6 +31,7 @@ import {
   ensure,
   ensureArray,
   hackyCast,
+  isArrayOfLiterals,
   isArrayOfStrings,
   isNumeric,
   maybe,
@@ -108,6 +109,7 @@ import {
   isEventHandlerKeyForAttr,
   isEventHandlerKeyForFuncType,
   isEventHandlerKeyForParam,
+  isTplCodeComponent,
   isTplComponent,
   isTplSlot,
   mkSlot,
@@ -172,6 +174,8 @@ import {
   ensureKnownTplTag,
   isKnownClassNamePropType,
   isKnownPropParam,
+  isKnownRenderFuncType,
+  isKnownRenderableType,
   isKnownStateParam,
   isKnownStyleExpr,
   isKnownVirtualRenderExpr,
@@ -209,11 +213,7 @@ import type {
   PropTypeBaseDefault,
 } from "@plasmicapp/host/dist/prop-types";
 import { RefActionRegistration } from "@plasmicapp/host/registerComponent";
-import {
-  BaseParam,
-  ParamType,
-  VoidType,
-} from "@plasmicapp/host/registerFunction";
+import { ParamType } from "@plasmicapp/host/registerFunction";
 import {
   assign,
   clone,
@@ -429,6 +429,15 @@ export type StudioPropType<P> =
   | ControlModePropType<P>
   | FormDataConnectionPropType<P>
   | DynamicPropType<P>;
+
+type ExtractType<T> = T extends { type: string }
+  ? T["type"] extends string
+    ? T["type"]
+    : never
+  : never;
+
+export type PropTypeType = ExtractType<PropType<any>>;
+export type StudioPropTypeType = ExtractType<StudioPropType<any>>;
 
 type BuiltinComponentsType = Record<string, ComponentRegistration>;
 
@@ -839,42 +848,81 @@ function typeCheckRegistrations(ctx: SiteCtx) {
                 )
               );
             }
-            if (propType.type === "slot") {
+            if (propType.hidden && typeof propType.hidden !== "function") {
+              return failure(
+                new CodeComponentRegistrationTypeError(
+                  errorPrefix +
+                    `Prop ${propName} has invalid "hidden" value - expects a function but got: ${propType.hidden}`
+                )
+              );
+            }
+
+            if ("editOnly" in propType && propType.editOnly) {
               if (
-                !isNil(propType.allowedComponents) &&
-                !isArrayOfStrings(propType.allowedComponents)
+                !isNil(propType.uncontrolledProp) &&
+                !isString(propType.uncontrolledProp)
               ) {
                 return failure(
                   new CodeComponentRegistrationTypeError(
                     errorPrefix +
-                      `Prop ${propName} has invalid "slot" type. \`PropType.allowedComponents\` expects an array of strings, but received: ${propType.allowedComponents}`
+                      `Prop ${propName} has invalid "uncontrolled prop". \`PropType.uncontrolledProp\` expects a string, but received: ${propType.uncontrolledProp}`
                   )
                 );
               }
-            } else {
-              if (propType.hidden && typeof propType.hidden !== "function") {
-                return failure(
-                  new CodeComponentRegistrationTypeError(
-                    errorPrefix +
-                      `Prop ${propName} has invalid "hidden" value - expects a function but got: ${propType.hidden}`
-                  )
-                );
-              }
-              if (
-                propType.type === "dataSelector" &&
-                !isObject(propType.data) &&
-                typeof propType.data !== "function"
-              ) {
-                return failure(
-                  new CodeComponentRegistrationTypeError(
-                    errorPrefix +
-                      `Prop ${propName} has invalid "data" type. \`PropType.data\` expects an object or a function, but received: ${propType.data}`
-                  )
-                );
-              }
-              if (propType.type === "choice") {
+            }
+            if (
+              !isNil(propType.displayName) &&
+              !isString(propType.displayName)
+            ) {
+              return failure(
+                new CodeComponentRegistrationTypeError(
+                  errorPrefix +
+                    `Prop ${propName} has invalid "display name". \`PropType.displayName\` expects a string, but received: ${propType.displayName}`
+                )
+              );
+            }
+            if (
+              !isNil(propType.description) &&
+              !isString(propType.description)
+            ) {
+              return failure(
+                new CodeComponentRegistrationTypeError(
+                  errorPrefix +
+                    `Prop ${propName} has invalid "description". \`PropType.description\` expects a string, but received: ${propType.description}`
+                )
+              );
+            }
+
+            switch (propType.type) {
+              case "slot":
                 if (
-                  !isArrayOfStrings(propType.options) &&
+                  !isNil(propType.allowedComponents) &&
+                  !isArrayOfStrings(propType.allowedComponents)
+                ) {
+                  return failure(
+                    new CodeComponentRegistrationTypeError(
+                      errorPrefix +
+                        `Prop ${propName} has invalid "slot" type. \`PropType.allowedComponents\` expects an array of strings, but received: ${propType.allowedComponents}`
+                    )
+                  );
+                }
+                break;
+              case "dataSelector":
+                if (
+                  !isObject(propType.data) &&
+                  typeof propType.data !== "function"
+                ) {
+                  return failure(
+                    new CodeComponentRegistrationTypeError(
+                      errorPrefix +
+                        `Prop ${propName} has invalid "data" type. \`PropType.data\` expects an object or a function, but received: ${propType.data}`
+                    )
+                  );
+                }
+                break;
+              case "choice":
+                if (
+                  !isArrayOfLiterals(propType.options) &&
                   !(
                     Array.isArray(propType.options) &&
                     propType.options.every(
@@ -894,62 +942,28 @@ function typeCheckRegistrations(ctx: SiteCtx) {
                     )
                   );
                 }
-              }
-              if (propType.type === "code" && !isString(propType.lang)) {
-                return failure(
-                  new CodeComponentRegistrationTypeError(
-                    errorPrefix +
-                      `Prop ${propName} has invalid "code" type. \`PropType.lang\` expects a string, but received: ${propType.lang}`
-                  )
-                );
-              }
-              if (
-                propType.type === "dataSource" &&
-                !isString(propType.dataSource)
-              ) {
-                return failure(
-                  new CodeComponentRegistrationTypeError(
-                    errorPrefix +
-                      `Prop ${propName} has invalid "dataSource" type. \`PropType.dataSource\` expects a string, but received: ${propType.dataSource}`
-                  )
-                );
-              }
-              if ("editOnly" in propType && propType.editOnly) {
-                if (
-                  !isNil(propType.uncontrolledProp) &&
-                  !isString(propType.uncontrolledProp)
-                ) {
+                break;
+              case "code":
+                if (!isString(propType.lang)) {
                   return failure(
                     new CodeComponentRegistrationTypeError(
                       errorPrefix +
-                        `Prop ${propName} has invalid "uncontrolled prop". \`PropType.uncontrolledProp\` expects a string, but received: ${propType.uncontrolledProp}`
+                        `Prop ${propName} has invalid "code" type. \`PropType.lang\` expects a string, but received: ${propType.lang}`
                     )
                   );
                 }
-              }
-              if (
-                !isNil(propType.displayName) &&
-                !isString(propType.displayName)
-              ) {
-                return failure(
-                  new CodeComponentRegistrationTypeError(
-                    errorPrefix +
-                      `Prop ${propName} has invalid "display name". \`PropType.displayName\` expects a string, but received: ${propType.displayName}`
-                  )
-                );
-              }
-              if (
-                !isNil(propType.description) &&
-                !isString(propType.description)
-              ) {
-                return failure(
-                  new CodeComponentRegistrationTypeError(
-                    errorPrefix +
-                      `Prop ${propName} has invalid "description". \`PropType.description\` expects a string, but received: ${propType.description}`
-                  )
-                );
-              }
-              if (propType.type === "number" || propType.type === "string") {
+                break;
+              case "dataSource":
+                if (!isString(propType.dataSource)) {
+                  return failure(
+                    new CodeComponentRegistrationTypeError(
+                      errorPrefix +
+                        `Prop ${propName} has invalid "dataSource" type. \`PropType.dataSource\` expects a string, but received: ${propType.dataSource}`
+                    )
+                  );
+                }
+                break;
+              case "number": {
                 if (!isNil(propType.control) && !isString(propType.control)) {
                   return failure(
                     new CodeComponentRegistrationTypeError(
@@ -958,8 +972,6 @@ function typeCheckRegistrations(ctx: SiteCtx) {
                     )
                   );
                 }
-              }
-              if (propType.type === "number") {
                 const checkNumberOrFunction = (attr: string) => {
                   const val = propType[attr];
                   if (
@@ -992,8 +1004,19 @@ function typeCheckRegistrations(ctx: SiteCtx) {
                 if (res) {
                   return res;
                 }
+                break;
               }
-              if (propType.type === "custom") {
+              case "string":
+                if (!isNil(propType.control) && !isString(propType.control)) {
+                  return failure(
+                    new CodeComponentRegistrationTypeError(
+                      errorPrefix +
+                        `Numeric prop ${propName} has invalid "control" attr. \`PropType.control\` expects a string, but received: ${propType.control}`
+                    )
+                  );
+                }
+                break;
+              case "custom":
                 if (!checkReactComponent(propType.control)) {
                   return failure(
                     new CodeComponentRegistrationTypeError(
@@ -1002,7 +1025,52 @@ function typeCheckRegistrations(ctx: SiteCtx) {
                     )
                   );
                 }
-              }
+                break;
+              case "eventHandler":
+                if (isNil(propType.argTypes)) {
+                  return failure(
+                    new CodeComponentRegistrationTypeError(
+                      errorPrefix +
+                        `Event handler prop ${propName} has invalid "argTypes" attr. \`PropType.argTypes\` expects an array of objects, but received: ${propType.argTypes}`
+                    )
+                  );
+                }
+                break;
+              case "cardPicker":
+                if (
+                  !(
+                    Array.isArray(propType.options) &&
+                    propType.options.every(
+                      (option) =>
+                        typeof option.value === "string" &&
+                        typeof option.imgUrl === "string"
+                    )
+                  ) &&
+                  !(typeof propType.options === "function")
+                ) {
+                  return failure(
+                    new CodeComponentRegistrationTypeError(
+                      errorPrefix +
+                        `Prop ${propName} has invalid "cardPicker" type. \`PropType.options\` expects an array of value-imgUrl pair or a function, but received: ${propType.options}`
+                    )
+                  );
+                }
+                break;
+              // Exaustive list with no checks for now
+              case "href":
+              case "dateString":
+              case "dateRangeStrings":
+              case "boolean":
+              case "object":
+              case "imageUrl":
+              case "exprEditor":
+              case "richText":
+              case "color":
+              case "class":
+              case "themeResetClass":
+              case "array":
+              case "formValidationRules":
+                break;
             }
           }
         }
@@ -1205,7 +1273,14 @@ async function fixCodeComponentsVariants(
     const componentsToObserve: Component[] = [];
 
     ctx.site.components.forEach((c) => {
-      if (!isCodeComponent(c)) {
+      // We ignore the hostless code components roots here, to let this be handled by the server upgrade
+      if (
+        !isCodeComponent(c) &&
+        !(
+          isTplCodeComponent(c.tplTree) &&
+          isHostLessCodeComponent(c.tplTree.component)
+        )
+      ) {
         const { unregisterdKeys } =
           getInvalidCodeComponentVariantsInComponent(c);
 
@@ -2075,6 +2150,14 @@ export function compareComponentPropsWithMeta(
           if (!!(registered as any).isLocalizable !== p.isLocalizable) {
             return true;
           }
+          if (
+            (isKnownRenderableType(registered.type) ||
+              isKnownRenderFuncType(registered.type)) &&
+            (isKnownRenderableType(p.type) || isKnownRenderFuncType(p.type)) &&
+            !!registered.type.allowRootWrapper !== !!p.type.allowRootWrapper
+          ) {
+            return true;
+          }
         }
         return false;
       })
@@ -2148,11 +2231,12 @@ function updateChangedClassNameProp(
   after: Param
 ) {
   assert(
-    isKnownClassNamePropType(before.type) &&
-      isKnownClassNamePropType(after.type),
+    isKnownClassNamePropType(before.type),
     "Params must be of ClassNamePropType"
   );
-  const newSelectors = after.type.selectors;
+  const newSelectors = isKnownClassNamePropType(after.type)
+    ? after.type.selectors
+    : [];
   const shouldRemove = (sty: SelectorRuleSet) => {
     if (!sty.selector) {
       // This used to be the Base style...
@@ -2168,9 +2252,13 @@ function updateChangedClassNameProp(
   };
   for (const tpl of componentToTplComponents(ctx.site, component)) {
     for (const vs of tpl.vsettings) {
-      for (const arg of vs.args) {
-        if (arg.param === before && isKnownStyleExpr(arg.expr)) {
-          removeWhere(arg.expr.styles, (s) => shouldRemove(s));
+      if (!isKnownClassNamePropType(after.type)) {
+        removeWhere(vs.args, (arg) => arg.param === before);
+      } else {
+        for (const arg of vs.args) {
+          if (arg.param === before && isKnownStyleExpr(arg.expr)) {
+            removeWhere(arg.expr.styles, (s) => shouldRemove(s));
+          }
         }
       }
     }
@@ -2223,10 +2311,7 @@ function doUpdateComponentProps(
       ...hardUpdatedProps.map(({ after }) => after)
     );
     xDifference(updatedProps, hardUpdatedProps).forEach(({ before, after }) => {
-      if (
-        isKnownClassNamePropType(before.type) &&
-        isKnownClassNamePropType(after.type)
-      ) {
+      if (isKnownClassNamePropType(before.type)) {
         updateChangedClassNameProp(ctx, component, before, after);
       }
 
@@ -2389,7 +2474,33 @@ export function registeredFunctionId(r: CustomFunctionRegistration) {
   }` as CustomFunctionId;
 }
 
-export function createCustomFunctionFromRegistration(
+function mapParamTypeToArgType(
+  paramReg: string | ParamType<any, any>
+): ArgType["type"] {
+  if (isString(paramReg)) {
+    return typeFactory.text();
+  }
+  if (isArray(paramReg.type)) {
+    return typeFactory.any();
+  }
+  if (paramReg.type === "choice") {
+    return typeFactory.choice(
+      Array.isArray(paramReg.options)
+        ? isArrayOfLiterals(paramReg.options)
+          ? paramReg.options
+          : paramReg.options.map((op) => ({
+              label: op.label,
+              value: op.value,
+            }))
+        : ["Dynamic options"]
+    );
+  } else if ((paramReg.type as any) === "code") {
+    return convertTsToWabType("string") as ArgType["type"];
+  }
+  return convertTsToWabType(paramReg.type ?? "string") as ArgType["type"];
+}
+
+function createCustomFunctionFromRegistration(
   functionReg: CustomFunctionRegistration,
   existingFunction?: CustomFunction
 ) {
@@ -2399,14 +2510,12 @@ export function createCustomFunctionFromRegistration(
     importName: functionReg.meta.name,
     importPath: functionReg.meta.importPath,
     namespace: functionReg.meta.namespace ?? null,
+    displayName: functionReg.meta.displayName ?? null,
     params:
-      functionReg.meta.params?.map((paramReg: string | BaseParam<any>) => {
+      functionReg.meta.params?.map((paramReg: string | ParamType<any, any>) => {
         const name = isString(paramReg) ? paramReg : paramReg.name;
-        const argType = isString(paramReg)
-          ? typeFactory.text()
-          : isArray(paramReg.type)
-          ? typeFactory.any()
-          : (convertTsToWabType(paramReg.type ?? "string") as ArgType["type"]);
+
+        const argType = mapParamTypeToArgType(paramReg);
         const existingParam = existingParams.find((p) => p.argName === name);
         if (existingParam && existingParam.type.name === argType.name) {
           return existingParam;
@@ -3463,11 +3572,13 @@ export function isPlainObjectPropType(
   );
 }
 
-export function getPropTypeType(propType: StudioPropType<any> | undefined) {
+export function getPropTypeType(
+  propType: StudioPropType<any> | undefined
+): StudioPropTypeType | undefined {
   if (!propType) {
     return undefined;
   } else if (typeof propType === "string") {
-    return propType;
+    return propType as StudioPropTypeType;
   } else if (isReactImplControl(propType)) {
     return undefined;
   } else {
@@ -3990,7 +4101,7 @@ export function wabTypeToPropType(type: Type): StudioPropType<any> {
     .when(Num, () => "number" as const)
     .when(Choice, (choiceType) => ({
       type: "choice" as const,
-      options: isArrayOfStrings(choiceType.options)
+      options: isArrayOfLiterals(choiceType.options)
         ? choiceType.options
         : choiceType.options.map((op) => ({
             label: op.label as string,
@@ -4412,18 +4523,20 @@ async function upsertRegisteredFunctions(
       const updatedFunctionRegs: CustomFunctionRegistration[] = [];
       const removedFunctions = new Set<CustomFunction>();
 
-      const isValidType = (type: ParamType<any> | VoidType): boolean => {
+      const isValidType = (type: any): boolean => {
         if (Array.isArray(type)) {
           return type.every((t) => isValidType(t));
         }
         if (
           [
             "undefined",
+            "choice",
             "object",
             "any",
             "string",
             "number",
             "boolean",
+            "code",
             "true",
             "false",
             "null",
@@ -4474,6 +4587,7 @@ async function upsertRegisteredFunctions(
           "namespace",
           "description",
           "typescriptDeclaration",
+          "displayName",
         ] as const) {
           if (
             !isString(functionReg.meta[prop]) &&
@@ -4503,7 +4617,7 @@ async function upsertRegisteredFunctions(
           }
           for (const param of functionReg.meta.params as (
             | string
-            | BaseParam<any>
+            | ParamType<any, any>
           )[]) {
             if (isString(param)) {
               if (!isValidJsIdentifier(param)) {
@@ -4575,7 +4689,7 @@ async function upsertRegisteredFunctions(
             "importName" | "namespace" | "typeTag" | "uid"
           > = pick(
             createCustomFunctionFromRegistration(functionReg, existing),
-            ["defaultExport", "importPath", "params", "isQuery"]
+            ["defaultExport", "importPath", "params", "isQuery", "displayName"]
           );
           if (
             Object.entries(updateableFields).some(
@@ -4691,7 +4805,13 @@ async function upsertRegisteredFunctions(
                   "importName" | "namespace" | "typeTag" | "uid"
                 > = pick(
                   createCustomFunctionFromRegistration(functionReg, existing),
-                  ["defaultExport", "importPath", "params", "isQuery"]
+                  [
+                    "defaultExport",
+                    "importPath",
+                    "params",
+                    "isQuery",
+                    "displayName",
+                  ]
                 );
                 customFunctionUsages.forEach((usage) => {
                   usage.ownerComponent.serverQueries

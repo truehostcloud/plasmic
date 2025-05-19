@@ -6,7 +6,7 @@ import type {
 import {
   OverlayArrow,
   PopoverContext,
-  TooltipContext,
+  TooltipTriggerStateContext,
 } from "react-aria-components";
 import { arrowDown, COMMON_STYLES } from "./common";
 import {
@@ -28,6 +28,7 @@ export interface BaseOverlayArrowProps
   extends OverlayArrowProps,
     WithVariants<typeof OVERLAY_ARROW_VARIANTS> {
   children: React.ReactNode;
+  className?: string;
 }
 
 const { variants, withObservedValues } = pickAriaComponentVariants(
@@ -37,12 +38,16 @@ const { variants, withObservedValues } = pickAriaComponentVariants(
 export function BaseOverlayArrow({
   children,
   plasmicUpdateVariant,
+  className,
 }: BaseOverlayArrowProps) {
   const popoverContext = React.useContext(PopoverContext);
-  const tooltipContext = React.useContext(TooltipContext);
+  const tooltipContext = React.useContext(TooltipTriggerStateContext);
   const isStandalone = !popoverContext && !tooltipContext; // i.e. without a trigger to point to
   const overlayArrow = (
-    <OverlayArrow style={{ lineHeight: "0", ...COMMON_STYLES }}>
+    <OverlayArrow
+      className={className}
+      style={{ lineHeight: "0", ...COMMON_STYLES }}
+    >
       {({ placement }: OverlayArrowRenderProps) =>
         withObservedValues(
           children,
@@ -76,7 +81,7 @@ export function registerOverlayArrow(
       displayName: "Aria Overlay Arrow",
       importPath: "@plasmicpkgs/react-aria/skinny/registerOverlayArrow",
       importName: "BaseOverlayArrow",
-      styleSections: false,
+      styleSections: ["visibility"],
       variants,
       props: {
         children: {

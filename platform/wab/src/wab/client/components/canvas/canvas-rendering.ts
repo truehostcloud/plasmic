@@ -89,6 +89,7 @@ import {
   isBuiltinCodeComponent,
 } from "@/wab/shared/code-components/builtin-code-components";
 import {
+  customFunctionId,
   isCodeComponentWithHelpers,
   isPlainObjectPropType,
   tryGetStateHelpers,
@@ -114,6 +115,7 @@ import {
   makeWabSlotClassName,
   makeWabTextClassName,
 } from "@/wab/shared/codegen/react-p/serialize-utils";
+import { isServerQueryWithOperation } from "@/wab/shared/codegen/react-p/server-queries/utils";
 import { deriveReactHookSpecs } from "@/wab/shared/codegen/react-p/utils";
 import {
   paramToVarName,
@@ -133,6 +135,7 @@ import {
   switchType,
   tuple,
   unexpected,
+  unreachable,
   withDefaultFunc,
   withoutNils,
 } from "@/wab/shared/common";
@@ -144,6 +147,7 @@ import {
   isCodeComponent,
   isHostLessCodeComponent,
 } from "@/wab/shared/core/components";
+import { getCustomFunctionParams } from "@/wab/shared/core/custom-functions";
 import {
   ExprCtx,
   InteractionArgLoc,
@@ -189,6 +193,7 @@ import {
   RawTextLike,
   TplTextTag,
   ancestorsUp,
+  computeAncestorsValKey,
   getNumberOfRepeatingAncestors,
   getOwnerSite,
   isExprText,
@@ -280,6 +285,11 @@ import {
   makeVariantComboSorter,
   sortedVariantSettings,
 } from "@/wab/shared/variant-sort";
+import {
+  TplVisibility,
+  getEffectiveVsVisibility,
+  normalizeDisplayValue,
+} from "@/wab/shared/visibility-utils";
 import type { usePlasmicInvalidate } from "@plasmicapp/data-sources";
 import { DataDict, mkMetaName } from "@plasmicapp/host";
 import { $StateSpec } from "@plasmicapp/react-web";
@@ -1259,6 +1269,67 @@ export function renderTplNode(node: TplNode, ctx: RenderingCtx) {
   );
 }
 
+function getAutoOpenSelectionInfo(ctx: RenderingCtx, node: TplNode) {
+  return computedFn(
+    () => {
+      // Ensuring that the depencies are tracked
+      const isInteractive = ctx.viewCtx.studioCtx.isInteractiveMode;
+      const isAutoOpenMode = ctx.viewCtx.studioCtx.isAutoOpenMode;
+      const disabledAutoOpenUuid = ctx.viewCtx.disabledAutoOpenUuid;
+      // The reason why we are using the focusedTplDeepAncestorPath is because
+      // we can't rely on ValNodes or the dom to determine if a node is selected
+      // or not. Since code components are able to conditonally render content
+      // without our knowledge, even us being the ones that provide the content
+      // for the slot, we can't be sure wether the content is attached to the
+      // React tree. Our option is to rely on the model and based on the tpl nodes
+      // stretch the focused elements to include all the tpls that we are able to find.
+      //
+      // The reason for streching the selection is because code components can
+      // have the slot being proxied by a plasmic component, so we need to make sure
+      // that the selection is also handled through it.
+      const path = ctx.viewCtx.focusedTplAncestorsThroughComponents();
+      const nodeIdx = path?.findIndex((s) => s.node === node) ?? -1;
+
+      if (
+        isInteractive ||
+        !isAutoOpenMode ||
+        disabledAutoOpenUuid ||
+        !path ||
+        nodeIdx === -1
+      ) {
+        return {
+          id: node.uuid,
+          isSelected: false,
+          selectedSlotName: null,
+        };
+      }
+
+      const nodeAncestors = path.slice(nodeIdx);
+      const ancestorsKeyPath = computeAncestorsValKey(nodeAncestors);
+
+      // If it's truly selected, we should have the ancestors key as a suffix, since there is
+      // a prefix containing the current component instance and global contexts and that is not
+      // explicitly part of the model, but only how the rendering is done.
+      const isSelected = ctx.valKey.endsWith(ancestorsKeyPath);
+
+      const descendant = nodeIdx > 0 ? path[nodeIdx - 1].node : null;
+
+      return {
+        id: node.uuid,
+        isSelected,
+        selectedSlotName:
+          isSelected && isSlotSelection(descendant)
+            ? descendant?.slotParam?.variable.name
+            : null,
+      };
+    },
+    {
+      name: "getAutoOpenSelectionInfo",
+      equals: comparer.structural,
+    }
+  )();
+}
+
 function renderReppable(tplNode: TplNode, ctx: RenderingCtx) {
   const node = ensureInstance(tplNode, TplTag, TplComponent, TplSlot);
   const activeVSettings = getSortedActiveVariantSettings(node, ctx);
@@ -1389,22 +1460,15 @@ function renderTplComponent(
   ctx: RenderingCtx,
   activeVSettings: VariantSetting[]
 ): React.ReactElement | null {
-  const dataCondExpr = getCondExpr(activeVSettings, ctx);
-  const exprCtx: ExprCtx = {
-    component: ctx.ownerComponent ?? null,
-    projectFlags: ctx.projectFlags,
-    inStudio: true,
-  };
-  const dataCond =
-    dataCondExpr == null
-      ? true
-      : evalCodeWithEnv(
-          getCodeExpressionWithFallback(dataCondExpr, exprCtx),
-          ctx.env,
-          ctx.viewCtx.canvasCtx.win()
-        );
+  const effectiveVs = new EffectiveVariantSetting(
+    node,
+    activeVSettings,
+    ctx.site
+  );
 
-  if (!dataCond) {
+  const { rendered } = determineAutoOpenState(ctx, node, effectiveVs);
+
+  if (!rendered) {
     return null;
   }
 
@@ -1423,11 +1487,12 @@ function renderTplComponent(
     return null;
   }
 
-  const effectiveVs = new EffectiveVariantSetting(
-    node,
-    activeVSettings,
-    ctx.site
-  );
+  const exprCtx: ExprCtx = {
+    component: ctx.ownerComponent ?? null,
+    projectFlags: ctx.projectFlags,
+    inStudio: true,
+  };
+
   const props = computeTplComponentArgs(node, effectiveVs, ctx);
   const isComponentRoot = ctx.ownerComponent?.tplTree === node;
   const positionClassName = uniqifyClassName(
@@ -1697,64 +1762,15 @@ function renderTplComponent(
     });
   }
 
-  if (isCodeComponent(node.component) && ctx.projectFlags.autoOpen) {
-    const codeComponentSelectionInfo = computedFn(
-      () => {
-        // Ensuring that the depencies are tracked
-        const isInteractive = ctx.viewCtx.studioCtx.isInteractiveMode;
-        const isAutoOpenMode = ctx.viewCtx.studioCtx.isAutoOpenMode;
-
-        // The reason why we are using the focusedTplDeepAncestorPath is because
-        // we can't rely on ValNodes or the dom to determine if a node is selected
-        // or not. Since code components are able to conditonally render content
-        // without our knowledge, even us being the ones that provide the content
-        // for the slot, we can't be sure wether the content is attached to the
-        // React tree. Our option is to rely on the model and based on the tpl nodes
-        // stretch the focused elements to include all the tpls that we are able to find.
-        //
-        // The reason for streching the selection is because code components can
-        // have the slot being proxied by a plasmic component, so we need to make sure
-        // that the selection is also handled through it.
-        const path = ctx.viewCtx.focusedTplAncestorsThroughComponents();
-        const nodeIdx = path?.findIndex((s) => s === node) ?? -1;
-
-        if (isInteractive || !isAutoOpenMode || !path || nodeIdx === -1) {
-          return {
-            id: node.uuid,
-            isSelected: false,
-            selectedSlotName: null,
-          };
-        }
-
-        // We now need to know whether this node is really selected or not since
-        // when dealing with proxied components the same node will be reused for
-        // rendering, we will then look into all tpl node ancestors and if they
-        // are present in the valKey
-        const nodeAncestors = path.slice(nodeIdx);
-        const isSelected = nodeAncestors.every((ancestor) => {
-          return (
-            isSlotSelection(ancestor) || ctx.valKey.includes(ancestor.uuid)
-          );
-        });
-
-        const descendant = nodeIdx > 0 ? path[nodeIdx - 1] : null;
-
-        return {
-          id: node.uuid,
-          isSelected,
-          selectedSlotName:
-            isSelected && isSlotSelection(descendant)
-              ? descendant?.slotParam?.variable.name
-              : null,
-        };
-      },
-      {
-        name: "canvasCodeComponentCtxValue",
-        equals: comparer.structural,
-      }
-    )();
-
+  if (isCodeComponent(node.component)) {
+    const codeComponentSelectionInfo = getAutoOpenSelectionInfo(ctx, node);
     props[INTERNAL_CC_CANVAS_SELECTION_PROP] = codeComponentSelectionInfo;
+    props["plasmicNotifyAutoOpenedContent"] = () => {
+      ctx.viewCtx.autoOpenedUuid =
+        node.component.params.find(
+          (p) => p.variable.name === codeComponentSelectionInfo.selectedSlotName
+        )?.uuid ?? node.uuid;
+    };
   }
 
   let elt = createPlasmicElementProxy(node, ctx, ComponentImpl, props);
@@ -2237,7 +2253,7 @@ function getComponentRootTagResetClassNames(
         targetEnv: "canvas",
         prefix: "__wab_",
       }
-    )}`,
+    )}` || undefined,
   ]);
 }
 
@@ -2305,20 +2321,9 @@ function renderTplTag(
       effectiveVsWithoutDisabled
     );
 
-  const dataCondExpr = getCondExpr(activeVSettings, ctx);
-  const dataCond =
-    dataCondExpr == null
-      ? true
-      : evalCodeWithEnv(
-          getCodeExpressionWithFallback(dataCondExpr, {
-            component: ctx.ownerComponent ?? null,
-            projectFlags: ctx.projectFlags,
-            inStudio: true,
-          }),
-          ctx.env,
-          ctx.viewCtx.canvasCtx.win()
-        );
-  if (!dataCond) {
+  const { rendered, style } = determineAutoOpenState(ctx, node, effectiveVs);
+
+  if (!rendered) {
     return null;
   }
 
@@ -2456,6 +2461,13 @@ function renderTplTag(
   if (tplHasRef(node)) {
     attrs["ref"] = (ref: any) =>
       (ctx.env.$refs[ensure(node.name, `Only named tpls can have ref`)] = ref);
+  }
+
+  if (style) {
+    attrs["style"] = {
+      ...(attrs["style"] ?? {}),
+      ...style,
+    };
   }
 
   if (isTplTextBlock(node)) {
@@ -2723,6 +2735,105 @@ function getCondExpr(
     return condExpr;
   }
   return null;
+}
+
+function evalDataCondExpr(
+  ctx: RenderingCtx,
+  effectiveVs: EffectiveVariantSetting
+) {
+  const dataCondExpr = effectiveVs.dataCond;
+  const exprCtx: ExprCtx = {
+    component: ctx.ownerComponent ?? null,
+    projectFlags: ctx.projectFlags,
+    inStudio: true,
+  };
+  const dataCondResult =
+    dataCondExpr == null
+      ? true
+      : evalCodeWithEnv(
+          getCodeExpressionWithFallback(dataCondExpr, exprCtx),
+          ctx.env,
+          ctx.viewCtx.canvasCtx.win()
+        );
+  return !!dataCondResult;
+}
+
+function determineAutoOpenState(
+  ctx: RenderingCtx,
+  node: TplNode,
+  effectiveVs: EffectiveVariantSetting
+) {
+  function getVisibilityWithAutoOpen() {
+    const visibility = getEffectiveVsVisibility(effectiveVs);
+
+    switch (visibility) {
+      case TplVisibility.Visible: {
+        return {
+          rendered: true,
+          autoOpened: false,
+        };
+      }
+
+      case TplVisibility.NotRendered:
+      case TplVisibility.CustomExpr: {
+        const autoOpenInfo = getAutoOpenSelectionInfo(ctx, node);
+        const dataCondResult = evalDataCondExpr(ctx, effectiveVs);
+        if (dataCondResult) {
+          return {
+            rendered: true,
+            autoOpened: false,
+          };
+        }
+
+        if (!ctx.projectFlags.autoOpen2) {
+          return {
+            rendered: false,
+            autoOpened: false,
+          };
+        }
+
+        return {
+          rendered: autoOpenInfo.isSelected,
+          autoOpened: autoOpenInfo.isSelected,
+        };
+      }
+
+      case TplVisibility.DisplayNone: {
+        const autoOpenInfo = getAutoOpenSelectionInfo(ctx, node);
+        // Auto Open is not yet supported for TplComponents / images with Visibility.DisplayNone
+        if (!ctx.projectFlags.autoOpen2 || isTplComponent(node)) {
+          return {
+            rendered: true,
+            autoOpened: false,
+          };
+        }
+
+        return {
+          rendered: true,
+          style: autoOpenInfo.isSelected
+            ? {
+                display: normalizeDisplayValue(
+                  effectiveVs.rsh().get("display")
+                ),
+              }
+            : undefined,
+          autoOpened: autoOpenInfo.isSelected,
+        };
+      }
+
+      default: {
+        unreachable(visibility);
+      }
+    }
+  }
+
+  const state = getVisibilityWithAutoOpen();
+
+  if (state.autoOpened) {
+    ctx.viewCtx.autoOpenedUuid = node.uuid;
+  }
+
+  return state;
 }
 
 function deriveTplTagChildren(
@@ -3119,21 +3230,13 @@ function renderTplSlot(
   ctx: RenderingCtx,
   activeVSettings: VariantSetting[]
 ): React.ReactElement | null {
-  const dataCondExpr = getCondExpr(activeVSettings, ctx);
-  const dataCond =
-    dataCondExpr == null
-      ? true
-      : evalCodeWithEnv(
-          getCodeExpressionWithFallback(dataCondExpr, {
-            component: ctx.ownerComponent ?? null,
-            projectFlags: ctx.projectFlags,
-            inStudio: true,
-          }),
-          ctx.env,
-          ctx.viewCtx.canvasCtx.win()
-        );
+  const { rendered } = determineAutoOpenState(
+    ctx,
+    node,
+    new EffectiveVariantSetting(node, activeVSettings, ctx.site)
+  );
 
-  if (!dataCond) {
+  if (!rendered) {
     return null;
   }
 
@@ -3576,8 +3679,8 @@ const mkComponentLevelQueryFetcher = computedFn(
                 );
               }
             : undefined;
-        const new$Queries = Object.fromEntries(
-          component.dataQueries
+        const new$Queries = Object.fromEntries([
+          ...component.dataQueries
             .filter((query) => !!query.op)
             .map(
               (query) =>
@@ -3585,8 +3688,37 @@ const mkComponentLevelQueryFetcher = computedFn(
                   toVarName(query.name),
                   sub.dataSources?.usePlasmicDataOp(getDataOp(query)),
                 ] as const
-            )
-        );
+            ),
+          ...component.serverQueries
+            .filter(isServerQueryWithOperation)
+            .map((query) => {
+              const funcId = customFunctionId(query.op.func);
+              const funcReg = ctx.viewCtx.canvasCtx
+                .getRegisteredFunctionsMap()
+                .get(funcId);
+              if (!funcReg) {
+                return [toVarName(query.name), undefined] as const;
+              }
+              return [
+                toVarName(query.name),
+                sub.dataSources?.usePlasmicServerQuery({
+                  id: funcId,
+                  fn: funcReg.function,
+                  execParams: () =>
+                    getCustomFunctionParams(
+                      query.op,
+                      ctx.env,
+                      {
+                        component,
+                        projectFlags: ctx.projectFlags,
+                        inStudio: true,
+                      },
+                      ctx.viewCtx.canvasCtx.win()
+                    ),
+                }),
+              ] as const;
+            }),
+        ]);
         defer(() => {
           Object.keys(new$Queries).forEach((k) => {
             try {
@@ -3644,7 +3776,8 @@ function wrapInComponentDataQueries(ctx: RenderingCtx, component: Component) {
     mkComponentLevelQueryFetcher(
       ctx.sub,
       ctx.viewCtx,
-      component.dataQueries.filter((query) => !!query.op).length
+      component.dataQueries.filter((query) => !!query.op).length +
+        component.serverQueries.filter(isServerQueryWithOperation).length
     ),
     {
       ctx,

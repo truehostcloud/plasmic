@@ -1,5 +1,6 @@
 import { toOpaque } from "@/wab/commons/types";
 import { getUser, userDbMgr, withNext } from "@/wab/server/routes/util";
+import { getUniqueUsersWithCommentAccess } from "@/wab/server/scripts/send-comments-notifications";
 import { broadcastToStudioRoom } from "@/wab/server/socket-util";
 import {
   AddCommentReactionRequest,
@@ -74,13 +75,17 @@ async function getCommentsForProject(req: Request, res: Response) {
   const selfNotificationSettings = req.user
     ? await mgr.tryGetNotificationSettings(req.user.id, toOpaque(projectId))
     : undefined;
+
+  const permissions = await mgr.getPermissionsForProject(projectId);
+  const projectUsers = getUniqueUsersWithCommentAccess(permissions);
   const usersIds = uniq(
     withoutNils([
       ...threads.map((c) => c.createdById),
       ...reactions.map((r) => r.createdById),
     ])
   );
-  const users = await mgr.getUsersById(usersIds);
+  const commentUsers = await mgr.getUsersById(usersIds);
+  const users = uniq(withoutNils([...commentUsers, ...projectUsers]));
 
   res.json(
     ensureType<GetCommentsResponse>({
@@ -101,10 +106,13 @@ async function postRootCommentInProject(req: Request, res: Response) {
   // Ensure the user has access to the project
   await mgr.getProjectById(projectId);
 
-  const { location, body } = uncheckedCast<RootCommentData>(req.body);
+  const { commentId, commentThreadId, location, body } =
+    uncheckedCast<RootCommentData>(req.body);
   await mgr.postRootCommentInProject(
     { projectId, branchId },
     {
+      commentId,
+      commentThreadId,
       location,
       body,
     }
@@ -129,12 +137,13 @@ async function postCommentInThread(req: Request, res: Response) {
   // Ensure the user has access to the project
   await mgr.getProjectById(projectId);
 
-  const { body } = uncheckedCast<ThreadCommentData>(req.body);
+  const { id, body } = uncheckedCast<ThreadCommentData>(req.body);
   await mgr.postCommentInThread(
     { projectId, branchId },
     {
-      body,
+      id,
       threadId,
+      body,
     }
   );
 
@@ -197,9 +206,8 @@ async function addReactionToComment(req: Request, res: Response) {
 
   // Ensure the user has access to the project
   await mgr.getProjectById(projectId);
-  const { data } = uncheckedCast<AddCommentReactionRequest>(req.body);
-
-  await mgr.addCommentReaction(toOpaque(req.params.commentId), data);
+  const { data, id } = uncheckedCast<AddCommentReactionRequest>(req.body);
+  await mgr.addCommentReaction(id, toOpaque(req.params.commentId), data);
   res.json({});
 
   await broadcastToStudioRoom(
@@ -261,8 +269,8 @@ async function editThread(req: Request, res: Response) {
   await mgr.getProjectById(projectId);
   const commentThreadId = req.params.commentThreadId as CommentThreadId;
 
-  const { resolved } = uncheckedCast<ResolveThreadRequest>(req.body);
-  await mgr.resolveThreadInProject(commentThreadId, resolved);
+  const { resolved, id } = uncheckedCast<ResolveThreadRequest>(req.body);
+  await mgr.resolveThreadInProject(id, commentThreadId, resolved);
 
   res.json({});
 

@@ -53,6 +53,7 @@ export async function ensureDbConnection(
           // Set postgres pool size up from default of 10
           // https://node-postgres.com/api/pool
           max: maxConnections,
+          simple_query_mode: process.env.PG_SIMPLE_QUERY_MODE === "true",
         },
       },
       opts?.useEnvPassword && envPassword
@@ -70,7 +71,13 @@ export async function ensureDbConnection(
     connOpts = dburi;
   }
 
-  return await createConnection({ ...connOpts, name });
+  return await createConnection({
+    ...connOpts,
+    name,
+
+    // uncomment this to log all SQL queries
+    // logging: true
+  });
 }
 
 export const MIGRATION_POOL_NAME = "migration-pool";

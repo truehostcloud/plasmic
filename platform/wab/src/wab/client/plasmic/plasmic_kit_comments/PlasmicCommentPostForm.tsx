@@ -1,6 +1,6 @@
-// @ts-nocheck
 /* eslint-disable */
 /* tslint:disable */
+// @ts-nocheck
 /* prettier-ignore-start */
 
 /** @jsxRuntime classic */
@@ -13,38 +13,50 @@
 
 import * as React from "react";
 
-import * as p from "@plasmicapp/react-web";
-import * as ph from "@plasmicapp/react-web/lib/host";
-
 import {
+  Flex as Flex__,
   SingleBooleanChoiceArg,
+  Stack as Stack__,
   StrictProps,
   classNames,
   createPlasmicElementProxy,
   deriveRenderOpts,
+  generateStateOnChangeProp,
+  generateStateValueProp,
   hasVariant,
+  useDollarState,
 } from "@plasmicapp/react-web";
-import Button from "../../components/widgets/Button"; // plasmic-import: SEF-sRmSoqV5c/component
-import Textbox from "../../components/widgets/Textbox"; // plasmic-import: pA22NEzDCsn_/component
+import { useDataEnv } from "@plasmicapp/react-web/lib/host";
+
+import { PlexusButton } from "../../components/plexus/PlexusButton"; // plasmic-import: sbyrU_8SkoWY/component
+import TextField from "../../components/plexus/TextField"; // plasmic-import: tKtZ3ZcVITrx/component
+import IconButton from "../../components/widgets/IconButton"; // plasmic-import: LPry-TF4j22a/component
 
 import "@plasmicapp/react-web/lib/plasmic.css";
 
 import plasmic_plasmic_kit_color_tokens_css from "../plasmic_kit_q_4_color_tokens/plasmic_plasmic_kit_q_4_color_tokens.module.css"; // plasmic-import: 95xp9cYcv7HrNWpFWWhbcv/projectcss
-import plasmic_plasmic_kit_design_system_deprecated_css from "../PP__plasmickit_design_system.module.css"; // plasmic-import: tXkSR39sgCDWSitZxC5xFV/projectcss
+import plasmic_plasmic_kit_design_system_css from "../PP__plasmickit_design_system.module.css"; // plasmic-import: tXkSR39sgCDWSitZxC5xFV/projectcss
 import projectcss from "./plasmic_plasmic_kit_comments.module.css"; // plasmic-import: BP7V3EkXPURJVwwMyWoHn/projectcss
 import sty from "./PlasmicCommentPostForm.module.css"; // plasmic-import: qi3Y1X2qZ7/css
+
+import IconIcon from "./icons/PlasmicIcon__Icon"; // plasmic-import: _-_PqTBs1dWd/icon
+import Icon2Icon from "./icons/PlasmicIcon__Icon2"; // plasmic-import: NiBzf-jmX1er/icon
+import Icon3Icon from "./icons/PlasmicIcon__Icon3"; // plasmic-import: 4ZDQfZwOzIuI/icon
 
 createPlasmicElementProxy;
 
 export type PlasmicCommentPostForm__VariantMembers = {
-  initial: "initial";
+  isEditing: "isEditing";
+  isPreviewing: "isPreviewing";
 };
 export type PlasmicCommentPostForm__VariantsArgs = {
-  initial?: SingleBooleanChoiceArg<"initial">;
+  isEditing?: SingleBooleanChoiceArg<"isEditing">;
+  isPreviewing?: SingleBooleanChoiceArg<"isPreviewing">;
 };
 type VariantPropType = keyof PlasmicCommentPostForm__VariantsArgs;
 export const PlasmicCommentPostForm__VariantProps = new Array<VariantPropType>(
-  "initial"
+  "isEditing",
+  "isPreviewing"
 );
 
 export type PlasmicCommentPostForm__ArgsType = {};
@@ -52,13 +64,20 @@ type ArgPropType = keyof PlasmicCommentPostForm__ArgsType;
 export const PlasmicCommentPostForm__ArgProps = new Array<ArgPropType>();
 
 export type PlasmicCommentPostForm__OverridesType = {
-  root?: p.Flex<"div">;
-  bodyInput?: p.Flex<typeof Textbox>;
-  submitButton?: p.Flex<typeof Button>;
+  root?: Flex__<"div">;
+  bodyInput?: Flex__<typeof TextField>;
+  body?: Flex__<"div">;
+  mentionIcon?: Flex__<typeof IconButton>;
+  shareProjectIcon?: Flex__<typeof IconButton>;
+  markdownHintsIcon?: Flex__<typeof IconButton>;
+  previewButton?: Flex__<typeof PlexusButton>;
+  cancelButton?: Flex__<typeof PlexusButton>;
+  submitButton?: Flex__<typeof PlexusButton>;
 };
 
 export interface DefaultCommentPostFormProps {
-  initial?: SingleBooleanChoiceArg<"initial">;
+  isEditing?: SingleBooleanChoiceArg<"isEditing">;
+  isPreviewing?: SingleBooleanChoiceArg<"isPreviewing">;
   className?: string;
 }
 
@@ -72,32 +91,51 @@ function PlasmicCommentPostForm__RenderFunc(props: {
 }) {
   const { variants, overrides, forNode } = props;
 
-  const args = React.useMemo(() => Object.assign({}, props.args), [props.args]);
+  const args = React.useMemo(
+    () =>
+      Object.assign(
+        {},
+        Object.fromEntries(
+          Object.entries(props.args).filter(([_, v]) => v !== undefined)
+        )
+      ),
+    [props.args]
+  );
 
   const $props = {
     ...args,
     ...variants,
   };
 
-  const $ctx = ph.useDataEnv?.() || {};
+  const $ctx = useDataEnv?.() || {};
   const refsRef = React.useRef({});
   const $refs = refsRef.current;
 
-  const currentUser = p.useCurrentUser?.() || {};
-
-  const stateSpecs: Parameters<typeof p.useDollarState>[0] = React.useMemo(
+  const stateSpecs: Parameters<typeof useDollarState>[0] = React.useMemo(
     () => [
       {
-        path: "initial",
+        path: "isEditing",
         type: "private",
         variableType: "variant",
-        initFunc: ({ $props, $state, $queries, $ctx }) => $props.initial,
+        initFunc: ({ $props, $state, $queries, $ctx }) => $props.isEditing,
+      },
+      {
+        path: "bodyInput.value",
+        type: "private",
+        variableType: "text",
+        initFunc: ({ $props, $state, $queries, $ctx }) =>
+          $props["defaultValue"],
+      },
+      {
+        path: "isPreviewing",
+        type: "private",
+        variableType: "variant",
+        initFunc: ({ $props, $state, $queries, $ctx }) => $props.isPreviewing,
       },
     ],
-
     [$props, $ctx, $refs]
   );
-  const $state = p.useDollarState(stateSpecs, {
+  const $state = useDollarState(stateSpecs, {
     $props,
     $ctx,
     $queries: {},
@@ -105,7 +143,7 @@ function PlasmicCommentPostForm__RenderFunc(props: {
   });
 
   return (
-    <p.Stack
+    <Stack__
       as={"div"}
       data-plasmic-name={"root"}
       data-plasmic-override={overrides.root}
@@ -118,51 +156,289 @@ function PlasmicCommentPostForm__RenderFunc(props: {
         projectcss.plasmic_default_styles,
         projectcss.plasmic_mixins,
         projectcss.plasmic_tokens,
-        plasmic_plasmic_kit_design_system_deprecated_css.plasmic_tokens,
+        plasmic_plasmic_kit_design_system_css.plasmic_tokens,
         plasmic_plasmic_kit_color_tokens_css.plasmic_tokens,
         sty.root,
-        { [sty.rootinitial]: hasVariant($state, "initial", "initial") }
+        { [sty.rootisEditing]: hasVariant($state, "isEditing", "isEditing") }
       )}
     >
-      <div className={classNames(projectcss.all, sty.freeBox__njtN0)}>
-        <Textbox
+      <div
+        className={classNames(projectcss.all, sty.freeBox__njtN0, {
+          [sty.freeBoxisEditing__njtN0ZsQtK]: hasVariant(
+            $state,
+            "isEditing",
+            "isEditing"
+          ),
+          [sty.freeBoxisPreviewing__njtN0ZvkP]: hasVariant(
+            $state,
+            "isPreviewing",
+            "isPreviewing"
+          ),
+        })}
+      >
+        <TextField
           data-plasmic-name={"bodyInput"}
           data-plasmic-override={overrides.bodyInput}
-          className={classNames("__wab_instance", sty.bodyInput, {
-            [sty.bodyInputinitial]: hasVariant($state, "initial", "initial"),
+          autoComplete={["off"]}
+          autoFocus={true}
+          className={classNames("__wab_instance", {
+            [sty.bodyInputisPreviewing]: hasVariant(
+              $state,
+              "isPreviewing",
+              "isPreviewing"
+            ),
           })}
-          placeholder={"Add a comment..."}
-          styleType={["autoheight", "gray"]}
+          multiLine={true}
+          onChange={async (...eventArgs: any) => {
+            generateStateOnChangeProp($state, ["bodyInput", "value"]).apply(
+              null,
+              eventArgs
+            );
+
+            if (
+              eventArgs.length > 1 &&
+              eventArgs[1] &&
+              eventArgs[1]._plasmic_state_init_
+            ) {
+              return;
+            }
+          }}
+          placeholder={"Add a comment"}
+          showLabel={false}
+          value={generateStateValueProp($state, ["bodyInput", "value"])}
         />
 
         <div
-          className={classNames(projectcss.all, sty.freeBox__ovWQ, {
-            [sty.freeBoxinitial__ovWQZsQtK]: hasVariant(
+          data-plasmic-name={"body"}
+          data-plasmic-override={overrides.body}
+          className={classNames(
+            projectcss.all,
+            projectcss.__wab_text,
+            sty.body,
+            {
+              [sty.bodyisPreviewing]: hasVariant(
+                $state,
+                "isPreviewing",
+                "isPreviewing"
+              ),
+            }
+          )}
+        >
+          {"body"}
+        </div>
+      </div>
+      <div
+        className={classNames(projectcss.all, sty.freeBox__ekXz, {
+          [sty.freeBoxisEditing__ekXzZsQtK]: hasVariant(
+            $state,
+            "isEditing",
+            "isEditing"
+          ),
+        })}
+      >
+        <div
+          className={classNames(projectcss.all, sty.freeBox__rndZx, {
+            [sty.freeBoxisEditing__rndZxZsQtK]: hasVariant(
               $state,
-              "initial",
-              "initial"
+              "isEditing",
+              "isEditing"
             ),
           })}
-        />
+        >
+          <IconButton
+            data-plasmic-name={"mentionIcon"}
+            data-plasmic-override={overrides.mentionIcon}
+            className={classNames("__wab_instance", sty.mentionIcon, {
+              [sty.mentionIconisEditing]: hasVariant(
+                $state,
+                "isEditing",
+                "isEditing"
+              ),
+              [sty.mentionIconisPreviewing]: hasVariant(
+                $state,
+                "isPreviewing",
+                "isPreviewing"
+              ),
+            })}
+            disabled={
+              hasVariant($state, "isPreviewing", "isPreviewing")
+                ? true
+                : undefined
+            }
+            type={[]}
+            withBackgroundHover={true}
+          >
+            <IconIcon
+              className={classNames(projectcss.all, sty.svg__wnixe)}
+              role={"img"}
+            />
+          </IconButton>
+          <IconButton
+            data-plasmic-name={"shareProjectIcon"}
+            data-plasmic-override={overrides.shareProjectIcon}
+            className={classNames("__wab_instance", sty.shareProjectIcon, {
+              [sty.shareProjectIconisEditing]: hasVariant(
+                $state,
+                "isEditing",
+                "isEditing"
+              ),
+            })}
+            type={[]}
+            withBackgroundHover={true}
+          >
+            <Icon2Icon
+              className={classNames(projectcss.all, sty.svg__t3Ip6)}
+              role={"img"}
+            />
+          </IconButton>
+          <IconButton
+            data-plasmic-name={"markdownHintsIcon"}
+            data-plasmic-override={overrides.markdownHintsIcon}
+            className={classNames("__wab_instance", sty.markdownHintsIcon, {
+              [sty.markdownHintsIconisEditing]: hasVariant(
+                $state,
+                "isEditing",
+                "isEditing"
+              ),
+            })}
+            type={[]}
+            withBackgroundHover={true}
+          >
+            <Icon3Icon
+              className={classNames(projectcss.all, sty.svg__kDvAo)}
+              role={"img"}
+            />
+          </IconButton>
+        </div>
+        <Stack__
+          as={"div"}
+          hasGap={true}
+          className={classNames(projectcss.all, sty.freeBox__jbqOp, {
+            [sty.freeBoxisEditing__jbqOpZsQtK]: hasVariant(
+              $state,
+              "isEditing",
+              "isEditing"
+            ),
+          })}
+        >
+          <PlexusButton
+            data-plasmic-name={"previewButton"}
+            data-plasmic-override={overrides.previewButton}
+            className={classNames("__wab_instance", sty.previewButton, {
+              [sty.previewButtonisEditing]: hasVariant(
+                $state,
+                "isEditing",
+                "isEditing"
+              ),
+              [sty.previewButtonisPreviewing]: hasVariant(
+                $state,
+                "isPreviewing",
+                "isPreviewing"
+              ),
+            })}
+            color={"muted"}
+            label={
+              <div
+                className={classNames(
+                  projectcss.all,
+                  projectcss.__wab_text,
+                  sty.text__geIt,
+                  {
+                    [sty.textisPreviewing__geItZvkP]: hasVariant(
+                      $state,
+                      "isPreviewing",
+                      "isPreviewing"
+                    ),
+                  }
+                )}
+              >
+                {hasVariant($state, "isPreviewing", "isPreviewing")
+                  ? "Edit"
+                  : "Preview"}
+              </div>
+            }
+            type={"clear"}
+          />
+
+          <PlexusButton
+            data-plasmic-name={"cancelButton"}
+            data-plasmic-override={overrides.cancelButton}
+            className={classNames("__wab_instance", sty.cancelButton, {
+              [sty.cancelButtonisEditing]: hasVariant(
+                $state,
+                "isEditing",
+                "isEditing"
+              ),
+            })}
+            color={"muted"}
+            label={
+              <div
+                className={classNames(
+                  projectcss.all,
+                  projectcss.__wab_text,
+                  sty.text___9U10X
+                )}
+              >
+                {"Cancel"}
+              </div>
+            }
+            type={"soft"}
+          />
+
+          <PlexusButton
+            data-plasmic-name={"submitButton"}
+            data-plasmic-override={overrides.submitButton}
+            className={classNames("__wab_instance", sty.submitButton, {
+              [sty.submitButtonisEditing]: hasVariant(
+                $state,
+                "isEditing",
+                "isEditing"
+              ),
+            })}
+            label={
+              <div
+                className={classNames(
+                  projectcss.all,
+                  projectcss.__wab_text,
+                  sty.text__zljgi,
+                  {
+                    [sty.textisEditing__zljgiZsQtK]: hasVariant(
+                      $state,
+                      "isEditing",
+                      "isEditing"
+                    ),
+                  }
+                )}
+              >
+                {hasVariant($state, "isEditing", "isEditing") ? "Save" : "Send"}
+              </div>
+            }
+          />
+        </Stack__>
       </div>
-      <Button
-        data-plasmic-name={"submitButton"}
-        data-plasmic-override={overrides.submitButton}
-        className={classNames("__wab_instance", sty.submitButton, {
-          [sty.submitButtoninitial]: hasVariant($state, "initial", "initial"),
-        })}
-        isSubmit={true}
-        type={["primary"]}
-      >
-        {"Post"}
-      </Button>
-    </p.Stack>
+    </Stack__>
   ) as React.ReactElement | null;
 }
 
 const PlasmicDescendants = {
-  root: ["root", "bodyInput", "submitButton"],
+  root: [
+    "root",
+    "bodyInput",
+    "body",
+    "mentionIcon",
+    "shareProjectIcon",
+    "markdownHintsIcon",
+    "previewButton",
+    "cancelButton",
+    "submitButton",
+  ],
   bodyInput: ["bodyInput"],
+  body: ["body"],
+  mentionIcon: ["mentionIcon"],
+  shareProjectIcon: ["shareProjectIcon"],
+  markdownHintsIcon: ["markdownHintsIcon"],
+  previewButton: ["previewButton"],
+  cancelButton: ["cancelButton"],
   submitButton: ["submitButton"],
 } as const;
 type NodeNameType = keyof typeof PlasmicDescendants;
@@ -170,8 +446,14 @@ type DescendantsType<T extends NodeNameType> =
   (typeof PlasmicDescendants)[T][number];
 type NodeDefaultElementType = {
   root: "div";
-  bodyInput: typeof Textbox;
-  submitButton: typeof Button;
+  bodyInput: typeof TextField;
+  body: "div";
+  mentionIcon: typeof IconButton;
+  shareProjectIcon: typeof IconButton;
+  markdownHintsIcon: typeof IconButton;
+  previewButton: typeof PlexusButton;
+  cancelButton: typeof PlexusButton;
+  submitButton: typeof PlexusButton;
 };
 
 type ReservedPropsType = "variants" | "args" | "overrides";
@@ -179,7 +461,6 @@ type NodeOverridesType<T extends NodeNameType> = Pick<
   PlasmicCommentPostForm__OverridesType,
   DescendantsType<T>
 >;
-
 type NodeComponentProps<T extends NodeNameType> =
   // Explicitly specify variants, args, and overrides as objects
   {
@@ -187,15 +468,15 @@ type NodeComponentProps<T extends NodeNameType> =
     args?: PlasmicCommentPostForm__ArgsType;
     overrides?: NodeOverridesType<T>;
   } & Omit<PlasmicCommentPostForm__VariantsArgs, ReservedPropsType> & // Specify variants directly as props
-    /* Specify args directly as props*/ Omit<
-      PlasmicCommentPostForm__ArgsType,
-      ReservedPropsType
-    > &
-    /* Specify overrides for each element directly as props*/ Omit<
+    // Specify args directly as props
+    Omit<PlasmicCommentPostForm__ArgsType, ReservedPropsType> &
+    // Specify overrides for each element directly as props
+    Omit<
       NodeOverridesType<T>,
       ReservedPropsType | VariantPropType | ArgPropType
     > &
-    /* Specify props for the root element*/ Omit<
+    // Specify props for the root element
+    Omit<
       Partial<React.ComponentProps<NodeDefaultElementType[T]>>,
       ReservedPropsType | VariantPropType | ArgPropType | DescendantsType<T>
     >;
@@ -236,6 +517,12 @@ export const PlasmicCommentPostForm = Object.assign(
   {
     // Helper components rendering sub-elements
     bodyInput: makeNodeComponent("bodyInput"),
+    body: makeNodeComponent("body"),
+    mentionIcon: makeNodeComponent("mentionIcon"),
+    shareProjectIcon: makeNodeComponent("shareProjectIcon"),
+    markdownHintsIcon: makeNodeComponent("markdownHintsIcon"),
+    previewButton: makeNodeComponent("previewButton"),
+    cancelButton: makeNodeComponent("cancelButton"),
     submitButton: makeNodeComponent("submitButton"),
 
     // Metadata about props expected for PlasmicCommentPostForm

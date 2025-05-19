@@ -60,6 +60,7 @@ const paths = [
   "../loader-tests/data/slick-slider.json",
   "../loader-tests/data/plasmic-antd5.json",
   "../loader-tests/data/data-source-basic.json",
+  "../loader-tests/data/react-aria.json",
   "src/wab/shared/site-diffs/_tests_/bundles/code-components-with-same-name.json",
   "src/wab/shared/site-diffs/_tests_/bundles/rich-text-conflict.json",
   "src/wab/shared/site-diffs/_tests_/bundles/test-tpl-merge.json",
@@ -74,6 +75,8 @@ const paths = [
   "src/wab/server/__tests__/bundle-migrations/fixtures/style-variants.migrated.json",
   "src/wab/server/__tests__/bundle-migrations/fixtures/code-component-variants.migrated.json",
   "src/wab/server/__tests__/bundle-migrations/fixtures/plume-default-components.migrated.json",
+  "src/wab/server/__tests__/bundle-migrations/fixtures/duplicate-variants.migrated.json",
+  "src/wab/server/__tests__/bundle-migrations/fixtures/merge-duplicate-variants.migrated.json",
 ];
 
 async function migrate() {

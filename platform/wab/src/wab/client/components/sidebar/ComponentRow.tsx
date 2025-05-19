@@ -1,9 +1,6 @@
-import {
-  getEventDataForTplComponent,
-  trackInsertItem,
-} from "@/wab/client/analytics/events/insert-item";
 import { mkProjectLocation, openNewTab } from "@/wab/client/cli-routes";
 import RowItem from "@/wab/client/components/RowItem";
+import CommentIndicatorIcon from "@/wab/client/components/comments/CommentIndicatorIcon";
 import { MenuBuilder } from "@/wab/client/components/menu-builder";
 import { DefaultComponentKindModal } from "@/wab/client/components/modals/DefaultComponentKindModal";
 import { showModalToRefreshCodeComponentProps } from "@/wab/client/components/modals/codeComponentModals";
@@ -16,6 +13,10 @@ import { DraggableInsertable } from "@/wab/client/components/studio/add-drawer/D
 import { Matcher } from "@/wab/client/components/view-common";
 import { Icon } from "@/wab/client/components/widgets/Icon";
 import { AddItemType } from "@/wab/client/definitions/insertables";
+import {
+  getEventDataForTplComponent,
+  trackInsertItem,
+} from "@/wab/client/observability/events/insert-item";
 import ComponentIcon from "@/wab/client/plasmic/plasmic_kit/PlasmicIcon__Component";
 import { StudioCtx, useStudioCtx } from "@/wab/client/studio-ctx/StudioCtx";
 import { ViewCtx } from "@/wab/client/studio-ctx/view-ctx";
@@ -56,6 +57,7 @@ export const ComponentRow = observer(function ComponentRow(props: {
 }) {
   const { component, matcher, importedFrom, indentMultiplier } = props;
   const studioCtx = useStudioCtx();
+  const commentsCtx = studioCtx.commentsCtx;
   const isPlainComponent =
     isReusableComponent(component) &&
     !isCodeComponent(component) &&
@@ -89,6 +91,21 @@ export const ComponentRow = observer(function ComponentRow(props: {
     studioCtx.site,
     component
   );
+  const icon = (() => {
+    const commentsStats = commentsCtx
+      .computedData()
+      .commentStatsByComponent.get(component.tplTree.uuid);
+    if (commentsStats && studioCtx.showCommentsPanel) {
+      return (
+        <CommentIndicatorIcon
+          commentCount={commentsStats.commentCount}
+          replyCount={commentsStats.replyCount}
+        />
+      );
+    }
+    return <Icon icon={ComponentIcon} />;
+  })();
+
   return (
     <DraggableInsertable
       sc={studioCtx}
@@ -123,7 +140,7 @@ export const ComponentRow = observer(function ComponentRow(props: {
           paddingLeft: calcIndent * 16 + 6,
           paddingRight: 6,
         }}
-        icon={<Icon icon={ComponentIcon} />}
+        icon={icon}
         menu={overlay}
         menuSize={"small"}
         onClick={

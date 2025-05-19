@@ -11,6 +11,7 @@ import type {
   BranchStatus,
   CmsDatabaseExtraData,
   CmsDatabaseId,
+  CmsRowData,
   CmsRowId,
   CmsTableId,
   CmsTableSchema,
@@ -39,7 +40,7 @@ import type {
 import { Dict } from "@/wab/shared/collections";
 import type { DataSourceType } from "@/wab/shared/data-sources-meta/data-source-registry";
 import type { OperationTemplate } from "@/wab/shared/data-sources-meta/data-sources";
-import { CodeSandboxInfo, WebhookHeader } from "@/wab/shared/db-json-blobs";
+import { WebhookHeader } from "@/wab/shared/db-json-blobs";
 import type { AccessLevel, GrantableAccessLevel } from "@/wab/shared/EntUtil";
 import { LocalizationKeyScheme } from "@/wab/shared/localization";
 import { UiConfig } from "@/wab/shared/ui-config-utils";
@@ -290,19 +291,24 @@ export class User extends OrgChild<"UserId"> {
 }
 
 @Entity()
-export class Project extends OrgChild<"ProjectId"> {
+export class Project extends Base<"ProjectId"> {
   @Column("text") name: string;
+  /**
+   * If true, users visiting the site automatically get
+   * {@link defaultAccessLevel} permissions.
+   */
   @Column("boolean") inviteOnly: boolean;
+  /** See {@link inviteOnly}. */
   @Column("text") defaultAccessLevel: GrantableAccessLevel;
   @Column("text", { nullable: true }) hostUrl: string | null;
   @Column("text", { nullable: true }) clonedFromProjectId: ProjectId | null;
   @Column("text", { nullable: true }) projectApiToken: string | null;
 
   @Column("text", { nullable: true }) secretApiToken: string | null;
-  @Column("text", { nullable: true }) codeSandboxId: string | null;
-  @Column("jsonb", { nullable: true }) codeSandboxInfos:
-    | CodeSandboxInfo[]
-    | null;
+  /**
+   * If true, hides users with viewer permissions from the share dialog.
+   * This can only be set by admins.
+   */
   @Column("boolean") readableByPublic: boolean;
 
   @Column("jsonb", { nullable: true })
@@ -1160,10 +1166,10 @@ export class CmsRow extends Base<"CmsRowId"> {
   rank: string;
 
   @Column("jsonb", { nullable: true })
-  data: Dict<Dict<unknown>> | null;
+  data: CmsRowData | null;
 
   @Column("jsonb", { nullable: true })
-  draftData: Dict<Dict<unknown>> | null;
+  draftData: CmsRowData | null;
 
   @Column("integer", { nullable: true })
   revision: number | null;
@@ -1277,12 +1283,35 @@ export class CommentThread extends Base<"CommentThreadId"> {
   )
   commentThreadHistories: CommentThreadHistory[];
 
-  // this should be in synced with CommentThreadHistory resolved
+  /**
+   * Indicates whether the thread is resolved.
+   * This value should always be in sync with `CommentThreadHistory.resolved`.
+   */
   @Column("boolean", { default: false })
   resolved: boolean;
 
+  /**
+   * Timestamp of the last email notification for this thread.
+   * Updated whenever an email notification is sent.
+   */
+  @Index()
   @Column("timestamptz", { nullable: true })
   lastEmailedAt: Date | null;
+
+  @Index()
+  @Column("timestamptz")
+  createdAt: Date;
+
+  /**
+   * Timestamp when the thread was last updated.
+   * This updates when:
+   * - A new comment is added
+   * - The thread is resolved or unresolved
+   * - A reaction is added to a comment in the thread
+   */
+  @Index()
+  @Column("timestamptz")
+  updatedAt: Date;
 }
 
 @Entity()
@@ -1296,6 +1325,10 @@ export class Comment extends Base<"CommentId"> {
 
   @Column("text")
   body: string;
+
+  @Index()
+  @Column("timestamptz")
+  createdAt: Date;
 }
 
 @Entity()
@@ -1309,6 +1342,10 @@ export class CommentReaction extends Base<"CommentReactionId"> {
 
   @Column("jsonb")
   data: CommentReactionData;
+
+  @Index()
+  @Column("timestamptz")
+  createdAt: Date;
 }
 
 @Entity()
@@ -1322,6 +1359,10 @@ export class CommentThreadHistory extends Base<"ThreadHistoryId"> {
 
   @Column("boolean")
   resolved: boolean;
+
+  @Index()
+  @Column("timestamptz")
+  createdAt: Date;
 }
 
 // This table represents the directories that are configured for a team

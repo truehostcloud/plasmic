@@ -21,6 +21,7 @@ export {
   plasmicPrepass,
   repeatedElement,
   useDataEnv,
+  usePlasmicCanvasComponentInfo,
   usePlasmicCanvasContext,
   usePlasmicComponent,
   usePlasmicQueryData,
@@ -54,9 +55,9 @@ import { wrapRouterContext } from "./mocks";
 import type { ComponentRenderData, NextInitOptions } from "./shared-exports";
 
 type ServerRequest = IncomingMessage & {
-  cookies: {
+  cookies: Partial<{
     [key: string]: string;
-  };
+  }>;
 };
 
 const reactMajorVersion = +React.version.split(".")[0];

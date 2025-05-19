@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo } from "react";
+import React, { useCallback } from "react";
 import {
   Select,
   SelectProps,
@@ -11,15 +11,16 @@ import {
   PlasmicListBoxContext,
   PlasmicPopoverTriggerContext,
 } from "./contexts";
-import { OptionsItemIdManager } from "./OptionsItemIdManager";
+import { useIdManager } from "./OptionsItemIdManager";
 import { BUTTON_COMPONENT_NAME } from "./registerButton";
 import { LABEL_COMPONENT_NAME } from "./registerLabel";
 import { LIST_BOX_COMPONENT_NAME } from "./registerListBox";
 import { POPOVER_COMPONENT_NAME } from "./registerPopover";
 import {
+  BaseControlContextDataForLists,
   HasControlContextData,
+  PlasmicCanvasProps,
   Registerable,
-  WithPlasmicCanvasComponentInfo,
   extractPlasmicDataProps,
   makeComponentName,
   registerComponentHelper,
@@ -78,10 +79,6 @@ export const BaseSelectValue = (props: BaseSelectValueProps) => {
 
 const SELECT_NAME = makeComponentName("select");
 
-export interface BaseSelectControlContextData {
-  itemIds: string[];
-}
-
 const SELECT_VARIANTS = [
   "focused" as const,
   "focusVisible" as const,
@@ -94,8 +91,8 @@ const { variants: SELECT_VARIANTS_DATA } =
 export interface BaseSelectProps
   extends SelectProps<{}>, // NOTE: We don't need generic type here since we don't use items prop (that needs it). We just need to make the type checker happy
     WithVariants<typeof SELECT_VARIANTS>,
-    WithPlasmicCanvasComponentInfo,
-    HasControlContextData<BaseSelectControlContextData> {
+    PlasmicCanvasProps,
+    HasControlContextData<BaseControlContextDataForLists> {
   children?: React.ReactNode;
   className?: string;
 }
@@ -112,18 +109,22 @@ export function BaseSelect(props: BaseSelectProps) {
     name,
     setControlContextData,
     plasmicUpdateVariant,
+    plasmicNotifyAutoOpenedContent,
+    __plasmic_selection_prop__,
+    defaultSelectedKey,
     "aria-label": ariaLabel,
   } = props;
 
-  const idManager = useMemo(() => new OptionsItemIdManager(), []);
-
-  useEffect(() => {
-    idManager.subscribe((ids: string[]) => {
+  const updateIds = useCallback(
+    (ids: string[]) => {
       setControlContextData?.({
         itemIds: ids,
       });
-    });
-  }, []);
+    },
+    [setControlContextData]
+  );
+
+  const idManager = useIdManager(updateIds);
 
   const classNameProp = useCallback(
     ({
@@ -143,6 +144,7 @@ export function BaseSelect(props: BaseSelectProps) {
 
   return (
     <Select
+      defaultSelectedKey={defaultSelectedKey}
       selectedKey={selectedKey}
       onSelectionChange={onSelectionChange}
       onOpenChange={onOpenChange}
@@ -154,8 +156,17 @@ export function BaseSelect(props: BaseSelectProps) {
       aria-label={ariaLabel}
       {...extractPlasmicDataProps(props)}
     >
-      <SelectAutoOpen {...props} />
+      <SelectAutoOpen
+        __plasmic_selection_prop__={__plasmic_selection_prop__}
+        plasmicNotifyAutoOpenedContent={plasmicNotifyAutoOpenedContent}
+      />
+      {/* PlasmicPopoverTriggerContext is used by BasePopover */}
       <PlasmicPopoverTriggerContext.Provider value={true}>
+        {/* PlasmicListBoxContext is used by
+          - BaseListBox
+          - BaseListBoxItem
+          - BaseSection
+        */}
         <PlasmicListBoxContext.Provider
           value={{
             idManager,
