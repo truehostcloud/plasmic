@@ -13,7 +13,7 @@
     "rc-util": "Must be ^5.44.4. Earlier versions doesn't support React 19+ by attempting to use findDOMNode from react-dom. https://linear.app/plasmic/issue/PLA-11800/investigate-issue-with-rich-components-table-in-react-19"
   },
   "dependencies": {
-    "commerce-spree": "^0.2.11",
+    "commerce-spree": "^0.2.12",
     "@ant-design/icons": "^5.0.1",
     "@ant-design/pro-components": "2.6.4",
     "@emotion/react": "^11.10.4",
