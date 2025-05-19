@@ -14,7 +14,9 @@ import MonacoWebpackPlugin from "monaco-editor-webpack-plugin";
 import { homepage } from "./package.json";
 import { StudioHtmlPlugin } from "./tools/studio-html-plugin";
 
-const commitHash = execSync("git rev-parse HEAD").toString().slice(0, 6);
+const commitHash = (
+  process.env.COMMIT_HASH ?? execSync("git rev-parse HEAD").toString()
+).slice(0, 6);
 const buildEnv = process.env.NODE_ENV ?? "production";
 const isProd = buildEnv === "production";
 const port: number = process.env.PORT ? +process.env.PORT : 3003;
@@ -23,11 +25,13 @@ const backendPort: number = process.env.BACKEND_PORT
   : 3004;
 const publicUrl: string =
   process.env.PUBLIC_URL ?? (isProd ? homepage : `http://localhost:${port}`);
+const cdnUrl: string = process.env.CDN_URL ?? publicUrl;
 
 console.log(`Starting rsbuild...
 - commitHash: ${commitHash}
 - buildEnv: ${buildEnv}
 - publicUrl: ${publicUrl}
+- cdnUrl: ${cdnUrl}
 - port: ${port}
 - backendPort: ${backendPort}
 `);
@@ -52,7 +56,7 @@ class AppendSourceMapWithHash implements RspackPluginInstance {
           // We use the full path (with publicUrl) because the files may be
           // loaded from the inner frame and so the relative path would be
           // wrong.
-          const newMapping = `//# sourceMappingURL=${publicUrl}/${sourceMapFilePath}`;
+          const newMapping = `//# sourceMappingURL=${cdnUrl}/${sourceMapFilePath}`;
           if (content.includes("//# sourceMappingURL=")) {
             content = content
               .toString()
@@ -171,10 +175,11 @@ export default defineConfig({
   },
   source: {
     entry: {
-      index: "src/wab/client/main.tsx"
-    }
+      index: "src/wab/client/main.tsx",
+    },
   },
   output: {
+    assetPrefix: cdnUrl,
     distPath: {
       root: "build",
     },
@@ -199,10 +204,10 @@ export default defineConfig({
         // the files are cacheable until the next deployment.
         new CopyRspackPlugin({
           patterns: [
-            {
-              from: "dev-build/static/styles/",
-              to: `static/styles/[path][name].${commitHash}[ext]`,
-            },
+            // {
+            //   from: `${buildFolder}/static/styles/`,
+            //   to: `static/styles/[path][name].${commitHash}[ext]`,
+            // },
             {
               from: "../sub/public/static/",
               to: `static/[path][name].${commitHash}[ext]`,
@@ -252,7 +257,7 @@ export default defineConfig({
           Buffer: ["buffer", "Buffer"],
         }),
         new DefinePlugin({
-          PUBLICPATH: JSON.stringify(publicUrl),
+          PUBLICPATH: JSON.stringify(cdnUrl),
           COMMITHASH: JSON.stringify(commitHash),
           DEPLOYENV: JSON.stringify(buildEnv),
           "process.env": JSON.stringify({

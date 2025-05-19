@@ -6,11 +6,11 @@ import { OauthTokenProvider, User } from "@/wab/server/entities/Entities";
 import "@/wab/server/extensions";
 import { superDbMgr, userDbMgr } from "@/wab/server/routes/util";
 import {
-  getAirtableSsoSecrets,
+  getAirtableSsoSecrets, getFusionAuthConfig,
   getGoogleClientId,
   getGoogleClientSecret,
   getGoogleSheetsClientId,
-  getGoogleSheetsClientSecret,
+  getGoogleSheetsClientSecret
 } from "@/wab/server/secrets";
 import {
   MultiOAuth2Strategy,
@@ -125,7 +125,7 @@ export async function setupPassport(
     new MultiOAuth2Strategy(
       {
         passReqToCallback: true,
-        state: true,
+        state: process.env.PASSPORT_VERIFY_OAUTH2_STATE === 'true' ?? true,
         scope: ["openid", "email", "profile"],
         getOAuth2Options(req, callback) {
           asyncToCallback(
@@ -173,6 +173,10 @@ export async function setupPassport(
               id: user.id,
               needsTeamCreationPrompt: false,
             });
+          }
+
+          if (!row.teamId) {
+            return user;
           }
 
           // If the user is already on the team, don't do anything
@@ -274,7 +278,7 @@ export async function setupPassport(
 export async function extractSsoConfig(req: Request) {
   const tenantId = req.params.tenantId;
   const db = userDbMgr(req);
-  const sso = await db.getSsoConfigByTenantId(tenantId);
+  const sso = await db.getSsoConfigByTenantId(tenantId) || getFusionAuthConfig();
   if (!sso) {
     throw new BadRequestError(`Not configured to use SSO`);
   }

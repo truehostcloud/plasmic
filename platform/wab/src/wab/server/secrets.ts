@@ -69,6 +69,13 @@ interface Secrets {
     accessKeyId: string;
     secretAccessKey: string;
   };
+  fusionauth?: {
+    clientId: string;
+    clientSecret: string;
+    tokenUrl: string;
+    userProfileUrl: string;
+    authorizationUrl: string;
+  };
 }
 
 export function getEncryptionKey() {
@@ -128,6 +135,26 @@ export function getDiscourseConnectSecret() {
     loadSecrets().discourse?.discourseConnectSecret,
     "DiscourseConnect secret required"
   );
+}
+
+export function getFusionAuthConfig() {
+  const config = loadSecrets().fusionauth;
+  if (!config) {
+    return undefined;
+  }
+  return {
+    provider: "fusionauth" as "okta" | "fusionauth",
+    tenantId: "global",
+    id: undefined,
+    teamId: undefined,
+    config: {
+      clientID: ensure(config?.clientId, "FusionAuth clientId required"),
+      clientSecret: ensure(config?.clientSecret, "FusionAuth clientSecret required"),
+      tokenURL: ensure(config?.tokenUrl, "FusionAuth tokenUrl required"),
+      userProfileURL: ensure(config?.userProfileUrl, "FusionAuth userProfileUrl required"),
+      authorizationURL: ensure(config?.authorizationUrl, "FusionAuth authorizationUrl required"),
+    }
+  };
 }
 
 export function getDiscourseApiKey() {

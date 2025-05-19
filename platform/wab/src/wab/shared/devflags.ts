@@ -283,7 +283,7 @@ const DEFAULT_DEVFLAGS = {
     process.env.CODEGEN_ORIGIN_HOST ||
     process.env.CODEGEN_HOST ||
     "http://codegen-origin.plasmic.app",
-  adminTeamDomain: production ? "plasmic.app" : "admin.example.com",
+  adminTeamDomain: process.env.ADMIN_TEAM_DOMAIN,
   defaultHostUrl:
     process.env.REACT_APP_DEFAULT_HOST_URL ||
     "https://host.plasmicdev.com/static/host.html",
@@ -411,6 +411,8 @@ const DEFAULT_DEVFLAGS = {
   allowHtmlPaste: false,
   enableUiCopilot: false,
 
+  loaderBundler: "esbuild",
+  esbuildProjectIds: [] as string[],
   hostLessWorkspaceId: undefined as WorkspaceId | undefined,
   manuallyUpdatedHostLessProjectIds: [] as string[],
   whitespaceNormalProjectIds: [] as string[],
@@ -566,6 +568,8 @@ const DEFAULT_DEVFLAGS = {
   autoOpen: false,
   autoOpen2: false,
   cmsUniqueFields: false,
+
+  allowImportedHostlessPkgUpdate: false,
 };
 
 Object.assign(DEFAULT_DEVFLAGS, DEFAULT_DEVFLAG_OVERRIDES);

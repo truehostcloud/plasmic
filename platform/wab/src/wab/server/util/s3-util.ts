@@ -1,5 +1,5 @@
 import { ensureInstance } from "@/wab/shared/common";
-import S3 from "aws-sdk/clients/s3";
+import { S3 } from "@aws-sdk/client-s3";
 import path from "path";
 
 export async function upsertS3CacheEntry<T>(opts: {
@@ -10,40 +10,28 @@ export async function upsertS3CacheEntry<T>(opts: {
   deserialize: (str: string) => T;
 }) {
   const { bucket, key, compute: f, serialize, deserialize } = opts;
-  const s3 = new S3({ endpoint: process.env.S3_ENDPOINT });
+  const s3 = new S3({
+    forcePathStyle: process.env.S3_FORCE_PATH_STYLE === "true",
+  });
 
   try {
-    const obj = await s3
-      .getObject({
-        Bucket: bucket,
-        Key: key,
-      })
-      .promise();
+    const obj = await s3.getObject({
+      Bucket: bucket,
+      Key: key,
+    });
     const serialized = ensureInstance(obj.Body, Buffer).toString("utf8");
     console.log(`S3 cache hit for ${bucket} ${key}`);
     const data = deserialize(serialized);
     return data;
   } catch (err) {
-    if (err.code === "TimeoutError") {
-      throw err;
-    }
     console.log(`S3 cache miss for ${bucket} ${key}; computing`);
     const content = await f();
     const serialized = serialize(content);
-    try {
-      await s3
-        .putObject({
-          Bucket: bucket,
-          Key: key,
-          Body: serialized,
-        })
-        .promise();
-    } catch (e) {
-      if (process.env.NODE_ENV !== "development") {
-        throw e;
-      }
-      console.error("Unable to add content to S3", e);
-    }
+    await s3.putObject({
+      Bucket: bucket,
+      Key: key,
+      Body: serialized,
+    });
     return content;
   }
 }
@@ -54,16 +42,16 @@ export async function uploadFilesToS3(opts: {
   files: Record<string, string>;
 }) {
   const { bucket, key, files } = opts;
-  const s3 = new S3({ endpoint: process.env.S3_ENDPOINT });
+  const s3 = new S3({
+    forcePathStyle: process.env.S3_FORCE_PATH_STYLE === "true",
+  });
   await Promise.all(
     Object.entries(files).map(async ([file, content]) => {
-      await s3
-        .putObject({
-          Bucket: bucket,
-          Key: path.join(key, file),
-          Body: content,
-        })
-        .promise();
+      await s3.putObject({
+        Bucket: bucket,
+        Key: path.join(key, file),
+        Body: content,
+      });
     })
   );
 }

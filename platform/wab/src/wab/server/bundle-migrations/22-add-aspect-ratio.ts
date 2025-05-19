@@ -10,7 +10,7 @@ import {
   parseDataUrl,
   SVG_MEDIA_TYPE,
 } from "@/wab/shared/data-urls";
-import S3 from "aws-sdk/clients/s3";
+import { S3 } from "@aws-sdk/client-s3";
 
 const siteAssetsBucket = process.env.SITE_ASSETS_BUCKET as string;
 
@@ -27,15 +27,13 @@ export const migrate: BundledMigrationFn = async (bundle) => {
       ) {
         const storagePath = new URL(url).pathname.replace(/^\//, "");
         const res = await new S3({
-          endpoint: process.env.S3_ENDPOINT,
-        })
-          .getObject({
-            Bucket: siteAssetsBucket,
-            Key: storagePath,
-          })
-          .promise();
+          forcePathStyle: process.env.S3_FORCE_PATH_STYLE === "true",
+        }).getObject({
+          Bucket: siteAssetsBucket,
+          Key: storagePath,
+        });
         const dataUrl = asDataUrl(
-          Buffer.from(ensure(res.Body, "must exist") as string),
+          Buffer.from(ensure(res.Body, "must exist") as unknown as string),
           ensure(res.ContentType, "must exist")
         );
         const parsed = parseDataUrl(dataUrl);

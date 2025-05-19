@@ -50,7 +50,7 @@ import { asDataUrl } from "@/wab/shared/data-urls";
 import { isAdminTeamEmail } from "@/wab/shared/devflag-utils";
 import { DEVFLAGS, getProjectFlags } from "@/wab/shared/devflags";
 import { Site } from "@/wab/shared/model/classes";
-import S3 from "aws-sdk/clients/s3";
+import { S3 } from "@aws-sdk/client-s3";
 import fs from "fs";
 import { ConnectionOptions } from "typeorm";
 
@@ -494,15 +494,15 @@ async function fetchImageAssetsFromS3(site: Site) {
         return;
       }
       const storagePath = new URL(i.dataUri).pathname.replace(/^\//, "");
-      const res = await new S3({ endpoint: process.env.S3_ENDPOINT })
-        .getObject({
-          Bucket: siteAssetsBucket,
-          Key: storagePath,
-        })
-        .promise();
+      const res = await new S3({
+        forcePathStyle: process.env.S3_FORCE_PATH_STYLE === "true",
+      }).getObject({
+        Bucket: siteAssetsBucket,
+        Key: storagePath,
+      });
       i.dataUri = asDataUrl(
         Buffer.from(
-          ensure(res.Body, "Unexpected null body response") as string
+          ensure(res.Body, "Unexpected null body response") as unknown as string
         ),
         ensure(res.ContentType, "Unexpected response with no contentType")
       );

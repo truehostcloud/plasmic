@@ -2,6 +2,7 @@ import type * as express from "express";
 import { Profile } from "passport";
 import { _StrategyOptionsBase } from "passport-google-oauth20";
 import {
+  Strategy as OAuth2Strategy,
   StrategyOptions,
   StrategyOptionsWithRequest,
   VerifyFunction,
@@ -10,7 +11,7 @@ import {
 import OktaStrategy from "passport-okta-oauth20/dist/src/Strategy";
 import { Strategy as AbstractStrategy } from "passport-strategy";
 
-export type KnownProvider = "okta";
+export type KnownProvider = "okta" | "fusionauth";
 
 export type StrategyOptionsCallback = (
   err: Error | null,
@@ -89,6 +90,8 @@ export class MultiOAuth2Strategy extends AbstractStrategy {
     const make = () => {
       if (provider === "okta") {
         return new OktaStrategy(options, this.verify);
+      } else if (provider === "fusionauth") {
+        return new CustomFusionAuthStrategy(options, this.verify);
       } else {
         throw new Error(`Unknown provider ${provider}`);
       }
@@ -101,5 +104,62 @@ export class MultiOAuth2Strategy extends AbstractStrategy {
     strategy.pass = this.pass;
     strategy.error = this.error;
     return strategy;
+  }
+}
+
+interface FusionAuthStrategyOptions extends StrategyOptions {
+  userProfileURL: string;
+}
+
+interface FusionAuthProfile extends Profile {
+  emailVerified: boolean;
+  _json: Record<string, unknown>;
+}
+
+class CustomFusionAuthStrategy extends OAuth2Strategy {
+  private readonly _userProfileURL: string;
+
+  constructor(options: FusionAuthStrategyOptions, verify: VerifyFunction) {
+    super(options, verify);
+    this.name = "fusionauth";
+    this._userProfileURL = options.userProfileURL;
+  }
+
+  userProfile(
+    accessToken: string,
+    done: (err?: Error | null, profile?: FusionAuthProfile) => void
+  ): void {
+    const options = {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    };
+
+    fetch(this._userProfileURL, options)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Failed to fetch user profile");
+        }
+        return response.json();
+      })
+      .then((json) => {
+        const profile: FusionAuthProfile = {
+          provider: "fusionauth",
+          id: json.sub,
+          displayName: `${json.given_name} ${json.family_name}`,
+          name: {
+            familyName: json.family_name,
+            givenName: json.given_name,
+          },
+          emails: [{ value: json.email }],
+          emailVerified: json.email_verified,
+          _json: json,
+        };
+        done(null, profile);
+      })
+      .catch((error) => {
+        done(error);
+      });
   }
 }

@@ -679,7 +679,8 @@ export type OauthTokenProvider =
   | "okta"
   | "ping"
   | "airtable"
-  | "google-sheets";
+  | "google-sheets"
+  | "fusionauth";
 
 const cryptr = new Cryptr(getEncryptionKey());
 const encryptTransformer = {

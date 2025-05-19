@@ -320,6 +320,10 @@ const csrfFreeStaticRoutes = [
   "/api/v1/cli/emit-token",
 ];
 
+if (process.env.ELASTIC_APM_SERVER_URL) {
+  require("elastic-apm-node").start();
+}
+
 const isCsrfFreeRoute = (pathname: string, config: Config) => {
   return (
     csrfFreeStaticRoutes.includes(pathname) ||
@@ -2171,6 +2175,7 @@ export function makeExpressSessionMiddleware(config: Config) {
         // all the dev servers in https mode.
         sameSite: "none",
         secure: true,
+        partitioned: process.env.EXPRESS_SESSION_COOKIE_PARTITIONED === "true",
       }),
     },
     genid: function (req: any) {
