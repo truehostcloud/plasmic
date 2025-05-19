@@ -3205,6 +3205,19 @@
     react-hook-form "^7.28.0"
     swr "^1.2.2"
 
+"@plasmicpkgs/commerce@^0.0.209":
+  version "0.0.209"
+  resolved "https://registry.yarnpkg.com/@plasmicpkgs/commerce/-/commerce-0.0.209.tgz#a23d089932edef31a8681e0f82e9b96460a0c8d7"
+  integrity sha512-1aA+fPYdkcUMHo0FDFQMy4Wbly64OT/Hmdd5z9z9amyynp9o53g8h1fFdXd4MPTsOUkNYDWVghnCJGSBpMJ8dw==
+  dependencies:
+    "@types/react" "^18.0.27"
+    "@vercel/fetch" "^6.2.0"
+    debounce "^1.2.1"
+    js-cookie "^3.0.1"
+    lodash.debounce "^4.0.8"
+    react-hook-form "^7.28.0"
+    swr "^1.2.2"
+
 "@plasmicpkgs/fetch@^0.0.5":
   version "0.0.5"
   resolved "https://registry.yarnpkg.com/@plasmicpkgs/fetch/-/fetch-0.0.5.tgz#bce8789de1eedd4f7f4cfd8afef949759a241c4c"
