@@ -101,6 +101,7 @@ import {
 } from "@/wab/server/tutorialdb/tutorialdb-utils";
 import { generateSomeApiToken } from "@/wab/server/util/Tokens";
 import {
+  makeFieldMetaMap,
   makeSqlCondition,
   makeTypedFieldSql,
   normalizeTableSchema,
@@ -7452,15 +7453,19 @@ export class DbMgr implements MigrationDbMgr {
     query: ApiCmsQuery,
     opts: { useDraft?: boolean } = {}
   ) {
+    if (query.offset && query.offset < 0) {
+      throw new BadRequestError("offset field cannot be negative");
+    }
+    if (query.limit && query.limit < 0) {
+      throw new BadRequestError("limit field cannot be negative");
+    }
+
     const table = await this.getCmsTableById(tableId);
     await this.checkCmsDatabasePerms(
       table.databaseId,
       opts.useDraft ? "content" : "viewer"
     );
 
-    const fieldToMeta = Object.fromEntries(
-      table.schema.fields.map((f) => [f.identifier, f])
-    );
     let builder = this.cmsRows()
       .createQueryBuilder("r")
       .where("r.tableId = :tableId", { tableId })
@@ -7488,19 +7493,18 @@ export class DbMgr implements MigrationDbMgr {
     }
 
     if (query.order) {
+      const fieldMetaMap = makeFieldMetaMap(table.schema);
       for (const order of query.order) {
         const field = typeof order === "string" ? order : order.field;
-        if (field in fieldToMeta) {
+        const fieldSql = makeTypedFieldSql(field, fieldMetaMap, opts);
+        if (fieldSql) {
           const dir =
             typeof order === "string"
               ? "ASC"
               : order.dir === "asc"
               ? "ASC"
               : "DESC";
-          builder = builder.addOrderBy(
-            makeTypedFieldSql(fieldToMeta[field], opts),
-            dir
-          );
+          builder = builder.addOrderBy(fieldSql, dir);
         }
       }
     } else {
