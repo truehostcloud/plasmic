@@ -16,6 +16,7 @@ import * as React from "react";
 import {
   Flex as Flex__,
   StrictProps,
+  classNames,
   createPlasmicElementProxy,
   deriveRenderOpts,
   renderPlasmicSlot,
@@ -27,6 +28,7 @@ import {
   EmailImage,
   EmailLink,
 } from "@/wab/server/emails/components.tsx"; // plasmic-import: oy2tNUrSNuyD/codeComponent
+import Footer from "../../Footer"; // plasmic-import: XGWqRhmEjwRw/component
 
 import "@plasmicapp/react-web/lib/plasmic.css";
 import "../plasmic__default_style.css"; // plasmic-import: global/defaultcss
@@ -49,10 +51,12 @@ export type PlasmicLayout__OverridesType = {
   root?: Flex__<typeof EmailContainer>;
   emailLink?: Flex__<typeof EmailLink>;
   emailImage?: Flex__<typeof EmailImage>;
+  footer?: Flex__<typeof Footer>;
 };
 
 export interface DefaultLayoutProps {
   children?: React.ReactNode;
+  className?: string;
 }
 
 const $$ = {};
@@ -91,6 +95,14 @@ function PlasmicLayout__RenderFunc(props: {
       data-plasmic-override={overrides.root}
       data-plasmic-root={true}
       data-plasmic-for-node={forNode}
+      className={classNames(
+        "__wab_instance",
+        "root_reset_taNK5uwsoPrzfpYmBVwUwX",
+        "plasmic_default_styles",
+        "plasmic_mixins",
+        "plasmic_tokens",
+        "Layout__root__ndSek"
+      )}
       style={{
         backgroundColor: "#ffffff",
         borderRadius: "8px",
@@ -100,11 +112,16 @@ function PlasmicLayout__RenderFunc(props: {
       <EmailLink
         data-plasmic-name={"emailLink"}
         data-plasmic-override={overrides.emailLink}
-        href={"https://studio.plasmic.app/"}
+        className={classNames("__wab_instance", "Layout__emailLink___23HjL")}
+        href={"https://plasmic.app"}
         image={
           <EmailImage
             data-plasmic-name={"emailImage"}
             data-plasmic-override={overrides.emailImage}
+            className={classNames(
+              "__wab_instance",
+              "Layout__emailImage__fhmjg"
+            )}
             height={"48"}
             src={
               "https://site-assets.plasmic.app/ef1c5e4024825224b5a8dc6bf0f823d9.png"
@@ -118,14 +135,20 @@ function PlasmicLayout__RenderFunc(props: {
         defaultContents: null,
         value: args.children,
       })}
+      <Footer
+        data-plasmic-name={"footer"}
+        data-plasmic-override={overrides.footer}
+        className={classNames("__wab_instance", "Layout__footer___9WflH")}
+      />
     </EmailContainer>
   ) as React.ReactElement | null;
 }
 
 const PlasmicDescendants = {
-  root: ["root", "emailLink", "emailImage"],
+  root: ["root", "emailLink", "emailImage", "footer"],
   emailLink: ["emailLink", "emailImage"],
   emailImage: ["emailImage"],
+  footer: ["footer"],
 } as const;
 type NodeNameType = keyof typeof PlasmicDescendants;
 type DescendantsType<T extends NodeNameType> =
@@ -134,6 +157,7 @@ type NodeDefaultElementType = {
   root: typeof EmailContainer;
   emailLink: typeof EmailLink;
   emailImage: typeof EmailImage;
+  footer: typeof Footer;
 };
 
 type ReservedPropsType = "variants" | "args" | "overrides";
@@ -198,6 +222,7 @@ export const PlasmicLayout = Object.assign(
     // Helper components rendering sub-elements
     emailLink: makeNodeComponent("emailLink"),
     emailImage: makeNodeComponent("emailImage"),
+    footer: makeNodeComponent("footer"),
 
     // Metadata about props expected for PlasmicLayout
     internalVariantProps: PlasmicLayout__VariantProps,
