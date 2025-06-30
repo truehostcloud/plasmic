@@ -2421,7 +2421,11 @@ export class ViewCtx extends WithDbCtx {
    * Similar to `instanceof Element` but also checks for Sub.Element
    */
   isElement(v: any): v is Element {
-    return v instanceof Element || v instanceof this.canvasCtx.Sub.localElement;
+    return (
+      v instanceof Element ||
+      (!!this.canvasCtx.Sub.localElement &&
+        v instanceof this.canvasCtx.Sub.localElement)
+    );
   }
 
   private fiberNodeToPlasmicData(
@@ -2647,7 +2651,7 @@ export function ensureVariantRs(
   return vs.rs;
 }
 
-export function getSetOfVariantsForViewCtx(
+export function getSetOfPinnedVariantsForViewCtx(
   viewCtx: ViewCtx,
   bundler: FastBundler
 ) {
@@ -2655,8 +2659,6 @@ export function getSetOfVariantsForViewCtx(
     [
       ...viewCtx.currentComponentStackFrame().getPinnedVariants().keys(),
       ...viewCtx.globalFrame.getPinnedVariants().keys(),
-      ...viewCtx.currentComponentStackFrame().getTargetVariants(),
-      ...viewCtx.globalFrame.getTargetVariants(),
     ],
     (v) => bundler.addrOf(v)?.iid
   );

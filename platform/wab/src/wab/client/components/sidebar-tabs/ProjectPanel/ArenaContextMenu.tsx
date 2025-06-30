@@ -1,5 +1,5 @@
 import { menuSection } from "@/wab/client/components/menu-builder";
-import promptDeleteComponent from "@/wab/client/components/modals/componentDeletionModal";
+import { promptDeleteComponent } from "@/wab/client/components/modals/componentDeletionModal";
 import { StudioCtx } from "@/wab/client/studio-ctx/StudioCtx";
 import {
   AnyArena,
@@ -20,6 +20,33 @@ import { Component } from "@/wab/shared/model/classes";
 import { naturalSort } from "@/wab/shared/sort";
 import { Menu } from "antd";
 import * as React from "react";
+
+export const deleteArenas = async (
+  studioCtx: StudioCtx,
+  arenas: AnyArena[]
+) => {
+  const allRefs = arenas.flatMap((arena) =>
+    isDedicatedArena(arena) && isPageComponent(arena.component)
+      ? Array.from(
+          componentsReferecerToPageHref(studioCtx.site, arena.component)
+        )
+      : []
+  );
+
+  await studioCtx.changeObserved(
+    () => allRefs,
+    ({ success }) => {
+      for (const arena of arenas) {
+        if (isDedicatedArena(arena)) {
+          studioCtx.siteOps().tryRemoveComponent(arena.component);
+        } else if (isMixedArena(arena)) {
+          studioCtx.siteOps().removeMixedArena(arena);
+        }
+      }
+      return success();
+    }
+  );
+};
 
 /**
  * Context menu shown when right-clicking an arena row.
@@ -147,28 +174,17 @@ export function ArenaContextMenu({
   const onDelete = async () => {
     const confirmation = await promptDeleteComponent(
       getSiteItemTypeName(arena),
-      getArenaName(arena)
+      getArenaName(arena),
+      isDedicatedArena(arena)
+        ? studioCtx.commentsCtx
+            .computedData()
+            .commentStatsByComponent.get(arena.component.uuid)?.commentCount
+        : undefined
     );
     if (!confirmation) {
       return;
     }
-    await studioCtx.changeObserved(
-      () => {
-        return isDedicatedArena(arena) && isPageComponent(arena.component)
-          ? Array.from(
-              componentsReferecerToPageHref(studioCtx.site, arena.component)
-            )
-          : [];
-      },
-      ({ success }) => {
-        if (isDedicatedArena(arena)) {
-          studioCtx.siteOps().tryRemoveComponent(arena.component);
-        } else if (isMixedArena(arena)) {
-          studioCtx.siteOps().removeMixedArena(arena);
-        }
-        return success();
-      }
-    );
+    await deleteArenas(studioCtx, [arena]);
   };
 
   return (

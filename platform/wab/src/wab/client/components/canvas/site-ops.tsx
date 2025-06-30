@@ -1,6 +1,7 @@
 import { AppCtx } from "@/wab/client/app-ctx";
 import { U } from "@/wab/client/cli-routes";
 import { FrameClip } from "@/wab/client/clipboard/local";
+import { RenameArenaProps } from "@/wab/client/commands/arena/renameArena";
 import { toast } from "@/wab/client/components/Messages";
 import { promptRemapCodeComponent } from "@/wab/client/components/modals/codeComponentModals";
 import {
@@ -756,8 +757,11 @@ export class SiteOps {
     return { asset, iconColor: opts.iconColor };
   }
 
-  async createFrameForNewComponent() {
-    const componentInfo = await promptComponentTemplate(this.studioCtx);
+  async createFrameForNewComponent(folderPath?: string) {
+    const componentInfo = await promptComponentTemplate(
+      this.studioCtx,
+      folderPath
+    );
     if (!componentInfo) {
       return;
     }
@@ -928,23 +932,27 @@ export class SiteOps {
     }
   }
 
-  tryRenameArena(arena: Arena | PageArena | ComponentArena, newName: string) {
-    if (getArenaName(arena) === newName) {
+  tryRenameArenas(entries: RenameArenaProps[]) {
+    if (entries.length === 0) {
       return;
     }
+    for (const { arena, newName } of entries) {
+      const oldName = getArenaName(arena);
+      if (oldName === newName) {
+        continue;
+      }
 
-    return this.studioCtx.changeUnsafe(() => {
       switchType(arena)
-        .when(Arena, (it) => this.tplMgr.renameArena(it, newName))
+        .when(Arena, (it) => this.studioCtx.tplMgr().renameArena(it, newName))
         .when([PageArena, ComponentArena], (it) =>
-          this.tryRenameComponent(it.component, newName)
+          this.studioCtx.siteOps().tryRenameComponent(it.component, newName)
         );
 
-      // Replace the URL if this is the current arena
+      // Switch to currentArena to force the URL to update with the new name
       if (arena === this.studioCtx.currentArena) {
         this.studioCtx.switchToArena(arena, { replace: true });
       }
-    });
+    }
   }
 
   tryRenameComponent(component: Component, newName: string) {

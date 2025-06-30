@@ -4,7 +4,7 @@ import CommentIndicatorIcon from "@/wab/client/components/comments/CommentIndica
 import { MenuBuilder } from "@/wab/client/components/menu-builder";
 import { DefaultComponentKindModal } from "@/wab/client/components/modals/DefaultComponentKindModal";
 import { showModalToRefreshCodeComponentProps } from "@/wab/client/components/modals/codeComponentModals";
-import promptDeleteComponent from "@/wab/client/components/modals/componentDeletionModal";
+import { promptDeleteComponent } from "@/wab/client/components/modals/componentDeletionModal";
 import {
   reactPrompt,
   showTemporaryPrompt,
@@ -94,7 +94,7 @@ export const ComponentRow = observer(function ComponentRow(props: {
   const icon = (() => {
     const commentsStats = commentsCtx
       .computedData()
-      .commentStatsByComponent.get(component.tplTree.uuid);
+      .commentStatsByComponent.get(component.uuid);
     if (commentsStats && studioCtx.showCommentsPanel) {
       return (
         <CommentIndicatorIcon
@@ -305,7 +305,10 @@ function buildPlasmicComponentMenuItems(
           onClick={async () => {
             const confirmation = await promptDeleteComponent(
               "component",
-              component.name
+              component.name,
+              studioCtx.commentsCtx
+                .computedData()
+                .commentStatsByComponent.get(component.uuid)?.commentCount
             );
             if (!confirmation) {
               return;

@@ -4,24 +4,26 @@ import {
   parseHtmlToWebImporterTree,
 } from "@/wab/client/web-importer/html-parser";
 import { WIElement } from "@/wab/client/web-importer/types";
+import { TokenType } from "@/wab/commons/StyleToken";
+import { toVarName } from "@/wab/shared/codegen/util";
 import { assert } from "@/wab/shared/common";
+import { createSite } from "@/wab/shared/core/sites";
+import { TplMgr } from "@/wab/shared/TplMgr";
 
-const { fixCSSValue } = _testOnlyUtils;
+const { fixCSSValue, renameTokenVarNameToUuid } = _testOnlyUtils;
 
 describe("parseHtmlToWebImporterTree", () => {
+  const site = createSite();
+
   it("parses a simple span with text", async () => {
     const html = "<span>plasmic</span>";
-    const {
-      wiTree: rootEl,
-      fontDefinitions,
-      variables,
-    } = await parseHtmlToWebImporterTree(html);
+    const { wiTree: rootEl, fontDefinitions } =
+      await parseHtmlToWebImporterTree(html, site);
 
     assert(rootEl, "rootEl should not be null");
 
     // no @font-face definitions or CSS variables
     expect(fontDefinitions).toEqual([]);
-    expect(variables.size).toBe(0);
 
     // root is a container whose first child is the span we provided
     expect(rootEl).toMatchObject<Partial<WIElement>>({
@@ -44,7 +46,7 @@ describe("parseHtmlToWebImporterTree", () => {
   it("extracts inline styles properly", async () => {
     const html =
       '<div style="display: flex; margin: 10px; color: #0000ff"><h1>Blue Heading 1</h1></div>';
-    const { wiTree: rootEl } = await parseHtmlToWebImporterTree(html);
+    const { wiTree: rootEl } = await parseHtmlToWebImporterTree(html, site);
 
     assert(rootEl, "rootEl should not be null");
 
@@ -103,6 +105,135 @@ describe("parseHtmlToWebImporterTree", () => {
       styles: {},
     });
   });
+
+  it("extracts stylesheet styles properly", async () => {
+    const html = `<style>
+.container {
+  display: flex;
+  margin: 10px;
+  color: #0000ff;
+}
+
+.heading {
+  color: rgb(0,0,255);
+}
+</style>
+<div class="container"><h1 class="heading">Blue Heading 1</h1></div>`;
+    const { wiTree: rootEl } = await parseHtmlToWebImporterTree(html, site);
+
+    assert(rootEl, "rootEl should not be null");
+
+    expect(rootEl).toMatchObject<WIElement>({
+      type: "container",
+      tag: "div",
+      attrs: {},
+      children: [
+        {
+          type: "container",
+          tag: "div",
+          attrs: { class: "container" },
+          children: [
+            {
+              type: "text",
+              tag: "h1",
+              text: "Blue Heading 1",
+              unsanitizedStyles: {
+                base: {
+                  color: "rgb(0,0,255)",
+                },
+              },
+              styles: {
+                base: {
+                  safe: {
+                    color: "rgb(0,0,255)",
+                  },
+                  unsafe: {},
+                },
+              },
+            },
+          ],
+          unsanitizedStyles: {
+            base: {
+              display: "flex",
+              "flex-direction": "row",
+              margin: "10px",
+            },
+          },
+          styles: {
+            base: {
+              safe: {
+                display: "flex",
+                flexDirection: "row",
+                marginTop: "10px",
+                marginBottom: "10px",
+                marginLeft: "10px",
+                marginRight: "10px",
+              },
+              unsafe: {},
+            },
+          },
+        },
+      ],
+      unsanitizedStyles: {},
+      styles: {},
+    });
+  });
+});
+
+describe("renameTokenVarNameToUuid", () => {
+  const site = createSite();
+  const tplMgr = new TplMgr({ site });
+  const colorPrimaryToken = tplMgr.addToken({
+    tokenType: TokenType.Color,
+    name: "Brand/Brand",
+    value: "#3594F0",
+  });
+  const colorPrimaryForegroundToken = tplMgr.addToken({
+    tokenType: TokenType.Color,
+    name: "Neutral/Neutral",
+    value: "#374151",
+  });
+
+  it("Rename token variable name to token uuid ", async () => {
+    // "returns empty string for invalid token"
+    expect(
+      renameTokenVarNameToUuid("var(--token-unknown-token)", site)
+    ).toBeNull();
+
+    // "transform a valid token name to token uuid"
+    expect(
+      renameTokenVarNameToUuid(
+        `var(--token-${toVarName(colorPrimaryToken.name)})`,
+        site
+      )
+    ).toEqual(`var(--token-${colorPrimaryToken.uuid})`);
+
+    // "transform multiple valid token names properly"
+    expect(
+      renameTokenVarNameToUuid(
+        `linear-gradient(var(--token-${toVarName(
+          colorPrimaryToken.name
+        )}), var(--token-${toVarName(colorPrimaryForegroundToken.name)}))`,
+        site
+      )
+    ).toEqual(
+      `linear-gradient(var(--token-${colorPrimaryToken.uuid}), var(--token-${colorPrimaryForegroundToken.uuid}))`
+    );
+
+    // "return empty string if one of the tokens is invalid"
+    expect(
+      renameTokenVarNameToUuid(
+        `linear-gradient(var(--token-unknown-token), var(--token-${toVarName(
+          colorPrimaryForegroundToken.name
+        )}))`,
+        site
+      )
+    ).toBeNull();
+
+    expect(
+      renameTokenVarNameToUuid(`1px var(--token-border-color) solid`, site)
+    ).toBeNull();
+  });
 });
 
 describe("fixCSSValue", () => {
@@ -159,9 +290,9 @@ describe("fixCSSValue", () => {
     });
   });
 
-  it("transforms 'transparent' into rgba(0, 0, 0, 0)", () => {
+  it("transforms 'transparent' into rgba(0,0,0,0)", () => {
     expect(fixCSSValue("background-color", "transparent")).toEqual({
-      background: "linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0))",
+      background: "linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0))",
     });
   });
 
@@ -199,10 +330,6 @@ describe("fixCSSValue", () => {
       borderBottomRightRadius: "5px",
       borderBottomLeftRadius: "5px",
     });
-  });
-
-  it("returns empty object for overflowWrap 'break-word'", () => {
-    expect(fixCSSValue("overflow-wrap", "break-word")).toEqual({});
   });
 
   it("returns property for overflowWrap when not 'break-word'", () => {
@@ -258,8 +385,8 @@ describe("fixCSSValue", () => {
     });
   });
 
-  it("returns background gradient for backgroundColor with rgb or var", () => {
-    const rgb = "rgb(10, 20, 30)";
+  it("returns background gradient for backgroundColor with rgb or var or hex", () => {
+    const rgb = "rgb(10,20,30)";
     expect(fixCSSValue("background-color", rgb)).toEqual({
       background: `linear-gradient(${rgb}, ${rgb})`,
     });
@@ -268,26 +395,28 @@ describe("fixCSSValue", () => {
     expect(fixCSSValue("background-color", token)).toEqual({
       background: `linear-gradient(${token}, ${token})`,
     });
-  });
 
-  it("returns empty object for backgroundColor when not rgb", () => {
-    expect(fixCSSValue("background-color", "#fff")).toEqual({});
+    expect(fixCSSValue("background-color", "#fff")).toEqual({
+      background: `linear-gradient(#fff, #fff)`,
+    });
   });
 
   it("returns background gradient for background with rgb or var", () => {
-    const rgb = "rgb(10, 20, 30)";
+    const rgb = "rgb(10,20,30)";
     expect(fixCSSValue("background", rgb)).toEqual({
       background: `linear-gradient(${rgb}, ${rgb})`,
     });
 
     const token = "var(--token-abc)";
     expect(fixCSSValue("background", token)).toEqual({
-      background: `linear-gradient(${token}, ${token})`,
+      background: token,
     });
   });
 
   it("returns empty object for background when not rgb", () => {
-    expect(fixCSSValue("background", "url(image.png)")).toEqual({});
+    expect(fixCSSValue("background", "url(image.png)")).toEqual({
+      background: `url("image.png")`,
+    });
   });
 
   it("parse box-shadow value properly", () => {

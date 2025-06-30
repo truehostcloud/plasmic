@@ -4536,7 +4536,8 @@
       "indirect": false,
       "globalContextsFilePath": "",
       "splitsProviderFilePath": "",
-      "customFunctions": []
+      "customFunctions": [],
+      "jsBundleThemes": []
     },
     {
       "projectId": "6CrqkTcB6gSAHoA8c8zpNz",
@@ -9379,6 +9380,20 @@
           "cssFilePath": "wab/client/plasmic/plasmic_kit_data_binding/PlasmicCopilotPromptImage.module.css",
           "scheme": "blackbox",
           "componentType": "component"
+        },
+        {
+          "id": "pnV7KLVDUyoz",
+          "name": "CopilotPromptInput",
+          "type": "managed",
+          "projectId": "w2GXN278dkQ2gQTVQnPehW",
+          "renderModuleFilePath": "wab/client/plasmic/plasmic_kit_data_binding/PlasmicCopilotPromptInput.tsx",
+          "importSpec": {
+            "modulePath": "wab/client/components/copilot/CopilotPromptInput.tsx",
+            "exportName": "CopilotPromptInput"
+          },
+          "cssFilePath": "wab/client/plasmic/plasmic_kit_data_binding/PlasmicCopilotPromptInput.module.css",
+          "scheme": "blackbox",
+          "componentType": "component"
         }
       ],
       "icons": [
@@ -10204,19 +10219,6 @@
           "cssFilePath": "wab/client/plasmic/plasmic_kit_insert_panel/PlasmicSpacer.module.css",
           "scheme": "blackbox",
           "componentType": "component"
-        },
-        {
-          "id": "LAxjR8HGkN",
-          "name": "Homepage",
-          "type": "managed",
-          "projectId": "4B48dRthR8uGgyaBYpWthR",
-          "renderModuleFilePath": "wab/client/plasmic/plasmic_kit_insert_panel/PlasmicHomepage.tsx",
-          "importSpec": {
-            "modulePath": "wab/client/components/insert-panel/Homepage.tsx"
-          },
-          "cssFilePath": "wab/client/plasmic/plasmic_kit_insert_panel/PlasmicHomepage.module.css",
-          "scheme": "blackbox",
-          "componentType": "page"
         },
         {
           "id": "bulTqUMaa2",

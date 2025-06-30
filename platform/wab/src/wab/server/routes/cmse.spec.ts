@@ -3,21 +3,18 @@ import { ensureDbConnection } from "@/wab/server/db/DbCon";
 import { seedTestUserAndProjects } from "@/wab/server/db/DbInit";
 import { DbMgr, normalActor } from "@/wab/server/db/DbMgr";
 import { CmsRow, CmsTable, User } from "@/wab/server/entities/Entities";
-import { ApiTester } from "@/wab/server/test/api-tester";
+import { SharedApiTester } from "@/wab/server/test/api-tester";
 import { createBackend, createDatabase } from "@/wab/server/test/backend-util";
 import { isUniqueViolationError } from "@/wab/shared/ApiErrors/cms-errors";
 import { CmsMetaType, CmsRowId } from "@/wab/shared/ApiSchema";
-import { APIRequestContext, request } from "playwright";
 
 const ROWS = 10;
 
-describe("unique violation check", () => {
-  let apiRequestContext: APIRequestContext;
-  let api: ApiTester;
+describe("CMS tests", () => {
+  let api: SharedApiTester;
   let baseURL: string;
   let cleanup: () => Promise<void>;
 
-  let userToken: string;
   let user: User;
   let table: CmsTable;
   let published: CmsRow[];
@@ -73,8 +70,6 @@ describe("unique violation check", () => {
       user = userAndProjects.user;
 
       const db = new DbMgr(em, normalActor(user.id));
-      const pat = await db.createPersonalApiToken(user.id);
-      userToken = pat.token;
 
       const team = await db.createTeam("team");
       const workspace = await db.createWorkspace({
@@ -143,13 +138,7 @@ describe("unique violation check", () => {
   });
 
   beforeEach(async () => {
-    apiRequestContext = await request.newContext({
-      baseURL,
-    });
-    api = new ApiTester(apiRequestContext, baseURL, {
-      "x-plasmic-api-user": user.email,
-      "x-plasmic-api-token": userToken,
-    });
+    api = new SharedApiTester(baseURL);
     await api.refreshCsrfToken();
     await api.login({
       email: "user@example.com",
@@ -158,7 +147,7 @@ describe("unique violation check", () => {
   });
 
   afterEach(async () => {
-    await apiRequestContext.dispose();
+    await api.dispose();
   });
 
   afterAll(async () => {

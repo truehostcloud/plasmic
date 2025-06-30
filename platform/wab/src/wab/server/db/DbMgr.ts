@@ -118,7 +118,6 @@ import {
 } from "@/wab/shared/ApiErrors/errors";
 import {
   ApiBranch,
-  ApiCmsQuery,
   ApiFeatureTier,
   ApiNotificationSettings,
   ApiTeamMeta,
@@ -179,6 +178,7 @@ import {
   PERSONAL_WORKSPACE,
   WORKSPACE_CAP,
 } from "@/wab/shared/Labels";
+import { ApiCmsQuery } from "@/wab/shared/api/cms";
 import { Bundler } from "@/wab/shared/bundler";
 import { getBundle } from "@/wab/shared/bundles";
 import { getUniqueFieldsData } from "@/wab/shared/cms";
@@ -210,7 +210,10 @@ import {
   withoutNils,
   xor,
 } from "@/wab/shared/common";
-import { CreateChatCompletionRequest } from "@/wab/shared/copilot/prompt-utils";
+import {
+  CreateChatCompletionRequest,
+  LLMParseResponsesRequest,
+} from "@/wab/shared/copilot/prompt-utils";
 import {
   cloneSite,
   fixAppAuthRefs,
@@ -232,7 +235,6 @@ import {
   ProjectDependency,
   Site,
 } from "@/wab/shared/model/classes";
-import { withoutUids } from "@/wab/shared/model/model-meta";
 import { ratePasswordStrength } from "@/wab/shared/password-strength";
 import {
   ResourceId,
@@ -5934,7 +5936,7 @@ export class DbMgr implements MigrationDbMgr {
     userPrompt: string;
     response: string;
     model: "gpt" | "claude";
-    request: CreateChatCompletionRequest;
+    request: CreateChatCompletionRequest | LLMParseResponsesRequest;
   }) {
     await this.checkProjectPerms(projectId, "content", "run copilot");
     const copilotInteraction = this.copilotInteractions().create({
@@ -7416,10 +7418,10 @@ export class DbMgr implements MigrationDbMgr {
     opts: { useDraft?: boolean } = {}
   ) {
     if (query.offset && query.offset < 0) {
-      throw new BadRequestError("offset field cannot be negative");
+      throw new Error("offset field cannot be negative");
     }
     if (query.limit && query.limit < 0) {
-      throw new BadRequestError("limit field cannot be negative");
+      throw new Error("limit field cannot be negative");
     }
 
     const table = await this.getCmsTableById(tableId);
@@ -8057,18 +8059,6 @@ export class DbMgr implements MigrationDbMgr {
       }
     );
 
-    // Check that there are no outstanding changes in destination
-    const { site: latestToPkgVersionSite } = await unbundlePkgVersion(
-      this,
-      bundler,
-      latestToPkgVersion
-    );
-    const { site: latestFromPkgVersionSite } = await unbundlePkgVersion(
-      this,
-      bundler,
-      latestFromPkgVersion
-    );
-
     const extras = {
       ancestorPkgVersionId: ancestorPkgVersion.id,
       ancestorPkgVersionString: ancestorPkgVersion.version,
@@ -8079,11 +8069,8 @@ export class DbMgr implements MigrationDbMgr {
       toPkgVersionString: latestToPkgVersion.version,
       pkgId: pkg.id,
       fromHasOutstandingChanges:
-        JSON.stringify(withoutUids(latestFromSite)) !==
-        JSON.stringify(withoutUids(latestFromPkgVersionSite)),
-      toHasOutstandingChanges:
-        JSON.stringify(withoutUids(latestToSite)) !==
-        JSON.stringify(withoutUids(latestToPkgVersionSite)),
+        latestFromRev.id !== latestFromPkgVersion.revisionId,
+      toHasOutstandingChanges: latestToRev.id !== latestToPkgVersion.revisionId,
     };
 
     const fromHostUrl = fromBranchId
