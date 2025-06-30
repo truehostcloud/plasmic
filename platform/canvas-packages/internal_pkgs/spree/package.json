@@ -1,6 +1,6 @@
 {
   "name": "commerce-spree",
-  "version": "0.2.12",
+  "version": "0.2.13",
   "description": "Plasmic registration calls for spree commerce provider",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -20,7 +20,7 @@
     "postinstall": "patch-package && node scripts/fix-global.js"
   },
   "dependencies": {
-    "@plasmicpkgs/commerce": "^0.0.215",
+    "@plasmicpkgs/commerce": "^0.0.220",
     "@spree/storefront-api-v2-sdk": "^5.1.1",
     "debounce": "^1.2.1",
     "js-cookie": "^3.0.5",

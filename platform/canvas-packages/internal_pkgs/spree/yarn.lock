@@ -1223,10 +1223,10 @@
   dependencies:
     swr "^1.0.0"
 
-"@plasmicpkgs/commerce@^0.0.215":
-  version "0.0.215"
-  resolved "https://registry.yarnpkg.com/@plasmicpkgs/commerce/-/commerce-0.0.215.tgz#66788238702fa6b5f46eb86d310393c64a201cc4"
-  integrity sha512-ICBUKvnQcezGVv3luGmcrUC20Cshsq9WjsWnTQOOE3En04GoPDR9nPkgRqYCUX1SC7+yZU/epvrABKU3deNf2w==
+"@plasmicpkgs/commerce@^0.0.220":
+  version "0.0.220"
+  resolved "https://registry.yarnpkg.com/@plasmicpkgs/commerce/-/commerce-0.0.220.tgz#b2aae51667401ca69a4a804b6f0d0ee9f07053cd"
+  integrity sha512-GhXMLEQ56SE11H+mKKbbZEkYAeSpWWD8UWXDlL4Aswa92Fz4pI8XNIzM0K8QkDmSQnGxLA0j/LTGea/bWlhasA==
   dependencies:
     "@types/react" "^18.0.27"
     "@vercel/fetch" "^6.2.0"
