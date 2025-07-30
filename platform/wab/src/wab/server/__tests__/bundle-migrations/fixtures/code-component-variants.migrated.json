@@ -1077,6 +1077,7 @@
         },
         "l3QNGOyvwJ2u": {
           "type": { "__ref": "X73UGKu_jwhb" },
+          "advanced": false,
           "variable": { "__ref": "OTH6SrHG0UH2" },
           "uuid": "-IY9Xn11_g2a",
           "enumValues": [],
@@ -1097,6 +1098,7 @@
         },
         "De00XYv5K_es": {
           "type": { "__ref": "LbsM4A_PDhfI" },
+          "advanced": false,
           "variable": { "__ref": "bvVYJdKPSv5f" },
           "uuid": "Gjm7Ag1pLmae",
           "enumValues": [],
@@ -1117,6 +1119,7 @@
         },
         "Y42dSoyOEKcm": {
           "type": { "__ref": "KFs_CW46D_Ph" },
+          "advanced": false,
           "variable": { "__ref": "crjCvAbR7N49" },
           "uuid": "rdQi3q6WCjEc",
           "enumValues": [],
@@ -1137,6 +1140,7 @@
         },
         "wVtO2GgLxqzf": {
           "type": { "__ref": "folWbTWfFbdZ" },
+          "advanced": false,
           "variable": { "__ref": "SEihXYbKnKYm" },
           "uuid": "8-DO6MFdzOP-",
           "enumValues": [],
@@ -1178,6 +1182,7 @@
         },
         "WNCOHyokJpui": {
           "type": { "__ref": "8o-baMdCEb1E" },
+          "advanced": false,
           "variable": { "__ref": "eHB6h6RCHUPC" },
           "uuid": "T9Yb3stV9aS-",
           "enumValues": [],
@@ -1219,6 +1224,7 @@
         },
         "xRIxVAT1cNUV": {
           "type": { "__ref": "DGoHCgEcgWTb" },
+          "advanced": false,
           "variable": { "__ref": "9bvUWKQs-XEg" },
           "uuid": "poe3Grpri5cg",
           "enumValues": [],
@@ -1239,6 +1245,7 @@
         },
         "7-07JlDpU236": {
           "type": { "__ref": "nTAlDSgNB8gl" },
+          "advanced": false,
           "variable": { "__ref": "aCoAU2WYA1R4" },
           "uuid": "DDDfKHULlIDO",
           "enumValues": [],
@@ -1439,6 +1446,7 @@
         },
         "zukd2wYrO69h": {
           "type": { "__ref": "vviLKSFVNGVk" },
+          "advanced": false,
           "variable": { "__ref": "1Q3A9DNdaK-t" },
           "uuid": "auTggVQ48HZX",
           "enumValues": [],
@@ -1532,6 +1540,7 @@
         },
         "C4HHJDFXCv9Z": {
           "type": { "__ref": "0yET5NFp6APM" },
+          "advanced": false,
           "variable": { "__ref": "kNewcPcNjfHh" },
           "uuid": "fBiFXwoRZxvw",
           "enumValues": [],
@@ -1552,6 +1561,7 @@
         },
         "diVr6TpOxl20": {
           "type": { "__ref": "Tv-4Ss_a9ZaH" },
+          "advanced": false,
           "variable": { "__ref": "isHJRkSRI9tn" },
           "uuid": "V8xnAYXWiJor",
           "enumValues": [],
@@ -1593,6 +1603,7 @@
         },
         "aZdbMb4-30gQ": {
           "type": { "__ref": "GMAbrymabhVq" },
+          "advanced": false,
           "variable": { "__ref": "fEvpfDVJThA1" },
           "uuid": "wMyHAtHRXvum",
           "enumValues": [],
@@ -1613,6 +1624,7 @@
         },
         "vvip6MM_Y5h-": {
           "type": { "__ref": "uZIYRACxTERy" },
+          "advanced": false,
           "variable": { "__ref": "CiXwafXOXBAO" },
           "uuid": "j17RyYWQ27yn",
           "enumValues": [],
@@ -1654,6 +1666,7 @@
         },
         "2HaHjxMtsyxO": {
           "type": { "__ref": "KU4_K5OqU6A5" },
+          "advanced": false,
           "variable": { "__ref": "cx-AisWDlRzA" },
           "uuid": "GohwP_qmnl7w",
           "enumValues": [],
@@ -1695,6 +1708,7 @@
         },
         "2KkseLmE2c1r": {
           "type": { "__ref": "hxi2z30hRubz" },
+          "advanced": false,
           "variable": { "__ref": "sJf7nTRbqxyO" },
           "uuid": "x4ClPXLPi4XD",
           "enumValues": [],
@@ -1883,6 +1897,7 @@
         },
         "l6f0dZ5hSRbu": {
           "type": { "__ref": "075lsMxYQaRq" },
+          "advanced": false,
           "variable": { "__ref": "i0Q_D-3yFYoY" },
           "uuid": "yifXiVzzt3fF",
           "enumValues": [],
@@ -1903,6 +1918,7 @@
         },
         "5fLcor_aUzUy": {
           "type": { "__ref": "Qga1Qc4LZkBe" },
+          "advanced": false,
           "variable": { "__ref": "CKqcBtybSZl9" },
           "uuid": "caGqxQrhrsXE",
           "enumValues": [],
@@ -1923,6 +1939,7 @@
         },
         "sTFPkfzikVSM": {
           "type": { "__ref": "2Bu8SDCbeDEZ" },
+          "advanced": false,
           "variable": { "__ref": "UDfvCMzm-207" },
           "uuid": "y99zUrnREX22",
           "enumValues": [],
@@ -1943,6 +1960,7 @@
         },
         "mmTt82U6ZIo8": {
           "type": { "__ref": "P2gqTMhXPmjF" },
+          "advanced": false,
           "variable": { "__ref": "2D9WMzdJT478" },
           "uuid": "JPBLj9xoWShS",
           "enumValues": [],
@@ -1963,6 +1981,7 @@
         },
         "sWOBdyR2eD35": {
           "type": { "__ref": "oWUdUG6Iig5n" },
+          "advanced": false,
           "variable": { "__ref": "czTn6Y_idWXd" },
           "uuid": "h5z_YqP6oKvT",
           "enumValues": [],
@@ -1983,6 +2002,7 @@
         },
         "xsMEBiwc5gdK": {
           "type": { "__ref": "pUd_8pX69PLi" },
+          "advanced": false,
           "variable": { "__ref": "alX0QYyARGQc" },
           "uuid": "Ucjr_Gk9rGLI",
           "enumValues": [],
@@ -2003,6 +2023,7 @@
         },
         "hQJE4woUvOVu": {
           "type": { "__ref": "C_fR_ONZ7D4j" },
+          "advanced": false,
           "variable": { "__ref": "av_VU5IsN-5B" },
           "uuid": "YgWv3JoppzzE",
           "enumValues": [],
@@ -2175,6 +2196,7 @@
         },
         "e8uvIBt8rX6g": {
           "type": { "__ref": "-i5_-ItqrFU8" },
+          "advanced": false,
           "variable": { "__ref": "D3IPbcBT_V_u" },
           "uuid": "mnTGeYCVe7cy",
           "enumValues": [],
@@ -2216,6 +2238,7 @@
         },
         "aTk54hKTSGm2": {
           "type": { "__ref": "EGG_XWgwDros" },
+          "advanced": false,
           "variable": { "__ref": "U4rUYgTq-H-k" },
           "uuid": "X7dWUdqpReXc",
           "enumValues": [],
@@ -2456,6 +2479,7 @@
         },
         "f9PGp34HjjRA": {
           "type": { "__ref": "c5xGk6A_3c6e" },
+          "advanced": false,
           "variable": { "__ref": "6tnSrfPBsSHT" },
           "uuid": "3W9Tttln20ng",
           "enumValues": [],
@@ -2476,6 +2500,7 @@
         },
         "5KucuKXzGRdF": {
           "type": { "__ref": "VCTKkR89ZhSZ" },
+          "advanced": false,
           "variable": { "__ref": "u2_-IJpm-Ivg" },
           "uuid": "geQ1ZFCjHc7W",
           "enumValues": [],
@@ -2608,6 +2633,7 @@
         },
         "5homuCMfI28Q": {
           "type": { "__ref": "fJrCDMcc48uL" },
+          "advanced": false,
           "variable": { "__ref": "mivNsgqmdI-G" },
           "uuid": "K2ytwCjITvQH",
           "enumValues": [],
@@ -2628,6 +2654,7 @@
         },
         "_nK074uJh4mo": {
           "type": { "__ref": "YBrASeKVi97k" },
+          "advanced": false,
           "variable": { "__ref": "jRP-UTXlVFX0" },
           "uuid": "8E074YWEFH4Z",
           "enumValues": [],
@@ -2648,6 +2675,7 @@
         },
         "nwZXMctwuznE": {
           "type": { "__ref": "gopdNWTT9z4d" },
+          "advanced": false,
           "variable": { "__ref": "gRGnqP8WBecy" },
           "uuid": "m9SNWsJrxwdF",
           "enumValues": [],
@@ -2668,6 +2696,7 @@
         },
         "ysPg0s07LB3R": {
           "type": { "__ref": "5QlnD5eWsMHl" },
+          "advanced": false,
           "variable": { "__ref": "6V44qQnppVfe" },
           "uuid": "YwkMKmuhL6rZ",
           "enumValues": [],
@@ -2688,6 +2717,7 @@
         },
         "ATlz-3NBLO3r": {
           "type": { "__ref": "Sw-LTug4s1xu" },
+          "advanced": false,
           "variable": { "__ref": "LLsDUo5DHjRU" },
           "uuid": "qO_qvrndeXtA",
           "enumValues": [],
@@ -2786,6 +2816,7 @@
         },
         "E5oTPpEwpg1s": {
           "type": { "__ref": "5_1lqKOgj0g8" },
+          "advanced": false,
           "variable": { "__ref": "zf3noTE12S4Q" },
           "uuid": "TV1qFBqYj0Y6",
           "enumValues": [],
@@ -2806,6 +2837,7 @@
         },
         "EgWlMtz7SIZD": {
           "type": { "__ref": "HdfP9gXMGqCB" },
+          "advanced": false,
           "variable": { "__ref": "2PIkDqz66Cti" },
           "uuid": "LooqsUmpr-n-",
           "enumValues": [],
@@ -2826,6 +2858,7 @@
         },
         "Y3SDu30jL3g7": {
           "type": { "__ref": "GDUukXm90A4M" },
+          "advanced": false,
           "variable": { "__ref": "1u2rsd8XcDLc" },
           "uuid": "rwcvtBvuQF_p",
           "enumValues": [],
@@ -2846,6 +2879,7 @@
         },
         "zEW9NpKIZrIx": {
           "type": { "__ref": "LXsYazAq--U1" },
+          "advanced": false,
           "variable": { "__ref": "7Lxu3pCS4KEk" },
           "uuid": "7ITuubHINfnx",
           "enumValues": [],
@@ -2866,6 +2900,7 @@
         },
         "NlrFXCuY_XXm": {
           "type": { "__ref": "kcQdNxt9i6i_" },
+          "advanced": false,
           "variable": { "__ref": "uyeuUu8NtYN0" },
           "uuid": "0awGB8AAQp4G",
           "enumValues": [],
@@ -2886,6 +2921,7 @@
         },
         "IDmDaBQVH7OR": {
           "type": { "__ref": "lhXW6KxpMnzA" },
+          "advanced": false,
           "variable": { "__ref": "MH0_Q-PtUvNi" },
           "uuid": "83N8gcOjIa-T",
           "enumValues": [],
@@ -2906,6 +2942,7 @@
         },
         "p1CENcHRKY4q": {
           "type": { "__ref": "jTE0aUV5QFTF" },
+          "advanced": false,
           "variable": { "__ref": "Eg4FOko_GnSc" },
           "uuid": "cp7l1rN7BQtN",
           "enumValues": [],
@@ -2947,6 +2984,7 @@
         },
         "rHPjgvV2EsB2": {
           "type": { "__ref": "FRmHl0uLQ0ls" },
+          "advanced": false,
           "variable": { "__ref": "EFllOQ9DneSv" },
           "uuid": "kdq0QQbccLE3",
           "enumValues": [],
@@ -2967,6 +3005,7 @@
         },
         "0bmd6nY4XvJz": {
           "type": { "__ref": "gjNSRb4Top7d" },
+          "advanced": false,
           "variable": { "__ref": "mNc_cnUL8YFj" },
           "uuid": "39oTOvhga2y8",
           "enumValues": [],
@@ -2987,6 +3026,7 @@
         },
         "7tgUqTekjUV-": {
           "type": { "__ref": "ReCn2ETOzdEW" },
+          "advanced": false,
           "variable": { "__ref": "A4O9q_T2Gre7" },
           "uuid": "WgaxWK6tjys2",
           "enumValues": [],
@@ -3007,6 +3047,7 @@
         },
         "-XmldOGkccYo": {
           "type": { "__ref": "Ij1_nUJ7v0EI" },
+          "advanced": false,
           "variable": { "__ref": "qQn-phqfzxxq" },
           "uuid": "XNUo3DHAek9V",
           "enumValues": [],
@@ -3027,6 +3068,7 @@
         },
         "cXhJJSSt5icn": {
           "type": { "__ref": "DAyg9_vwQydF" },
+          "advanced": false,
           "variable": { "__ref": "o6GYR6-tZZc3" },
           "uuid": "cQMGp7MPMN6k",
           "enumValues": [],
@@ -3047,6 +3089,7 @@
         },
         "rYjKrwSlZfpL": {
           "type": { "__ref": "J1fzJx9ZEQM0" },
+          "advanced": false,
           "variable": { "__ref": "3Ip89wiKt6Zr" },
           "uuid": "iFTnedghs1Xf",
           "enumValues": [],
@@ -3067,6 +3110,7 @@
         },
         "qjkJqbgQjR_t": {
           "type": { "__ref": "0OOHqJ4Ccduc" },
+          "advanced": false,
           "variable": { "__ref": "-uYTUWgQYPwY" },
           "uuid": "1vZyKMa_7CcZ",
           "enumValues": [],
@@ -3087,6 +3131,7 @@
         },
         "MBUxwdBoTs1Q": {
           "type": { "__ref": "YSMn9imQ-sHd" },
+          "advanced": false,
           "variable": { "__ref": "69fJXqItnY50" },
           "uuid": "HD1D7AoXq3Pw",
           "enumValues": [],
@@ -3107,6 +3152,7 @@
         },
         "ZDaFRe19fyIg": {
           "type": { "__ref": "l5Goi045FtXh" },
+          "advanced": false,
           "variable": { "__ref": "XW4dZY4srrxQ" },
           "uuid": "OLx24kNO5viJ",
           "enumValues": [],
@@ -3127,6 +3173,7 @@
         },
         "IMX6uGvWvsCb": {
           "type": { "__ref": "fWscB4akwYA2" },
+          "advanced": false,
           "variable": { "__ref": "o9VRTB9CMRr6" },
           "uuid": "M6MNnmdKNwZW",
           "enumValues": [],
@@ -3147,6 +3194,7 @@
         },
         "3XTUUFZff4vM": {
           "type": { "__ref": "YI8ZnrE840Lb" },
+          "advanced": false,
           "variable": { "__ref": "pRdvYF1GMTDp" },
           "uuid": "6t7W0a-0OdZR",
           "enumValues": [],
@@ -3167,6 +3215,7 @@
         },
         "SomhLq7UADMP": {
           "type": { "__ref": "dZYwmykvb0Bu" },
+          "advanced": false,
           "variable": { "__ref": "0V5v-TuS6YpX" },
           "uuid": "mj2RPumW6sW7",
           "enumValues": [],
@@ -3187,6 +3236,7 @@
         },
         "Hql60ab75jr_": {
           "type": { "__ref": "jtdyg-i-LeZo" },
+          "advanced": false,
           "variable": { "__ref": "ed9q8ssJGsB4" },
           "uuid": "PHRbMPMhh62M",
           "enumValues": [],
@@ -3207,6 +3257,7 @@
         },
         "hkcMds8ToEei": {
           "type": { "__ref": "HS-bKjCXZUy4" },
+          "advanced": false,
           "variable": { "__ref": "I98sV6WRVVk2" },
           "uuid": "F4WhKT7ykQcK",
           "enumValues": [],
@@ -3227,6 +3278,7 @@
         },
         "s8jG4r3Vo8XB": {
           "type": { "__ref": "2ZQbfdt3H5pq" },
+          "advanced": false,
           "variable": { "__ref": "fjcBVi1Lm37w" },
           "uuid": "qnM8cZR_vulI",
           "enumValues": [],
@@ -3247,6 +3299,7 @@
         },
         "0cykIytnN337": {
           "type": { "__ref": "rhB0hBW42R00" },
+          "advanced": false,
           "variable": { "__ref": "0D2IsNolv-GK" },
           "uuid": "YVMKWxF7F4Wm",
           "enumValues": [],
@@ -3267,6 +3320,7 @@
         },
         "ARCvF9f4q5M_": {
           "type": { "__ref": "E9gungROv77v" },
+          "advanced": false,
           "variable": { "__ref": "16ZeZGUH4GlG" },
           "uuid": "xTzteu4DGFLc",
           "enumValues": [],
@@ -3287,6 +3341,7 @@
         },
         "aJFSEZJgFps1": {
           "type": { "__ref": "aP3ZLcjWjnDa" },
+          "advanced": false,
           "variable": { "__ref": "gr6IcLJ1KqDz" },
           "uuid": "7AYY4eWhuMgT",
           "enumValues": [],
@@ -3307,6 +3362,7 @@
         },
         "gNXo2v2MwJRY": {
           "type": { "__ref": "hPJ2k4KF-NY9" },
+          "advanced": false,
           "variable": { "__ref": "QoMMqRcevxdu" },
           "uuid": "IM1kzaXveTAJ",
           "enumValues": [],
@@ -3327,6 +3383,7 @@
         },
         "9ZnrL1tWdWBP": {
           "type": { "__ref": "GoDyR6FWcFGB" },
+          "advanced": false,
           "variable": { "__ref": "vgZF1YjUxTKN" },
           "uuid": "4nbaaq-WMrEN",
           "enumValues": [],
@@ -3412,6 +3469,7 @@
         },
         "Vt9cOGRYPUNA": {
           "type": { "__ref": "02RaAAwLrUWz" },
+          "advanced": false,
           "variable": { "__ref": "RaWx5hGJSIXE" },
           "uuid": "OmmkoSB0pYOb",
           "enumValues": [],
@@ -3432,6 +3490,7 @@
         },
         "uzLRf_EgQpcZ": {
           "type": { "__ref": "Ldoa8YFc3cem" },
+          "advanced": false,
           "variable": { "__ref": "Phyg0KUFAySz" },
           "uuid": "CpHtBdw5win9",
           "enumValues": [],
@@ -3452,6 +3511,7 @@
         },
         "7LSAg91ljX-o": {
           "type": { "__ref": "e0wNtLbemSeH" },
+          "advanced": false,
           "variable": { "__ref": "X_dsDM__176I" },
           "uuid": "Wy0ucgM2kjkp",
           "enumValues": [],
@@ -3472,6 +3532,7 @@
         },
         "Ef403j9OFJay": {
           "type": { "__ref": "cH559AelgEGC" },
+          "advanced": false,
           "variable": { "__ref": "CMf1PyBrzW5n" },
           "uuid": "zEfnai-KDEux",
           "enumValues": [],
@@ -3492,6 +3553,7 @@
         },
         "nyVMPC3jNxEd": {
           "type": { "__ref": "XyRSL65sfFyE" },
+          "advanced": false,
           "variable": { "__ref": "b5CrhFP1gF1d" },
           "uuid": "I1gA4lwfwttO",
           "enumValues": [],
@@ -3533,6 +3595,7 @@
         },
         "rLF1s1ttaHE8": {
           "type": { "__ref": "CXkibIJ7x-0m" },
+          "advanced": false,
           "variable": { "__ref": "jE9rDyTEEXkn" },
           "uuid": "QUlnw40AXiC2",
           "enumValues": [],
@@ -3574,6 +3637,7 @@
         },
         "qqaIFhtr5tlz": {
           "type": { "__ref": "C9nQhBHHIncy" },
+          "advanced": false,
           "variable": { "__ref": "O3mpGUOU9RBc" },
           "uuid": "w6E6EYa0jd_G",
           "enumValues": [],
@@ -3722,6 +3786,7 @@
         },
         "YX5V7DSVkRoK": {
           "type": { "__ref": "ENqOyjWSD-PG" },
+          "advanced": false,
           "variable": { "__ref": "Hexz3qCofGiE" },
           "uuid": "iiBmAXBwetEo",
           "enumValues": [],
@@ -3742,6 +3807,7 @@
         },
         "c0jGTw_nWddn": {
           "type": { "__ref": "1_eC1C9GnitK" },
+          "advanced": false,
           "variable": { "__ref": "9o673CtXggsW" },
           "uuid": "ZcnZNRSk39_6",
           "enumValues": [],
@@ -3762,6 +3828,7 @@
         },
         "vUNAyMY7eTKW": {
           "type": { "__ref": "IDSN6XNznO5q" },
+          "advanced": false,
           "variable": { "__ref": "rEs9cSgp44FM" },
           "uuid": "iFssoutM2ARH",
           "enumValues": [],
@@ -3782,6 +3849,7 @@
         },
         "Y18yj0JH7Pai": {
           "type": { "__ref": "GCa19Cqbw1xq" },
+          "advanced": false,
           "variable": { "__ref": "OVxw7N5AjILb" },
           "uuid": "03076051aIXB",
           "enumValues": [],
@@ -3823,6 +3891,7 @@
         },
         "Wle5zRyr0lo7": {
           "type": { "__ref": "WsUhPANnW8tn" },
+          "advanced": false,
           "variable": { "__ref": "i5s5Kfc4ty3T" },
           "uuid": "WyT3OEQEg3p5",
           "enumValues": [],
@@ -3843,6 +3912,7 @@
         },
         "o6-kyXgMfgz2": {
           "type": { "__ref": "1_jNO-SAtJoS" },
+          "advanced": false,
           "variable": { "__ref": "ELMhEkI825xY" },
           "uuid": "0kSWQsB_C61B",
           "enumValues": [],
@@ -3863,6 +3933,7 @@
         },
         "FKl2AO-bmwro": {
           "type": { "__ref": "aqLgWyZ2slvK" },
+          "advanced": false,
           "variable": { "__ref": "BHSHHcLQ4HQH" },
           "uuid": "X7aUUhGvdvvc",
           "enumValues": [],
@@ -3904,6 +3975,7 @@
         },
         "DA4MSwElgjZV": {
           "type": { "__ref": "8I-4rVyE9nqi" },
+          "advanced": false,
           "variable": { "__ref": "fsyDRT5Ro8Y_" },
           "uuid": "c9oGTTTeX_WA",
           "enumValues": [],
@@ -3924,6 +3996,7 @@
         },
         "psOD8geYqq-r": {
           "type": { "__ref": "HdKWptBiQ_X8" },
+          "advanced": false,
           "variable": { "__ref": "5kqbv0_SeEmM" },
           "uuid": "Uvi6CkK14UMf",
           "enumValues": [],
@@ -3944,6 +4017,7 @@
         },
         "Mz_C1CHREdhE": {
           "type": { "__ref": "HhUutUFO8xVE" },
+          "advanced": false,
           "variable": { "__ref": "6OX1RlLtvUNW" },
           "uuid": "hLXdmq3T5auQ",
           "enumValues": [],
@@ -3964,6 +4038,7 @@
         },
         "nGBSbNlkUcOr": {
           "type": { "__ref": "-jKvjYFCS3mN" },
+          "advanced": false,
           "variable": { "__ref": "P_zmcCepTydP" },
           "uuid": "n7jwuPbm9WcA",
           "enumValues": [],
@@ -4092,6 +4167,7 @@
         },
         "Hd87sCoxMqAI": {
           "type": { "__ref": "G5GCtFbjpnsN" },
+          "advanced": false,
           "variable": { "__ref": "_HzxNnkLotfo" },
           "uuid": "62FiKgfAGTjF",
           "enumValues": [],
@@ -4112,6 +4188,7 @@
         },
         "P2vHryLB9Pcq": {
           "type": { "__ref": "jlLQaXvK1Au6" },
+          "advanced": false,
           "variable": { "__ref": "UOScFXE_oh-A" },
           "uuid": "1V6Y592xK92W",
           "enumValues": [],
@@ -4132,6 +4209,7 @@
         },
         "_BmlVxzZBxuW": {
           "type": { "__ref": "Lk-W6JWDcL6s" },
+          "advanced": false,
           "variable": { "__ref": "NeSzLrkWRA51" },
           "uuid": "FN7PcZ3SGUEB",
           "enumValues": [],
@@ -4152,6 +4230,7 @@
         },
         "ZcY0dxxTMvfX": {
           "type": { "__ref": "nwjRLjvCFMx9" },
+          "advanced": false,
           "variable": { "__ref": "tOHU1uEN2vJo" },
           "uuid": "iT6f2dE4hk6i",
           "enumValues": [],
@@ -4193,6 +4272,7 @@
         },
         "LpSScftQmg3I": {
           "type": { "__ref": "4WnalTwypJL4" },
+          "advanced": false,
           "variable": { "__ref": "kQzcSuCoHjwE" },
           "uuid": "YrtYcdDH6AR_",
           "enumValues": [],
@@ -4234,6 +4314,7 @@
         },
         "AKDF8IKOyeFU": {
           "type": { "__ref": "AyXkY7b3jbwr" },
+          "advanced": false,
           "variable": { "__ref": "DdLRu4fkMDhc" },
           "uuid": "Voqylgx-DjLf",
           "enumValues": [],
@@ -4254,6 +4335,7 @@
         },
         "8zuhM0hYhlbn": {
           "type": { "__ref": "Z2XIzOxhpa2b" },
+          "advanced": false,
           "variable": { "__ref": "j1dh2mEWD8vI" },
           "uuid": "-XJohks6GSYc",
           "enumValues": [],
@@ -4274,6 +4356,7 @@
         },
         "E87ouynBd-is": {
           "type": { "__ref": "RFOwxprA9u8G" },
+          "advanced": false,
           "variable": { "__ref": "H0LpxNQQU7Xl" },
           "uuid": "FKmj5PDvBdyj",
           "enumValues": [],
@@ -4511,6 +4594,7 @@
         },
         "urzSbhmvbFBC": {
           "type": { "__ref": "YMFipyDKE7oh" },
+          "advanced": false,
           "variable": { "__ref": "JvaggBB4-rtw" },
           "uuid": "1Vr-YESlTfWj",
           "enumValues": [],
@@ -4531,6 +4615,7 @@
         },
         "nMm0AmN4HM_T": {
           "type": { "__ref": "TaLCyweX-H7B" },
+          "advanced": false,
           "variable": { "__ref": "BLXKcunorBP6" },
           "uuid": "XLQ9u7UNnVsQ",
           "enumValues": [],
@@ -4551,6 +4636,7 @@
         },
         "8qHAs96Y0ea2": {
           "type": { "__ref": "SpDgJS0nJKGC" },
+          "advanced": false,
           "variable": { "__ref": "b0ccR1pKGtjm" },
           "uuid": "_Cmw_nHTxfYg",
           "enumValues": [],
@@ -4571,6 +4657,7 @@
         },
         "Jk-g5J2M3ksg": {
           "type": { "__ref": "UkEW-el8rczf" },
+          "advanced": false,
           "variable": { "__ref": "CiSzRPsZNdyv" },
           "uuid": "AffZfZw6JLGw",
           "enumValues": [],
@@ -4612,6 +4699,7 @@
         },
         "VCrR7dH2ojXb": {
           "type": { "__ref": "3z5rw4dtFcMs" },
+          "advanced": false,
           "variable": { "__ref": "4hINeoct54SZ" },
           "uuid": "pPErjVQ_Cb7j",
           "enumValues": [],
@@ -4653,6 +4741,7 @@
         },
         "5VCOhSI3thrU": {
           "type": { "__ref": "jIhduU8nHE3Z" },
+          "advanced": false,
           "variable": { "__ref": "mUX1Mujp3G3Z" },
           "uuid": "Cgn7G7R2Kqye",
           "enumValues": [],
@@ -4673,6 +4762,7 @@
         },
         "zVpxbLuqcQex": {
           "type": { "__ref": "RGOG62tAU6C_" },
+          "advanced": false,
           "variable": { "__ref": "EVbgvu_jiAxN" },
           "uuid": "Gk9XUTRewTG4",
           "enumValues": [],
@@ -4693,6 +4783,7 @@
         },
         "4iwP22CLReas": {
           "type": { "__ref": "QXktVeQtqelz" },
+          "advanced": false,
           "variable": { "__ref": "tEeurRgg1L6g" },
           "uuid": "wWXyky6Qog7A",
           "enumValues": [],
@@ -4915,6 +5006,7 @@
         },
         "-Glbv4tUOKPK": {
           "type": { "__ref": "RQ7TCS0uvbch" },
+          "advanced": false,
           "variable": { "__ref": "z0Qdy87cBzKR" },
           "uuid": "a4nzSN2pj6U7",
           "enumValues": [],
@@ -4935,6 +5027,7 @@
         },
         "plh-1NUCMm5Y": {
           "type": { "__ref": "aRA5A0mpsr5R" },
+          "advanced": false,
           "variable": { "__ref": "zjEotp1K5XFt" },
           "uuid": "hFVPQbZDqZIn",
           "enumValues": [],
@@ -4955,6 +5048,7 @@
         },
         "hBvgQ_uP9Dk2": {
           "type": { "__ref": "aJyrRs0My7UY" },
+          "advanced": false,
           "variable": { "__ref": "HniqNc7DHBD8" },
           "uuid": "DX_LZo9RE2El",
           "enumValues": [],
@@ -4996,6 +5090,7 @@
         },
         "pjEUxOIgospL": {
           "type": { "__ref": "KaiWVvOPdFeb" },
+          "advanced": false,
           "variable": { "__ref": "c1mnycVnfeBl" },
           "uuid": "GkXu_dAlndO9",
           "enumValues": [],
@@ -5102,6 +5197,7 @@
         },
         "Inp2OMENi_GO": {
           "type": { "__ref": "hA06OUQjL1UI" },
+          "advanced": false,
           "variable": { "__ref": "eyhEkJusXzH6" },
           "uuid": "0IzS8uJ7s7c-",
           "enumValues": [],
@@ -5122,6 +5218,7 @@
         },
         "MuItu-jRFxo5": {
           "type": { "__ref": "lSeVlelLIYfT" },
+          "advanced": false,
           "variable": { "__ref": "NySiUa6_eDuA" },
           "uuid": "16raoQ_KU2S-",
           "enumValues": [],
@@ -5142,6 +5239,7 @@
         },
         "PjhqRd0Ycbek": {
           "type": { "__ref": "xTWdf8pLekcU" },
+          "advanced": false,
           "variable": { "__ref": "tUuyf0uhvgAf" },
           "uuid": "ZBJjDln9wvjB",
           "enumValues": [],
@@ -5162,6 +5260,7 @@
         },
         "4FKL_RxsM7xU": {
           "type": { "__ref": "hbh3lgnFlp6V" },
+          "advanced": false,
           "variable": { "__ref": "_VsSxoHtV9kK" },
           "uuid": "2997x8TdWlq8",
           "enumValues": [],
@@ -5182,6 +5281,7 @@
         },
         "1GX5485E5dXa": {
           "type": { "__ref": "67SUvAHovXqX" },
+          "advanced": false,
           "variable": { "__ref": "i2T-SIVv3d_S" },
           "uuid": "UOG9bWbeGJgR",
           "enumValues": [],
@@ -5223,6 +5323,7 @@
         },
         "xU6QxB_eajbW": {
           "type": { "__ref": "LrN9TWXrYvp4" },
+          "advanced": false,
           "variable": { "__ref": "3L3EgzoVOiGD" },
           "uuid": "rLvXlvfHZmEx",
           "enumValues": [],
@@ -5264,6 +5365,7 @@
         },
         "Pi_OnqlYvmV6": {
           "type": { "__ref": "oshIrnDgZUlS" },
+          "advanced": false,
           "variable": { "__ref": "Ysxwed6fPqJf" },
           "uuid": "RGSV3tykwFVe",
           "enumValues": [],
@@ -5284,6 +5386,7 @@
         },
         "47C7p62snI7I": {
           "type": { "__ref": "HmJMBfw3xaul" },
+          "advanced": false,
           "variable": { "__ref": "saYLvX_yNJjm" },
           "uuid": "nRjN-kdy3woH",
           "enumValues": [],
@@ -5304,6 +5407,7 @@
         },
         "t1pNGtadf-fR": {
           "type": { "__ref": "JwEwNV7FTpHg" },
+          "advanced": false,
           "variable": { "__ref": "RmgnjubG1ils" },
           "uuid": "7hzEqtvNBBoh",
           "enumValues": [],
@@ -5324,6 +5428,7 @@
         },
         "IYwG2KXWCJ-t": {
           "type": { "__ref": "CBTOMDLUSscp" },
+          "advanced": false,
           "variable": { "__ref": "BOFGe1U6o4hQ" },
           "uuid": "NkPjXow6YBv8",
           "enumValues": [],
@@ -5344,6 +5449,7 @@
         },
         "THLXG47G_FMe": {
           "type": { "__ref": "_zaZ_QoNs8Zz" },
+          "advanced": false,
           "variable": { "__ref": "c9NEQqB6AnbQ" },
           "uuid": "UD8D9U1QBHFL",
           "enumValues": [],
@@ -5364,6 +5470,7 @@
         },
         "aQoz6tOLbBt0": {
           "type": { "__ref": "WrWxWttPgSZu" },
+          "advanced": false,
           "variable": { "__ref": "eh1hYnheS7cw" },
           "uuid": "lGoKAFE8kOL4",
           "enumValues": [],
@@ -5384,6 +5491,7 @@
         },
         "Y3mboFxz6PRx": {
           "type": { "__ref": "Q9MaSIKM6wiM" },
+          "advanced": false,
           "variable": { "__ref": "nz2PeJeAu7co" },
           "uuid": "typisq0YDlRr",
           "enumValues": [],
@@ -5404,6 +5512,7 @@
         },
         "RGZhyEt5Z5OM": {
           "type": { "__ref": "hgb1c9zWOcdA" },
+          "advanced": false,
           "variable": { "__ref": "j0VBbTZ0pi0m" },
           "uuid": "s2Mk3Px7uyoy",
           "enumValues": [],
@@ -5424,6 +5533,7 @@
         },
         "v8u2NOgsAVkH": {
           "type": { "__ref": "PBBo16NX0gPP" },
+          "advanced": false,
           "variable": { "__ref": "PztegFYCimzB" },
           "uuid": "zr2a6SOQ8wQq",
           "enumValues": [],
@@ -5444,6 +5554,7 @@
         },
         "LMY2C5O7PUzn": {
           "type": { "__ref": "drxFBnSeDCGH" },
+          "advanced": false,
           "variable": { "__ref": "I_J-Ir8jx7vJ" },
           "uuid": "4VazqsPI3kWQ",
           "enumValues": [],
@@ -5464,6 +5575,7 @@
         },
         "xsxGhPZyx1Ma": {
           "type": { "__ref": "T0svBjI6ll1Q" },
+          "advanced": false,
           "variable": { "__ref": "y9zi_D6u2Q88" },
           "uuid": "8W6WBpCCygCo",
           "enumValues": [],
@@ -5484,6 +5596,7 @@
         },
         "iuim4xnRIKdM": {
           "type": { "__ref": "d8G4ioadnR-b" },
+          "advanced": false,
           "variable": { "__ref": "S4hBt_kBnYnE" },
           "uuid": "9-FYcB_p-dOM",
           "enumValues": [],
@@ -5504,6 +5617,7 @@
         },
         "ieUkae7atKh1": {
           "type": { "__ref": "xIokdpBlK8aI" },
+          "advanced": false,
           "variable": { "__ref": "V9ZkLlX8gKmJ" },
           "uuid": "YCdbISiYvric",
           "enumValues": [],
@@ -5524,6 +5638,7 @@
         },
         "P8_KwXEjJ2pp": {
           "type": { "__ref": "Ea7-RlYp07dz" },
+          "advanced": false,
           "variable": { "__ref": "JLck0YHYnI8g" },
           "uuid": "cjB0ujILfNn7",
           "enumValues": [],
@@ -5544,6 +5659,7 @@
         },
         "nVXI91nfYhV9": {
           "type": { "__ref": "lokyjCk2rnHe" },
+          "advanced": false,
           "variable": { "__ref": "4Cr8VJF2r3ku" },
           "uuid": "N0n0ISw3Qa8Q",
           "enumValues": [],
@@ -5564,6 +5680,7 @@
         },
         "p-cur997d-Mo": {
           "type": { "__ref": "o9Pw58aF6FRI" },
+          "advanced": false,
           "variable": { "__ref": "lqGjcWI0MXmY" },
           "uuid": "eKl5fqV8nFY-",
           "enumValues": [],
@@ -5584,6 +5701,7 @@
         },
         "c0SPecK_qPeH": {
           "type": { "__ref": "CON9pTObsF9I" },
+          "advanced": false,
           "variable": { "__ref": "GT_qYgMm4ntA" },
           "uuid": "UgQBu-z7IvIs",
           "enumValues": [],
@@ -5604,6 +5722,7 @@
         },
         "sh6XIvs7XNph": {
           "type": { "__ref": "QRxS3bqiGVwd" },
+          "advanced": false,
           "variable": { "__ref": "3F7id0ktTv06" },
           "uuid": "vxdWlFev0hVp",
           "enumValues": [],
@@ -5624,6 +5743,7 @@
         },
         "N7CC3HC63HzJ": {
           "type": { "__ref": "ivHUok0nf7qj" },
+          "advanced": false,
           "variable": { "__ref": "8agTtBDKpv8t" },
           "uuid": "GaBXch7ASJNi",
           "enumValues": [],
@@ -5644,6 +5764,7 @@
         },
         "ZLJ6L3M4rtym": {
           "type": { "__ref": "BiboUsStL47z" },
+          "advanced": false,
           "variable": { "__ref": "dBj481GotlCQ" },
           "uuid": "hfs1mqfMJkZZ",
           "enumValues": [],
@@ -5664,6 +5785,7 @@
         },
         "iE1E7qOboc1a": {
           "type": { "__ref": "VXEHGP5ffczs" },
+          "advanced": false,
           "variable": { "__ref": "nehrIQYjHxLP" },
           "uuid": "QUu-8XevPShj",
           "enumValues": [],
@@ -5684,6 +5806,7 @@
         },
         "mXa7Wp2dTNer": {
           "type": { "__ref": "4OXlVHsdtPrV" },
+          "advanced": false,
           "variable": { "__ref": "bhIUwOrLeLxi" },
           "uuid": "7Dd_bIDQ6G9a",
           "enumValues": [],
@@ -5704,6 +5827,7 @@
         },
         "P4P1HF-3eaEV": {
           "type": { "__ref": "XLvPsi0R5p2n" },
+          "advanced": false,
           "variable": { "__ref": "E_NEqb9Fnu-D" },
           "uuid": "5tO4RzwlGeSe",
           "enumValues": [],
@@ -5724,6 +5848,7 @@
         },
         "t1vkkLaVg16c": {
           "type": { "__ref": "3zFDqlrx6F8u" },
+          "advanced": false,
           "variable": { "__ref": "A0Pby8Px4UyL" },
           "uuid": "fJqn_oCUzyEO",
           "enumValues": [],
@@ -5858,6 +5983,7 @@
         },
         "QhbIskAefubt": {
           "type": { "__ref": "Pz4yaH-uBo0a" },
+          "advanced": false,
           "variable": { "__ref": "1s8oO4Zeid2x" },
           "uuid": "a4mvy0ST6YMw",
           "enumValues": [],
@@ -5899,6 +6025,7 @@
         },
         "nUVzZgFVAKl_": {
           "type": { "__ref": "hixDmDy0UkSD" },
+          "advanced": false,
           "variable": { "__ref": "WWpRt2lRiEHC" },
           "uuid": "fapSNTqt9xdX",
           "enumValues": [],
@@ -5919,6 +6046,7 @@
         },
         "mc6iVz27s8ci": {
           "type": { "__ref": "8c24-gAB50df" },
+          "advanced": false,
           "variable": { "__ref": "rN_UA0P2t0r5" },
           "uuid": "aJDgVRYiaFhA",
           "enumValues": [],
@@ -5939,6 +6067,7 @@
         },
         "mifRwNxWbfU7": {
           "type": { "__ref": "mfIbOL3g8CBR" },
+          "advanced": false,
           "variable": { "__ref": "2j0QOQdSWHu2" },
           "uuid": "SrZdwsDCtgKL",
           "enumValues": [],
@@ -5959,6 +6088,7 @@
         },
         "PeoW7YLFEAWa": {
           "type": { "__ref": "cZfZeaK6iQQR" },
+          "advanced": false,
           "variable": { "__ref": "H7ejDsASoX0X" },
           "uuid": "O61dsQkBHyL5",
           "enumValues": [],
@@ -6105,6 +6235,7 @@
         },
         "EfYJXhBf3X33": {
           "type": { "__ref": "f4zOvRqLP3b1" },
+          "advanced": false,
           "variable": { "__ref": "5lssZVPlfjAO" },
           "uuid": "C1DJjhORvaKt",
           "enumValues": [],
@@ -6125,6 +6256,7 @@
         },
         "LE1qemR2tk2w": {
           "type": { "__ref": "njTOrgIYs0JK" },
+          "advanced": false,
           "variable": { "__ref": "jgtgJefU1mIh" },
           "uuid": "wxcRYf3gACat",
           "enumValues": [],
@@ -6145,6 +6277,7 @@
         },
         "r3pbLPwtD6xs": {
           "type": { "__ref": "yoEL0USKknzy" },
+          "advanced": false,
           "variable": { "__ref": "ZR3t6zebVJb1" },
           "uuid": "HeU8c_UObTR4",
           "enumValues": [],
@@ -6165,6 +6298,7 @@
         },
         "h_bBTfnWCg9c": {
           "type": { "__ref": "5g9yhKS09xx9" },
+          "advanced": false,
           "variable": { "__ref": "tylhRGLiOsls" },
           "uuid": "u6Mo4Z7piWlg",
           "enumValues": [],
@@ -6185,6 +6319,7 @@
         },
         "i0J-qo2Z9705": {
           "type": { "__ref": "xfBiBHFNIP03" },
+          "advanced": false,
           "variable": { "__ref": "zzzg5YHMBIVX" },
           "uuid": "6B7gEcu70Mge",
           "enumValues": [],
@@ -6226,6 +6361,7 @@
         },
         "untlsFBcEezT": {
           "type": { "__ref": "vqOGI1szlhrK" },
+          "advanced": false,
           "variable": { "__ref": "pwGbYdO_5fKg" },
           "uuid": "Ze7_rWQq0YI0",
           "enumValues": [],
@@ -6246,6 +6382,7 @@
         },
         "QkUq2ak4-djX": {
           "type": { "__ref": "W1v5jQeqZ0vT" },
+          "advanced": false,
           "variable": { "__ref": "XMYcgpRezNKj" },
           "uuid": "2o82G8I61dPb",
           "enumValues": [],
@@ -6413,6 +6550,7 @@
         },
         "MpsXLeByiDd8": {
           "type": { "__ref": "n0VFeH70qgZe" },
+          "advanced": false,
           "variable": { "__ref": "mnDFoB6kLxvm" },
           "uuid": "XVbf3u4mjSwO",
           "enumValues": [],
@@ -6529,6 +6667,7 @@
         },
         "5p3DBifG-o5q": {
           "type": { "__ref": "EstfxHNJIQhB" },
+          "advanced": false,
           "variable": { "__ref": "cp_fbvp7iSPj" },
           "uuid": "XxQyc15YETk8",
           "enumValues": [],
@@ -6622,6 +6761,7 @@
         },
         "g4p7JpSaZ_1P": {
           "type": { "__ref": "XHLQwptCb1kR" },
+          "advanced": false,
           "variable": { "__ref": "CvT3m1e7zIdq" },
           "uuid": "JzRvu1ubiLOz",
           "enumValues": [],
@@ -6922,6 +7062,7 @@
         },
         "oPDZm24MeNij": {
           "type": { "__ref": "_XK_x6IKvZ4m" },
+          "advanced": false,
           "variable": { "__ref": "1HctEqrS7i_G" },
           "uuid": "h8CpqiQSMOGq",
           "enumValues": [],
@@ -6942,6 +7083,7 @@
         },
         "SzrGyL1qBwgA": {
           "type": { "__ref": "4AESdpw6DVXW" },
+          "advanced": false,
           "variable": { "__ref": "vKiL3jC2JlgR" },
           "uuid": "YgFsK_gmretE",
           "enumValues": [],
@@ -6983,6 +7125,7 @@
         },
         "s_3VzsenOm7E": {
           "type": { "__ref": "8fp_DOJRxB3V" },
+          "advanced": false,
           "variable": { "__ref": "UTjOZysGihAC" },
           "uuid": "H05hmPOAoCnk",
           "enumValues": [],
@@ -7003,6 +7146,7 @@
         },
         "gatxIQRzKHFf": {
           "type": { "__ref": "v2C2KceBg5sq" },
+          "advanced": false,
           "variable": { "__ref": "_MbFBQu9iFjC" },
           "uuid": "TgRy2YwSAsSv",
           "enumValues": [],
@@ -7023,6 +7167,7 @@
         },
         "Opsq3QGv50F1": {
           "type": { "__ref": "zy6x7a6MGutP" },
+          "advanced": false,
           "variable": { "__ref": "bPZLT8Tnilbl" },
           "uuid": "eNtWo7H6NAGu",
           "enumValues": [],
@@ -7043,6 +7188,7 @@
         },
         "b9OFpdbeIw3c": {
           "type": { "__ref": "pKLvudUYtleq" },
+          "advanced": false,
           "variable": { "__ref": "i7XRmoQm6-6h" },
           "uuid": "ulFW4h6ALZhy",
           "enumValues": [],
@@ -7084,6 +7230,7 @@
         },
         "gkLYAlxvbDcE": {
           "type": { "__ref": "SrOkw3N2SlrD" },
+          "advanced": false,
           "variable": { "__ref": "-8iSVpG-jJw8" },
           "uuid": "FZ2PodQCKmA4",
           "enumValues": [],
@@ -7104,6 +7251,7 @@
         },
         "xTYhJeFk9aX-": {
           "type": { "__ref": "1rcR-C82B0wM" },
+          "advanced": false,
           "variable": { "__ref": "DLDWmQ_1fPok" },
           "uuid": "clfsIF4VLCNU",
           "enumValues": [],
@@ -7286,6 +7434,7 @@
         },
         "l455hpiFvxrW": {
           "type": { "__ref": "eaYQQ5FHd5uS" },
+          "advanced": false,
           "variable": { "__ref": "-ae0QPcxa4Ub" },
           "uuid": "Ws3bFH7z2sjt",
           "enumValues": [],
@@ -7327,6 +7476,7 @@
         },
         "FJgglFuyEtgs": {
           "type": { "__ref": "TYbPBCuxlFnf" },
+          "advanced": false,
           "variable": { "__ref": "93lNUVSak5sK" },
           "uuid": "Oda5cjaty3sI",
           "enumValues": [],
@@ -7347,6 +7497,7 @@
         },
         "UJqPAbxyA4JH": {
           "type": { "__ref": "x_MCYbsK376S" },
+          "advanced": false,
           "variable": { "__ref": "VcErUGsFRCGm" },
           "uuid": "3a9HimoJZ-dZ",
           "enumValues": [],
@@ -7367,6 +7518,7 @@
         },
         "GN3nrw5npdWK": {
           "type": { "__ref": "C2TuNTVTuaI4" },
+          "advanced": false,
           "variable": { "__ref": "1OB2eaKLwdNj" },
           "uuid": "ik211SQ_4iUk",
           "enumValues": [],
@@ -7485,6 +7637,7 @@
         },
         "RqOoebRZO0yQ": {
           "type": { "__ref": "r_GDp5KrtCKl" },
+          "advanced": false,
           "variable": { "__ref": "1mhpV0rT5uzp" },
           "uuid": "3obM7R9JNnO-",
           "enumValues": [],
@@ -7505,6 +7658,7 @@
         },
         "2alTJmIn0rMz": {
           "type": { "__ref": "q5qVc_DG0eCA" },
+          "advanced": false,
           "variable": { "__ref": "ctzFir_dGM-R" },
           "uuid": "PPRTejp_rlKO",
           "enumValues": [],
@@ -7525,6 +7679,7 @@
         },
         "AdUQg6wbhZ6e": {
           "type": { "__ref": "nvpopfNLl0Yv" },
+          "advanced": false,
           "variable": { "__ref": "E6ctUR8232qe" },
           "uuid": "7HkwV3NdRSfz",
           "enumValues": [],
@@ -7616,6 +7771,7 @@
         },
         "_GtFxN4F3Jco": {
           "type": { "__ref": "-hIX_cSNR5KK" },
+          "advanced": false,
           "variable": { "__ref": "1kxv-LryJS6q" },
           "uuid": "HvWp1_dtSXQJ",
           "enumValues": [],
@@ -7636,6 +7792,7 @@
         },
         "N4QKu0XS6AcZ": {
           "type": { "__ref": "j_eHvv2z42pP" },
+          "advanced": false,
           "variable": { "__ref": "eziMaxPcXcjS" },
           "uuid": "P-jBkL0zjzee",
           "enumValues": [],
@@ -7656,6 +7813,7 @@
         },
         "ANINNjCZuBYb": {
           "type": { "__ref": "eSXn149xufD-" },
+          "advanced": false,
           "variable": { "__ref": "EOjxuiz3fWmM" },
           "uuid": "XYTeXlb6X2jQ",
           "enumValues": [],
@@ -7676,6 +7834,7 @@
         },
         "mS4VWT421F0M": {
           "type": { "__ref": "DLFsPEZzfTmr" },
+          "advanced": false,
           "variable": { "__ref": "0GWo6C_tPld2" },
           "uuid": "TtrD6GInBjqA",
           "enumValues": [],
@@ -7696,6 +7855,7 @@
         },
         "L5Wu2grNT2f2": {
           "type": { "__ref": "XnkfI_OkbJ7B" },
+          "advanced": false,
           "variable": { "__ref": "lFg5d4lduDl_" },
           "uuid": "gRnSoEixiUAu",
           "enumValues": [],
@@ -7716,6 +7876,7 @@
         },
         "JZULVnBGN0y2": {
           "type": { "__ref": "-3elhpWOCzHm" },
+          "advanced": false,
           "variable": { "__ref": "FP7oYxCEh1kS" },
           "uuid": "vWyxfYLA5x-6",
           "enumValues": [],
@@ -7745,9 +7906,9 @@
           "defaultExpr": { "__ref": "F0L1Q5H2a6bJ" },
           "previewExpr": null,
           "propEffect": "defaultValue",
-          "description": "The intial value of the slider",
+          "description": "The initial value of the slider",
           "displayName": "Initial value",
-          "about": "The intial value of the slider",
+          "about": "The initial value of the slider",
           "isRepeated": null,
           "isMainContentSlot": false,
           "required": false,
@@ -7778,6 +7939,7 @@
         },
         "RuJ7JcoI9oyt": {
           "type": { "__ref": "K0yPUp3ql2EY" },
+          "advanced": false,
           "variable": { "__ref": "gk_JmiwLbVNT" },
           "uuid": "RdEHn9qW-yJd",
           "enumValues": [],
@@ -7798,6 +7960,7 @@
         },
         "TD4b4MZI3MiL": {
           "type": { "__ref": "HcJW8Pswkho_" },
+          "advanced": false,
           "variable": { "__ref": "H4r6an7Kjue9" },
           "uuid": "NEXEzHv2iLh_",
           "enumValues": [],
@@ -7943,6 +8106,7 @@
         },
         "fkiwDapq3_L6": {
           "type": { "__ref": "AyP4Ql1ROYQX" },
+          "advanced": false,
           "variable": { "__ref": "xHpqo0r0bsmT" },
           "uuid": "cDLKNm3L5nif",
           "enumValues": [],
@@ -8015,6 +8179,7 @@
         },
         "1w8-YosXX9DC": {
           "type": { "__ref": "XdY5uM3nnUwx" },
+          "advanced": false,
           "variable": { "__ref": "L0xZgAVkoIBr" },
           "uuid": "L_ZXPEkMEPbG",
           "enumValues": [],
@@ -8035,6 +8200,7 @@
         },
         "qhLWRW5oe1Q3": {
           "type": { "__ref": "LbmjUG48pJvR" },
+          "advanced": false,
           "variable": { "__ref": "6Pk6nwr3rlfQ" },
           "uuid": "muN0pIUk65v0",
           "enumValues": [],
@@ -8055,6 +8221,7 @@
         },
         "3QYWtpsTUew9": {
           "type": { "__ref": "6earwAMs5at7" },
+          "advanced": false,
           "variable": { "__ref": "SY4bR7bBfHnl" },
           "uuid": "sXRLumX5OWRz",
           "enumValues": [],
@@ -8075,6 +8242,7 @@
         },
         "lqLECz1yC8S_": {
           "type": { "__ref": "XJf-M0nXBSbt" },
+          "advanced": false,
           "variable": { "__ref": "5DeVz0hx3YeI" },
           "uuid": "FFtXmpJTQwU_",
           "enumValues": [],
@@ -8095,6 +8263,7 @@
         },
         "SnE_b9lz_rZf": {
           "type": { "__ref": "L_NhhdWTn70a" },
+          "advanced": false,
           "variable": { "__ref": "ty2jAh9VDPSv" },
           "uuid": "XiqnuvGE7qYf",
           "enumValues": [],
@@ -8115,6 +8284,7 @@
         },
         "DysbnQS9eAEV": {
           "type": { "__ref": "6glo0VP1eZiY" },
+          "advanced": false,
           "variable": { "__ref": "Pji5nn1A-mQw" },
           "uuid": "ETBfrGvd-uC6",
           "enumValues": [],
@@ -8135,6 +8305,7 @@
         },
         "dI_wr38SnEyv": {
           "type": { "__ref": "0AyloGP18lZv" },
+          "advanced": false,
           "variable": { "__ref": "JaY9aQuQBR6-" },
           "uuid": "aroazwq5ZgHD",
           "enumValues": [],
@@ -8176,6 +8347,7 @@
         },
         "rK8hci8QFD4Y": {
           "type": { "__ref": "F6zj2f41g2hj" },
+          "advanced": false,
           "variable": { "__ref": "S9x90K6pWilQ" },
           "uuid": "3Sgf2aIgjCv7",
           "enumValues": [],
@@ -8196,6 +8368,7 @@
         },
         "riI6fj3yhfRE": {
           "type": { "__ref": "ghn6PX_Y8Vd1" },
+          "advanced": false,
           "variable": { "__ref": "H1QYq2xzv2s7" },
           "uuid": "7ZJma5jL-Pbb",
           "enumValues": [],
@@ -8216,6 +8389,7 @@
         },
         "AunNqY9EPua_": {
           "type": { "__ref": "XxbSSway0FMW" },
+          "advanced": false,
           "variable": { "__ref": "N1tqS3Tl60JO" },
           "uuid": "_uGnjqq7PvZS",
           "enumValues": [],
@@ -8236,6 +8410,7 @@
         },
         "1sVa03XrnWcf": {
           "type": { "__ref": "khlaJzfHqz5e" },
+          "advanced": false,
           "variable": { "__ref": "K0XYhB14IbEk" },
           "uuid": "xbmv8jTpljBQ",
           "enumValues": [],
@@ -8256,6 +8431,7 @@
         },
         "PDyYoK5bAFtV": {
           "type": { "__ref": "5irlW0Mba4Tl" },
+          "advanced": false,
           "variable": { "__ref": "RdG8JaInuN4m" },
           "uuid": "BY5P7G0kfgJ3",
           "enumValues": [],
@@ -8276,6 +8452,7 @@
         },
         "FGFami9U6BFM": {
           "type": { "__ref": "LHzVCMfFUxu0" },
+          "advanced": false,
           "variable": { "__ref": "XvjvG-tuGsZb" },
           "uuid": "asy6ajH9f2Bl",
           "enumValues": [],
@@ -8296,6 +8473,7 @@
         },
         "OAINprtgMKzu": {
           "type": { "__ref": "iPkZ74wVnyIK" },
+          "advanced": false,
           "variable": { "__ref": "OOjre76hPPMf" },
           "uuid": "-sRryS7mDEZt",
           "enumValues": [],
@@ -8316,6 +8494,7 @@
         },
         "l96VPr2v95_-": {
           "type": { "__ref": "zP1SsPjohZkk" },
+          "advanced": false,
           "variable": { "__ref": "5cV3Y6idGeOK" },
           "uuid": "2cxSih85yvFW",
           "enumValues": [],
@@ -8336,6 +8515,7 @@
         },
         "Z5C2Odh6-VNh": {
           "type": { "__ref": "HvVlYgmmBZ9a" },
+          "advanced": false,
           "variable": { "__ref": "KM7uT8-yucHs" },
           "uuid": "1q5b9tTziynE",
           "enumValues": [],
@@ -8356,6 +8536,7 @@
         },
         "leP2v5faoH_D": {
           "type": { "__ref": "y88E6QcmvCCR" },
+          "advanced": false,
           "variable": { "__ref": "ubxedBS9Te-A" },
           "uuid": "iI0r7gJKmn27",
           "enumValues": [],
@@ -8376,6 +8557,7 @@
         },
         "7n6MdjLBwxJP": {
           "type": { "__ref": "kFQa0abz4ulO" },
+          "advanced": false,
           "variable": { "__ref": "JJyDa6fxpGK9" },
           "uuid": "WssSS90nuUFa",
           "enumValues": [],
@@ -8396,6 +8578,7 @@
         },
         "506dGNUa8zSb": {
           "type": { "__ref": "idc8HEwZenlU" },
+          "advanced": false,
           "variable": { "__ref": "g5xc-ivPzUmK" },
           "uuid": "Z9CS1Hnunj8C",
           "enumValues": [],
@@ -8416,6 +8599,7 @@
         },
         "xTL0YxiZV9AQ": {
           "type": { "__ref": "L1qyshoc-ZU0" },
+          "advanced": false,
           "variable": { "__ref": "EdvNQLdq6IWY" },
           "uuid": "rAMhPMjPNJIQ",
           "enumValues": [],
@@ -8436,6 +8620,7 @@
         },
         "NRwXZbjwgLMg": {
           "type": { "__ref": "vU9152UxiY28" },
+          "advanced": false,
           "variable": { "__ref": "K-0FWWLm1783" },
           "uuid": "RwUkUAVt0Q_8",
           "enumValues": [],
@@ -8456,6 +8641,7 @@
         },
         "h64y-Sryco1L": {
           "type": { "__ref": "4NMtqb6cvpHu" },
+          "advanced": false,
           "variable": { "__ref": "4kewg6NS3y9h" },
           "uuid": "3AyFSj6_DZCg",
           "enumValues": [],
@@ -8476,6 +8662,7 @@
         },
         "wTCgOfCsjIiF": {
           "type": { "__ref": "DfQXqbgbKFxc" },
+          "advanced": false,
           "variable": { "__ref": "cFvXc1RaWIaA" },
           "uuid": "9SimKepli6Jx",
           "enumValues": [],
@@ -8496,6 +8683,7 @@
         },
         "VhUmZLtgeeSC": {
           "type": { "__ref": "kHHd1LeD0oVe" },
+          "advanced": false,
           "variable": { "__ref": "ENF6LspBNBWH" },
           "uuid": "ac3Fm9hl3FZW",
           "enumValues": [],
@@ -13182,6 +13370,7 @@
         },
         "jqVnLhQGz7-C": {
           "type": { "__ref": "eva3uFp4JHg3" },
+          "advanced": false,
           "variable": { "__ref": "aHzB-x8rIW5l" },
           "uuid": "zkOKAvfZlszm",
           "enumValues": [],
@@ -13208,6 +13397,7 @@
         },
         "iFyy5lX8XVus": {
           "type": { "__ref": "zqN93k6zFgwk" },
+          "advanced": false,
           "variable": { "__ref": "WU-caqjRIXfT" },
           "uuid": "4k-8beq5TIyQ",
           "enumValues": [],
@@ -13239,6 +13429,7 @@
         },
         "a5B-A9KIYy5W": {
           "type": { "__ref": "5HXQQsCtDRaK" },
+          "advanced": false,
           "variable": { "__ref": "5BD8fukngaqw" },
           "uuid": "ZK89EOJhj6Y5",
           "enumValues": [],
@@ -13265,6 +13456,7 @@
         },
         "PzSZC_aZRoLh": {
           "type": { "__ref": "R3731V2k-BcB" },
+          "advanced": false,
           "variable": { "__ref": "S4k5cWQTW1SW" },
           "uuid": "fpy-teUBzb8P",
           "enumValues": [],
@@ -13291,6 +13483,7 @@
         },
         "TI1akuo71aEO": {
           "type": { "__ref": "FGDnxicvsciG" },
+          "advanced": false,
           "variable": { "__ref": "MJmvco2uVrSQ" },
           "uuid": "q-KvMgMz--cN",
           "enumValues": [],
@@ -13320,7 +13513,7 @@
         }
       },
       "deps": [],
-      "version": "246-add-component-updated-at"
+      "version": "248-add-prop-param-advanced"
     }
   ],
   [
@@ -13591,6 +13784,7 @@
         "wg4AwQaDHvfJ": { "name": "text", "__type": "Text" },
         "BoR03Gm1BMjk": {
           "type": { "__ref": "wg4AwQaDHvfJ" },
+          "advanced": false,
           "variable": { "__ref": "dcbtV-txF3xL" },
           "uuid": "GMoL3WQO3Cwn",
           "enumValues": [],
@@ -13617,6 +13811,7 @@
         "8y9RO6zHjzBJ": { "name": "text", "__type": "Text" },
         "IWIpBfL3ZrLw": {
           "type": { "__ref": "8y9RO6zHjzBJ" },
+          "advanced": false,
           "variable": { "__ref": "brYMhwDJ6X_n" },
           "uuid": "JOl9HwiVZwmk",
           "enumValues": [],
@@ -13643,6 +13838,7 @@
         "zRElhel3E-DB": { "name": "img", "__type": "Img" },
         "kIrMwO3xx8Pl": {
           "type": { "__ref": "zRElhel3E-DB" },
+          "advanced": false,
           "variable": { "__ref": "oYqEgFmRUPfD" },
           "uuid": "ngY1-Xo0_QQr",
           "enumValues": [],
@@ -13669,6 +13865,7 @@
         "zUMsdy_x903X": { "name": "text", "__type": "Text" },
         "fbfQ-fwgfFaC": {
           "type": { "__ref": "zUMsdy_x903X" },
+          "advanced": false,
           "variable": { "__ref": "nXZe4sIzgGy9" },
           "uuid": "xoSkDwK7blAm",
           "enumValues": [],
@@ -13792,6 +13989,7 @@
         "r_O3ddQcW3hg": { "name": "any", "__type": "AnyType" },
         "p2_ZDRtJicmK": {
           "type": { "__ref": "r_O3ddQcW3hg" },
+          "advanced": false,
           "variable": { "__ref": "P3XxiaHqGymA" },
           "uuid": "RZ9IdIZ2XMxJ",
           "enumValues": [],
@@ -13818,6 +14016,7 @@
         "aU4-TG8_9TOb": { "name": "text", "__type": "Text" },
         "Ki964Qk7tLWa": {
           "type": { "__ref": "aU4-TG8_9TOb" },
+          "advanced": false,
           "variable": { "__ref": "WuqiDvRKihMA" },
           "uuid": "9P7H5qFfjF31",
           "enumValues": [],
@@ -13885,6 +14084,7 @@
         "XN8V5iYj9wPs": { "name": "num", "__type": "Num" },
         "M_aphg8SbzUc": {
           "type": { "__ref": "XN8V5iYj9wPs" },
+          "advanced": false,
           "variable": { "__ref": "DMdFR_k_7-n4" },
           "uuid": "aH2vQvMfxwj1",
           "enumValues": [],
@@ -13911,6 +14111,7 @@
         "D0SLt2RrlISW": { "name": "num", "__type": "Num" },
         "6a_JIsXkHreh": {
           "type": { "__ref": "D0SLt2RrlISW" },
+          "advanced": false,
           "variable": { "__ref": "EmWyeUw-Bbj3" },
           "uuid": "utCw3Sl3GeVG",
           "enumValues": [],
@@ -15723,6 +15924,7 @@
         },
         "wRN7ZL03o7-h": {
           "type": { "__ref": "hwaYoUEDzzt_" },
+          "advanced": false,
           "variable": { "__ref": "hA-n-1tZRdy-" },
           "uuid": "BHpf1DOxnAy8",
           "enumValues": [],
@@ -15743,6 +15945,7 @@
         },
         "No69sTlN-C0n": {
           "type": { "__ref": "moLZyOJBJ0Bn" },
+          "advanced": false,
           "variable": { "__ref": "51xvXVDYCvKu" },
           "uuid": "MS7tRP8fWEAJ",
           "enumValues": [],
@@ -15763,6 +15966,7 @@
         },
         "zsodLXZ7Q6I-": {
           "type": { "__ref": "3fxRiasrpIac" },
+          "advanced": false,
           "variable": { "__ref": "EcLSzp8XZORo" },
           "uuid": "4jzY03-NloFb",
           "enumValues": [],
@@ -15783,6 +15987,7 @@
         },
         "3JOPzKjF4i4J": {
           "type": { "__ref": "jP6YGeCR7T4B" },
+          "advanced": false,
           "variable": { "__ref": "q4JaDLiuh8y5" },
           "uuid": "g_8UftesET-t",
           "enumValues": [],
@@ -15803,6 +16008,7 @@
         },
         "I8eYG4Zq6S26": {
           "type": { "__ref": "muZVz7VAiAdE" },
+          "advanced": false,
           "variable": { "__ref": "UapS7t7KQhFr" },
           "uuid": "Nsp-7SI0FjNp",
           "enumValues": [],
@@ -22218,7 +22424,7 @@
         }
       },
       "deps": ["680b1b11-6954-4dd8-b4e6-6a2d087c1c28"],
-      "version": "246-add-component-updated-at"
+      "version": "248-add-prop-param-advanced"
     }
   ]
 ]

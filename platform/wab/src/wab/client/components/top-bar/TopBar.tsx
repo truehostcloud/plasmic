@@ -1,5 +1,4 @@
 /** @format */
-import { U } from "@/wab/client/cli-routes";
 import { useContextMenu } from "@/wab/client/components/ContextMenu";
 import { PublicLink } from "@/wab/client/components/PublicLink";
 import { usePreviewCtx } from "@/wab/client/components/live/PreviewCtx";
@@ -30,6 +29,8 @@ import {
 import { isAdminTeamEmail } from "@/wab/shared/devflag-utils";
 import { DEVFLAGS } from "@/wab/shared/devflags";
 import { pruneUnusedImageAssets } from "@/wab/shared/prune-site";
+import { APP_ROUTES } from "@/wab/shared/route/app-routes";
+import { fillRoute } from "@/wab/shared/route/route";
 import { naturalSort } from "@/wab/shared/sort";
 import {
   canEditProjectConfig,
@@ -113,8 +114,12 @@ function _TopBar({ preview }: TopBarProps) {
                   Configure custom app host
                 </Menu.Item>
               );
-
-              if (appCtx.appConfig.appAuth && !isWhiteLabelUser) {
+              // After RSCs are released, only show auth config if the app already uses it
+              const showAuth =
+                (!appCtx.appConfig.rscRelease ||
+                  studioCtx.siteInfo.hasAppAuth) &&
+                !isWhiteLabelUser;
+              if (showAuth) {
                 push2(
                   <Menu.Item
                     key="app-auth"
@@ -362,7 +367,10 @@ function _TopBar({ preview }: TopBarProps) {
         logoLink={{
           render: (props) => (
             <Tooltip title={brand.logoTooltip ?? "Back to dashboard"}>
-              <PublicLink {...props} href={brand.logoHref ?? U.dashboard({})}>
+              <PublicLink
+                {...props}
+                href={brand.logoHref ?? fillRoute(APP_ROUTES.dashboard, {})}
+              >
                 {brand.logoImgSrc ? (
                   <img src={brand.logoImgSrc} style={{ maxHeight: 40 }} />
                 ) : (
@@ -453,6 +461,7 @@ function _TopBar({ preview }: TopBarProps) {
           props: {
             active: studioCtx.showCommentsPanel,
             onClick: () => studioCtx.toggleCommentsPanel(),
+            "data-test-id": "top-comment-icon",
           },
         }}
         aiButton={{

@@ -25,17 +25,20 @@ type ReplyData = {
     id: string;
     body: string;
     name: string;
+    avatarUrl?: string | null;
   };
+  link: string;
   replies: {
     name: string;
-    avatarUrl?: string | null;
     comment: string;
+    avatarUrl?: string | null;
   }[];
 };
 
 type ReactionData = {
   commentId: string;
   comment: string;
+  link: string;
   reactions: {
     name: string;
     emoji: string;
@@ -45,17 +48,20 @@ type ReactionData = {
 type ResolutionData = {
   name: string;
   resolved: boolean;
+  link: string;
   rootComment: {
     name: string;
     body: string;
+    avatarUrl?: string | null;
   };
 };
 
 type CommentData = {
   name: string;
-  avatarUrl?: string | null;
+  link: string;
   commentId: string;
   comment: string;
+  avatarUrl?: string | null;
 };
 
 export interface TemplateCommentsProps extends DefaultTemplateCommentsProps {

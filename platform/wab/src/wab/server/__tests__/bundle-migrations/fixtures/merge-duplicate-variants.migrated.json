@@ -9,6 +9,7 @@
     "MSWej4GyivUh": { "name": "text", "__type": "Text" },
     "aWV829uTiD-O": {
       "type": { "__ref": "MSWej4GyivUh" },
+      "advanced": false,
       "variable": { "__ref": "veyYj5cfZUn9" },
       "uuid": "NKpNCRj4ActC",
       "enumValues": [],
@@ -35,6 +36,7 @@
     "NlQJum24lH4H": { "name": "text", "__type": "Text" },
     "o5udqhg5gHfE": {
       "type": { "__ref": "NlQJum24lH4H" },
+      "advanced": false,
       "variable": { "__ref": "rHOn9lri23Mc" },
       "uuid": "I1_okUeQhpKK",
       "enumValues": [],
@@ -61,6 +63,7 @@
     "q0UQCFYdNUXD": { "name": "img", "__type": "Img" },
     "xIyd51pqc0FY": {
       "type": { "__ref": "q0UQCFYdNUXD" },
+      "advanced": false,
       "variable": { "__ref": "v0e3O81lf6Ef" },
       "uuid": "0CauUM7MPaD7",
       "enumValues": [],
@@ -87,6 +90,7 @@
     "dejphpQO1jdi": { "name": "text", "__type": "Text" },
     "fvs358zmuBYn": {
       "type": { "__ref": "dejphpQO1jdi" },
+      "advanced": false,
       "variable": { "__ref": "MW3nU6fE5hjY" },
       "uuid": "FGsYD97IIGwB",
       "enumValues": [],
@@ -210,6 +214,7 @@
     "hh7b3RZQgVRk": { "name": "any", "__type": "AnyType" },
     "A7gT-c9930Cl": {
       "type": { "__ref": "hh7b3RZQgVRk" },
+      "advanced": false,
       "variable": { "__ref": "A7tO22KzyDAJ" },
       "uuid": "nTPKXNqFmc01",
       "enumValues": [],
@@ -232,6 +237,7 @@
     "1eF3dP41ErSc": { "name": "text", "__type": "Text" },
     "42bHf32Xfab4": {
       "type": { "__ref": "1eF3dP41ErSc" },
+      "advanced": false,
       "variable": { "__ref": "gGQJUG7AtZ0e" },
       "uuid": "gezeLYmU6OFS",
       "enumValues": [],
@@ -299,6 +305,7 @@
     "GXLzZmxF_9I0": { "name": "num", "__type": "Num" },
     "GyFruzcnFgCt": {
       "type": { "__ref": "GXLzZmxF_9I0" },
+      "advanced": false,
       "variable": { "__ref": "-Secp8Gc4ntq" },
       "uuid": "fTIcAR7UjaDo",
       "enumValues": [],
@@ -325,6 +332,7 @@
     "CXHoCPz0XpsU": { "name": "num", "__type": "Num" },
     "SXMiKdmHLmFZ": {
       "type": { "__ref": "CXHoCPz0XpsU" },
+      "advanced": false,
       "variable": { "__ref": "K3l4LTwO9vhl" },
       "uuid": "mIMlKKc3oRTa",
       "enumValues": [],
@@ -2539,5 +2547,5 @@
     "uhQFT6I68Y8J": { "values": {}, "mixins": [], "__type": "RuleSet" }
   },
   "deps": [],
-  "version": "246-add-component-updated-at"
+  "version": "248-add-prop-param-advanced"
 }

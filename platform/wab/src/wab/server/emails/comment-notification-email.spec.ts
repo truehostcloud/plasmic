@@ -8,6 +8,7 @@ jest.spyOn(React, "useLayoutEffect").mockImplementation(React.useEffect);
 // END
 
 import {
+  getThreadUrl,
   Notification,
   sendUserNotificationEmail,
 } from "@/wab/server/emails/comment-notification-email";
@@ -140,10 +141,20 @@ describe("sendUserNotificationEmail", () => {
         );
 
         const projectLink = getProjectLink(projectId);
-        assertLinks(links, [{ url: projectLink, count: 3 }]);
+        assertLinks(links, [
+          { url: projectLink, count: 2 },
+          {
+            url: getThreadUrl(
+              req.config.host,
+              project.id,
+              user1Comment.commentThreadId
+            ),
+            count: 1,
+          },
+        ]);
 
         expect(receivedHtmlContent).toEqual(
-          `My projectYang 2 Zhang left a commentYang 2 ZhangThis looks great!View in Plasmic${FOOTER_TEXT}`
+          `My ProjectYangtwo Zhang left a commentYangtwo ZhangThis looks great!View in Plasmic${FOOTER_TEXT}`
         );
 
         expect(mailer.sendMail).toHaveBeenCalledTimes(1);
@@ -152,7 +163,7 @@ describe("sendUserNotificationEmail", () => {
           from: config.mailFrom,
           to: users[0].email,
           bcc: req.config.mailBcc,
-          subject: "New Activity from Yang 2 in My project",
+          subject: "New activity in My Project from Yangtwo Z.",
           html: expect.any(String), // Already tested above
         });
       }
@@ -221,11 +232,21 @@ describe("sendUserNotificationEmail", () => {
         );
 
         const projectLink = getProjectLink(projectId);
-        assertLinks(links, [{ url: projectLink, count: 3 }]);
+        assertLinks(links, [
+          { url: projectLink, count: 2 },
+          {
+            url: getThreadUrl(
+              req.config.host,
+              project.id,
+              reply.commentThreadId
+            ),
+            count: 1,
+          },
+        ]);
 
         expect(receivedHtmlContent).toEqual(
-          `My projectYang 2 Zhang replied to a commentYang 1 ZhangThis looks great!
-NEW COMMENTSYang 2 ZhangI agree...
+          `My ProjectYangtwo Zhang replied to a commentYangone ZhangThis looks great!
+NEW COMMENTSYangtwo ZhangI agree...
 View in Plasmic${FOOTER_TEXT}`
         );
 
@@ -235,7 +256,7 @@ View in Plasmic${FOOTER_TEXT}`
           from: config.mailFrom,
           to: users[0].email,
           bcc: req.config.mailBcc,
-          subject: "New Activity from Yang 2 in My project",
+          subject: "New activity in My Project from Yangtwo Z.",
           html: expect.any(String), // Already tested above
         });
       }
@@ -303,10 +324,20 @@ View in Plasmic${FOOTER_TEXT}`
         );
 
         const projectLink = getProjectLink(projectId);
-        assertLinks(links, [{ url: projectLink, count: 3 }]);
+        assertLinks(links, [
+          { url: projectLink, count: 2 },
+          {
+            url: getThreadUrl(
+              req.config.host,
+              project.id,
+              user1Comment.commentThreadId
+            ),
+            count: 1,
+          },
+        ]);
 
         expect(receivedHtmlContent).toEqual(
-          `My projectYang 2 Zhang reacted to your comment💯Yang 1 ZhangThis looks great!
+          `My ProjectYangtwo Zhang reacted to your comment💯Yangone ZhangThis looks great!
 View in Plasmic${FOOTER_TEXT}`
         );
 
@@ -316,7 +347,7 @@ View in Plasmic${FOOTER_TEXT}`
           from: config.mailFrom,
           to: users[0].email,
           bcc: req.config.mailBcc,
-          subject: "New Activity from Yang 2 in My project",
+          subject: "New activity in My Project from Yangtwo Z.",
           html: expect.any(String), // Already tested above
         });
       }
@@ -376,12 +407,20 @@ View in Plasmic${FOOTER_TEXT}`
 
         const projectLink = getProjectLink(projectId);
         assertLinks(links, [
-          { url: projectLink, count: 3 },
+          { url: projectLink, count: 2 },
           { url: "mailto:yang1@test.com", count: 1 },
+          {
+            url: getThreadUrl(
+              req.config.host,
+              project.id,
+              user1Comment.commentThreadId
+            ),
+            count: 1,
+          },
         ]);
 
         expect(receivedHtmlContent).toEqual(
-          `My projectYang 2 Zhang mentioned you in a commentYang 2 ZhangHey @yang1@test.com, can you look into this?
+          `My ProjectYangtwo Zhang mentioned you in a commentYangtwo ZhangHey @yang1@test.com, can you look into this?
 View in Plasmic${FOOTER_TEXT}`
         );
 
@@ -391,7 +430,7 @@ View in Plasmic${FOOTER_TEXT}`
           from: config.mailFrom,
           to: users[0].email,
           bcc: req.config.mailBcc,
-          subject: "New Activity from Yang 2 in My project",
+          subject: "New activity in My Project from Yangtwo Z.",
           html: expect.any(String), // Already tested above
         });
       }
@@ -456,10 +495,20 @@ View in Plasmic${FOOTER_TEXT}`
         );
 
         const projectLink = getProjectLink(projectId);
-        assertLinks(links, [{ url: projectLink, count: 3 }]);
+        assertLinks(links, [
+          { url: projectLink, count: 2 },
+          {
+            url: getThreadUrl(
+              req.config.host,
+              project.id,
+              user1Comment.commentThreadId
+            ),
+            count: 1,
+          },
+        ]);
 
         expect(receivedHtmlContent).toEqual(
-          `My projectYang 2 Zhang resolved a commentYang 1 ZhangThis looks great!
+          `My ProjectYangtwo Zhang resolved a commentYangone ZhangThis looks great!
 View in Plasmic${FOOTER_TEXT}`
         );
 
@@ -469,7 +518,7 @@ View in Plasmic${FOOTER_TEXT}`
           from: config.mailFrom,
           to: users[0].email,
           bcc: req.config.mailBcc,
-          subject: "New Activity from Yang 2 in My project",
+          subject: "New activity in My Project from Yangtwo Z.",
           html: expect.any(String), // Already tested above
         });
       }
@@ -754,27 +803,66 @@ View in Plasmic${FOOTER_TEXT}`
         const { text: receivedHtmlContent, links } = extractTextAndLinks(
           mailer.sendMail.mock.calls[0][0].html
         );
-
         const projectLink = getProjectLink(projectId);
         assertLinks(links, [
-          { url: projectLink, count: 8 },
+          { url: projectLink, count: 2 },
           { url: "mailto:yang1@test.com", count: 3 },
+          {
+            url: getThreadUrl(
+              req.config.host,
+              project.id,
+              rootComments[0].commentThreadId
+            ),
+            count: 4,
+          },
+          {
+            url: getThreadUrl(
+              req.config.host,
+              project.id,
+              rootComments[1].commentThreadId
+            ),
+            count: 3,
+          },
+          {
+            url: getThreadUrl(
+              req.config.host,
+              project.id,
+              rootComments[2].commentThreadId
+            ),
+            count: 1,
+          },
+          {
+            url: getThreadUrl(
+              req.config.host,
+              project.id,
+              rootComments[3].commentThreadId
+            ),
+            count: 1,
+          },
+          {
+            url: getThreadUrl(
+              req.config.host,
+              project.id,
+              rootComments[4].commentThreadId
+            ),
+            count: 1,
+          },
         ]);
 
         expect(receivedHtmlContent).toEqual(
-          `My projectYang 3 Zhang and others mentioned you in 2 commentsYang 3 Zhangcc: @yang1@test.com
-Yang 2 ZhangHey @yang1@test.com, can you look into this?
-View in PlasmicYang 3 Zhang and others replied to these commentsYang 1 ZhangThis looks great!
-NEW COMMENTSYang 3 ZhangI agree...
-Yang 2 ZhangThanks
-View in PlasmicYang 1 ZhangCan you increase the font size?
-NEW COMMENTSYang 3 Zhang20px?
-View in PlasmicYang 2 Zhang and others left 2 commentsYang 2 Zhangyang1@test.com reverted this change
-Yang 3 ZhangLooks good to me!
-View in PlasmicYang 2 Zhang and 1 others reacted to your comment👍Yang 1 ZhangThis looks great!
-Yang 3 Zhang reacted to your comment✅Yang 1 ZhangCan you increase the font size?
-View in PlasmicYang 3 Zhang reopened a commentYang 1 ZhangThis looks great!
-Yang 3 Zhang resolved a commentYang 1 ZhangCan you increase the font size?
+          `My ProjectYangthree Zhang and others mentioned you in 2 commentsYangthree Zhangcc: @yang1@test.com
+View in PlasmicYangtwo ZhangHey @yang1@test.com, can you look into this?
+View in PlasmicYangthree Zhang and others replied to these commentsYangone ZhangThis looks great!
+NEW COMMENTSYangthree ZhangI agree...
+Yangtwo ZhangThanks
+View in PlasmicYangone ZhangCan you increase the font size?
+NEW COMMENTSYangthree Zhang20px?
+View in PlasmicYangtwo Zhang and others left 2 commentsYangtwo Zhangyang1@test.com reverted this change
+View in PlasmicYangthree ZhangLooks good to me!
+View in PlasmicYangtwo Zhang and 1 others reacted to your comment👍Yangone ZhangThis looks great!
+View in PlasmicYangthree Zhang reacted to your comment✅Yangone ZhangCan you increase the font size?
+View in PlasmicYangthree Zhang reopened a commentYangone ZhangThis looks great!
+View in PlasmicYangthree Zhang resolved a commentYangone ZhangCan you increase the font size?
 View in Plasmic${FOOTER_TEXT}`
         );
 
@@ -784,7 +872,7 @@ View in Plasmic${FOOTER_TEXT}`
           from: config.mailFrom,
           to: users[0].email,
           bcc: req.config.mailBcc,
-          subject: "New Activity from Yang 3 and others in My project",
+          subject: "New activity in My Project from Yangthree Z. and others",
           html: expect.any(String), // Already tested above
         });
       }
@@ -798,7 +886,7 @@ View in Plasmic${FOOTER_TEXT}`
         // Create a second project
         const { workspace } = await getTeamAndWorkspace(userDbs[0]());
         const { project: project2 } = await userDbs[0]().createProject({
-          name: "My project 2",
+          name: "My Project 2",
           workspaceId: workspace.id,
         });
 
@@ -885,10 +973,18 @@ View in Plasmic${FOOTER_TEXT}`
         } = extractTextAndLinks(call1.html);
         const project1Link = getProjectLink(project.id);
         assertLinks(receivedLinksForProject1, [
-          { url: project1Link, count: 3 },
+          { url: project1Link, count: 2 },
+          {
+            url: getThreadUrl(
+              req.config.host,
+              project.id,
+              user0Comment.commentThreadId
+            ),
+            count: 1,
+          },
         ]);
         expect(receivedHtmlForProject1).toEqual(
-          `My projectYang 1 Zhang left a commentYang 1 Zhangcomment text in project 1
+          `My ProjectYangone Zhang left a commentYangone Zhangcomment text in project 1
 View in Plasmic${FOOTER_TEXT}`
         );
 
@@ -898,10 +994,18 @@ View in Plasmic${FOOTER_TEXT}`
         } = extractTextAndLinks(call2.html);
         const project2Link = getProjectLink(project2.id);
         assertLinks(receivedLinksForProject2, [
-          { url: project2Link, count: 3 },
+          { url: project2Link, count: 2 },
+          {
+            url: getThreadUrl(
+              req.config.host,
+              project2.id,
+              user0CommentInProject2.commentThreadId
+            ),
+            count: 1,
+          },
         ]);
         expect(receivedHtmlForProject2).toEqual(
-          `My project 2Yang 1 Zhang left a commentYang 1 Zhangcomment text in project 2
+          `My Project 2Yangone Zhang left a commentYangone Zhangcomment text in project 2
 View in Plasmic${FOOTER_TEXT}`
         );
 
@@ -910,14 +1014,14 @@ View in Plasmic${FOOTER_TEXT}`
           from: config.mailFrom,
           to: users[1].email,
           bcc: req.config.mailBcc,
-          subject: "New Activity from Yang 1 in My project",
+          subject: "New activity in My Project from Yangone Z.",
           html: expect.any(String), // Already tested above
         });
         expect(call2).toEqual({
           from: config.mailFrom,
           to: users[1].email,
           bcc: req.config.mailBcc,
-          subject: "New Activity from Yang 1 in My project 2",
+          subject: "New activity in My Project 2 from Yangone Z.",
           html: expect.any(String), // Already tested above
         });
       }
@@ -929,11 +1033,10 @@ View in Plasmic${FOOTER_TEXT}`
         const { req, config, mailer } = setupEmailTest();
 
         const projectId = project.id;
-        const branchName = "my-branch-2";
         const branch2 = await userDbs[0]().createBranchFromLatestPkgVersion(
           project.id,
           {
-            name: branchName,
+            name: "feat/branch",
           }
         );
 
@@ -1019,10 +1122,20 @@ View in Plasmic${FOOTER_TEXT}`
 
         const projectLink = getProjectLink(project.id);
 
-        assertLinks(linksMainBranch, [{ url: projectLink, count: 3 }]);
+        assertLinks(linksMainBranch, [
+          { url: projectLink, count: 2 },
+          {
+            url: getThreadUrl(
+              req.config.host,
+              project.id,
+              user0comment.commentThreadId
+            ),
+            count: 1,
+          },
+        ]);
 
         expect(receivedHtmlMainBranch).toEqual(
-          `My projectYang 1 Zhang left a commentYang 1 Zhangcomment text in main branch
+          `My ProjectYangone Zhang left a commentYangone Zhangcomment text in main branch
 View in Plasmic${FOOTER_TEXT}`
         );
 
@@ -1034,14 +1147,26 @@ View in Plasmic${FOOTER_TEXT}`
           links: linksFeatureBranch,
         } = extractTextAndLinks(call2.html);
 
-        const projectLinkFeatureBranch = getProjectLink(project.id, branchName);
+        const projectLinkFeatureBranch = getProjectLink(
+          project.id,
+          "feat/branch"
+        );
 
         assertLinks(linksFeatureBranch, [
-          { url: projectLinkFeatureBranch, count: 3 },
+          { url: projectLinkFeatureBranch, count: 2 },
+          {
+            url: getThreadUrl(
+              req.config.host,
+              project.id,
+              user0commentInBranch.commentThreadId,
+              branch2.name
+            ),
+            count: 1,
+          },
         ]);
 
         expect(receivedHtmlFeatureBranchBranch).toEqual(
-          `My projectYang 1 Zhang left a commentYang 1 Zhangcomment text in feature branch
+          `My ProjectYangone Zhang left a commentYangone Zhangcomment text in feature branch
 View in Plasmic${FOOTER_TEXT}`
         );
 
@@ -1052,14 +1177,14 @@ View in Plasmic${FOOTER_TEXT}`
           from: config.mailFrom,
           to: users[1].email,
           bcc: req.config.mailBcc,
-          subject: "New Activity from Yang 1 in My project",
+          subject: "New activity in My Project from Yangone Z.",
           html: expect.any(String), // Already tested above
         });
         expect(call2).toEqual({
           from: config.mailFrom,
           to: users[1].email,
           bcc: req.config.mailBcc,
-          subject: `New Activity from Yang 1 in My project (${branchName})`,
+          subject: `New activity in My Project (feat/branch) from Yangone Z.`,
           html: expect.any(String), // Already tested above
         });
       }

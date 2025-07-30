@@ -104,7 +104,7 @@ import {
   ensureType,
   flexFlatten,
   InvalidCodePathError,
-  isArrayOfStrings,
+  isArrayOfLiterals,
   isNonNil,
   maybe,
   mkShortId,
@@ -1574,7 +1574,7 @@ export function cloneType<T extends Type>(type_: T): T {
     .when([AnyType, QueryData, TargetType], () => typeFactory[type.name]())
     .when(Choice, (t) =>
       typeFactory.choice(
-        isArrayOfStrings(t.options)
+        isArrayOfLiterals(t.options)
           ? t.options
           : t.options.map((op) => ({
               label: op.label as string,
@@ -2421,9 +2421,13 @@ export function pushExprs(exprs: Expr[], expr: Expr | null | undefined) {
       exprs.push(...findExprsInInteraction(interaction));
     }
   } else if (isKnownPageHref(expr)) {
-    for (const arg of Object.values(expr.params)) {
-      pushExprs(exprs, arg);
+    for (const param of Object.values(expr.params)) {
+      pushExprs(exprs, param);
     }
+    for (const query of Object.values(expr.query)) {
+      pushExprs(exprs, query);
+    }
+    pushExprs(exprs, expr.fragment);
   } else if (isKnownCollectionExpr(expr)) {
     for (const _expr of expr.exprs) {
       pushExprs(exprs, _expr);
@@ -2923,7 +2927,7 @@ export function getAlwaysVisibleEventHandlerKeysForTpl(
 
           if (isTplCodeComponent(tpl)) {
             const propType = tpl.component._meta?.props[param.variable.name];
-            return !isAdvancedProp(propType);
+            return !isAdvancedProp(propType, param);
           }
 
           if (

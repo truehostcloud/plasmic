@@ -23,12 +23,7 @@ import {
   parseProjectIdSpec,
   resolveLatestProjectRevisions,
 } from "@/wab/server/loader/resolve-projects";
-import {
-  streamToBuffer,
-  superDbMgr,
-  userAnalytics,
-  userDbMgr,
-} from "@/wab/server/routes/util";
+import { superDbMgr, userDbMgr } from "@/wab/server/routes/util";
 import { prefillCloudfront } from "@/wab/server/workers/prefill-cloudfront";
 import { BadRequestError, NotFoundError } from "@/wab/shared/ApiErrors/errors";
 import { ProjectId } from "@/wab/shared/ApiSchema";
@@ -45,7 +40,7 @@ import { tplToPlasmicElements } from "@/wab/shared/element-repr/gen-element-repr
 import { LocalizationKeyScheme } from "@/wab/shared/localization";
 import { toJson } from "@/wab/shared/model/model-tree-util";
 import { getCodegenUrl } from "@/wab/shared/urls";
-import { S3 } from "@aws-sdk/client-s3";
+import S3 from "aws-sdk/clients/s3";
 import execa from "execa";
 import { Request, Response } from "express-serve-static-core";
 import fs from "fs";
@@ -416,16 +411,15 @@ export async function getLoaderChunk(req: Request, res: Response) {
 
   console.log(`Loading S3 bundle from ${LOADER_ASSETS_BUCKET} ${bundleKey}`);
 
-  const s3 = new S3({
-    forcePathStyle: process.env.S3_FORCE_PATH_STYLE === "true",
-  });
+  const s3 = new S3({ endpoint: process.env.S3_ENDPOINT, forcePathStyle: process.env.S3_FORCE_PATH_STYLE === "true" });
 
-  const result = await s3.getObject({
-    Bucket: LOADER_ASSETS_BUCKET,
-    Key: bundleKey,
-  });
-  const bodyBuffer = await streamToBuffer(result.Body as NodeJS.ReadableStream);
-  const serialized = ensureInstance(bodyBuffer, Buffer).toString("utf8");
+  const obj = await s3
+    .getObject({
+      Bucket: LOADER_ASSETS_BUCKET,
+      Key: bundleKey,
+    })
+    .promise();
+  const serialized = ensureInstance(obj.Body, Buffer).toString("utf8");
 
   const bundle: LoaderBundleOutput = JSON.parse(serialized);
 
@@ -897,17 +891,14 @@ function trackLoaderCodegenEvent(
   }
 ) {
   const { versionType, platform } = opts;
-  userAnalytics(req).track({
-    event: "Codegen",
-    properties: {
-      newCompScheme: "blackbox",
-      projectId: projects.map((p) => p.id).join(","),
-      projectName: projects.map((p) => p.name).join(","),
-      source: "loader2",
-      scheme: "loader2",
-      platform,
-      versionType,
-    },
+  req.analytics.track("Codegen", {
+    newCompScheme: "blackbox",
+    projectId: projects.map((p) => p.id).join(","),
+    projectName: projects.map((p) => p.name).join(","),
+    source: "loader2",
+    scheme: "loader2",
+    platform,
+    versionType,
   });
 }
 

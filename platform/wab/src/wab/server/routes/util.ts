@@ -15,16 +15,33 @@ import {
 } from "@/wab/shared/ApiErrors/errors";
 import { CmsIdAndToken, ProjectIdAndToken } from "@/wab/shared/ApiSchema";
 import { asyncWrapper, omitNils } from "@/wab/shared/common";
-import type { Properties } from "@/wab/shared/observability/Analytics";
 import { NextFunction, Request, Response } from "express-serve-static-core";
 import L from "lodash";
+import type { Readable } from "stream";
 
-export function hasUser(req: Request) {
+/**
+ * Request that is compatible with normal `Request`s and ts-rest `Request`s.
+ *
+ * ts-rest modifies the `query` field so it matches the shape of its schema,
+ * which makes it incompatible with normal Express requests.
+ * Therefore, we omit `query` from the type since it's usually unnecessary for
+ * generic request handling code.
+ *
+ * Some fields on `Request` return `this`, which is also problematic since it
+ * references the original `Request` type. This is handled by omitting the
+ * fields `setTimeout` and all fields of the extended class `Readable`.
+ */
+export type CompatRequest = Omit<
+  Request,
+  "query" | "setTimeout" | keyof Readable
+>;
+
+export function hasUser(req: CompatRequest) {
   return !!req.user;
 }
 
 export function getUser(
-  req: Request,
+  req: CompatRequest,
   opts?: { allowUnverifiedEmail: boolean }
 ) {
   if (!req.user) {
@@ -37,7 +54,7 @@ export function getUser(
 }
 
 export function userDbMgr(
-  req: Request,
+  req: CompatRequest,
   opts?: { allowUnverifiedEmail: boolean }
 ) {
   const isSpy = req.cookies["plasmic-spy"] === "true";
@@ -116,25 +133,12 @@ export function parseCmsIdsAndTokensHeader(value: any) {
   return parsed.length === 0 ? undefined : parsed;
 }
 
-export function superDbMgr(req: Request) {
+export function superDbMgr(req: CompatRequest) {
   let dbMgr = new DbMgr(req.txMgr, SUPER_USER);
   if (req.timingStore) {
     dbMgr = timingDbMgr(dbMgr);
   }
   return dbMgr;
-}
-
-/** @deprecated use `request.analytics` directly */
-export class UserAnalytics {
-  constructor(private req: Request) {}
-  track({ event, properties }: { event: string; properties?: Properties }) {
-    return this.req.analytics.track(event, properties);
-  }
-}
-
-/** @deprecated use `request.app.analytics` directly */
-export function userAnalytics(req: Request) {
-  return new UserAnalytics(req);
 }
 
 export function makeUserTraits(user: User) {

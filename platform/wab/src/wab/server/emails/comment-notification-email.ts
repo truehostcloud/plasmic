@@ -10,8 +10,15 @@ import {
   User,
 } from "@/wab/server/entities/Entities";
 import { NotificationsByProject } from "@/wab/server/scripts/send-comments-notifications";
-import { fullName, getUserEmail } from "@/wab/shared/ApiSchemaUtil";
+import { MainBranchId } from "@/wab/shared/ApiSchema";
+import {
+  fullName,
+  fullNameLastAbbreviated,
+  getUserEmail,
+} from "@/wab/shared/ApiSchemaUtil";
 import { extractMentionedEmails, REACTIONS } from "@/wab/shared/comments-utils";
+import { assert } from "@/wab/shared/common";
+import { mkProjectLocation } from "@/wab/shared/route/app-routes";
 import { createProjectUrl } from "@/wab/shared/urls";
 
 export interface Notification {
@@ -48,29 +55,47 @@ export interface HistoryEntry {
   history: CommentThreadHistory;
 }
 
+export const getThreadUrl = (
+  host: string,
+  projectId: string,
+  threadId: string,
+  branchName?: string
+) => {
+  const projectLocation = mkProjectLocation({
+    projectId: projectId,
+    branchName: branchName || MainBranchId,
+    threadId,
+    slug: undefined,
+    branchVersion: "latest",
+    arenaType: undefined,
+    arenaUuidOrNameOrPath: undefined,
+  });
+  return `${host}${projectLocation.pathname}${projectLocation.search || ""}`;
+};
+
 const getUserFullName = (user: User | null) =>
   user ? fullName(user) : "Unknown User";
 
 class ParticipantManager {
-  private participants: Set<string> = new Set();
+  private participants = new Map<string, User>();
 
   addParticipant(user: User | null | undefined) {
-    if (user?.firstName) {
-      this.participants.add(user.firstName);
-    }
+    assert(user, "participant user missing");
+    this.participants.set(user.id, user);
   }
 
   getFormattedString(): string {
-    const validParticipants = Array.from(this.participants);
-    const count = validParticipants.length;
-
-    if (count === 0) {
+    const participants = Array.from(this.participants.values());
+    if (participants.length === 0) {
       return "";
     }
-    if (count === 1) {
-      return validParticipants[0];
+
+    const p1 = fullNameLastAbbreviated(participants[0]);
+    if (this.participants.size === 1) {
+      return p1;
+    } else {
+      return `${p1} and others`;
     }
-    return `${validParticipants[0]} and others`;
   }
 }
 
@@ -84,9 +109,6 @@ export async function sendUserNotificationEmail(
   mailFrom: string,
   mailBcc?: string
 ) {
-  let userEmail = "";
-  let userName = "";
-
   // Process each project in the Map
   for (const [projectId, branchNotifications] of projectWiseUserNotification) {
     for (const [_branchId, threadNotifications] of branchNotifications) {
@@ -101,8 +123,8 @@ export async function sendUserNotificationEmail(
       const branchName = commentThread.branch?.name;
       const projectUrl = createProjectUrl(host, projectId, branchName);
 
-      userEmail = getUserEmail(user);
-      userName = getUserFullName(user);
+      const userEmail = getUserEmail(user);
+      const userName = getUserFullName(user);
 
       const participantManager = new ParticipantManager();
 
@@ -122,7 +144,11 @@ export async function sendUserNotificationEmail(
       };
 
       notifications.forEach((notification) => {
-        const { entry, rootComment } = notification;
+        const {
+          entry,
+          rootComment,
+          commentThread: notificationCommentThread,
+        } = notification;
 
         if (isCommentEntry(entry)) {
           const { comment } = entry;
@@ -132,6 +158,12 @@ export async function sendUserNotificationEmail(
             avatarUrl: comment.createdBy?.avatarUrl,
             commentId: comment.id,
             comment: comment.body,
+            link: getThreadUrl(
+              host,
+              project.id,
+              notificationCommentThread.id,
+              branchName
+            ),
           };
           const mentionedEmails = extractMentionedEmails(comment.body);
           if (mentionedEmails.includes(userEmail)) {
@@ -150,7 +182,14 @@ export async function sendUserNotificationEmail(
                   name: getUserFullName(rootComment.createdBy),
                   body: rootComment.body ?? "",
                   id: rootComment.id,
+                  avatarUrl: rootComment.createdBy?.avatarUrl,
                 },
+                link: getThreadUrl(
+                  host,
+                  project.id,
+                  notificationCommentThread.id,
+                  branchName
+                ),
                 replies: [commentData],
               });
             }
@@ -171,6 +210,12 @@ export async function sendUserNotificationEmail(
             templateProps.reactions.push({
               commentId: reaction.commentId,
               comment: reaction.comment?.body ?? "",
+              link: getThreadUrl(
+                host,
+                project.id,
+                notificationCommentThread.id,
+                branchName
+              ),
               reactions: [{ name, emoji: REACTIONS[reaction.data.emojiName] }],
             });
           }
@@ -181,9 +226,16 @@ export async function sendUserNotificationEmail(
           templateProps.resolutions.push({
             name,
             resolved: history.resolved,
+            link: getThreadUrl(
+              host,
+              project.id,
+              notificationCommentThread.id,
+              branchName
+            ),
             rootComment: {
               body: rootComment.body ?? "",
               name: getUserFullName(rootComment.createdBy),
+              avatarUrl: rootComment.createdBy?.avatarUrl,
             },
           });
         }
@@ -191,14 +243,17 @@ export async function sendUserNotificationEmail(
 
       const html = await generateEmailHtml("Comments", templateProps);
 
+      let projectBranch = projectName;
+      if (branchName) {
+        projectBranch += ` (${branchName})`;
+      }
+
       // Send the email
       await mailer.sendMail({
         from: mailFrom,
         to: userEmail,
         bcc: mailBcc,
-        subject: `New Activity from ${participantManager.getFormattedString()} in ${projectName}${
-          branchName ? ` (${branchName})` : ""
-        }`,
+        subject: `New activity in ${projectBranch} from ${participantManager.getFormattedString()}`,
         html,
       });
     }

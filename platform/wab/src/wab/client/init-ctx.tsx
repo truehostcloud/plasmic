@@ -1,7 +1,6 @@
 import * as Api from "@/wab/client/api";
 import { AppCtx } from "@/wab/client/app-ctx";
 import {
-  UU,
   getEmaiLVerificationRouteWithContinuation,
   getLoginRouteWithContinuation,
   parseProjectLocation,
@@ -12,6 +11,7 @@ import { SiteInfo } from "@/wab/shared/SharedApi";
 import * as slotUtils from "@/wab/shared/SlotUtils";
 import { $$$ } from "@/wab/shared/TplQuery";
 import { getBundle } from "@/wab/shared/bundles";
+import { findAllDataSourceOpExpr } from "@/wab/shared/cached-selectors";
 import { asyncNever, spawn } from "@/wab/shared/common";
 import * as exprs from "@/wab/shared/core/exprs";
 import { unbundleSite } from "@/wab/shared/core/tagged-unbundle";
@@ -19,6 +19,8 @@ import * as tpls from "@/wab/shared/core/tpls";
 import { getProjectFlags } from "@/wab/shared/devflags";
 import { instUtil } from "@/wab/shared/model/InstUtil";
 import { ProjectDependency } from "@/wab/shared/model/classes";
+import { APP_ROUTES } from "@/wab/shared/route/app-routes";
+import { fillRoute } from "@/wab/shared/route/route";
 import { fixPageHrefsToLocal } from "@/wab/shared/utils/split-site-utils";
 import { notification } from "antd";
 import * as React from "react";
@@ -92,6 +94,13 @@ export async function loadSiteDbCtx(
   appCtx.appConfig = getProjectFlags(site, appCtx.appConfig);
   spawn(checkDepPkgHosts(appCtx, siteInfo, depPkgVersions));
 
+  // Enable data queries after RSC release if any components already use them.
+  // Occurs after applyPlasmicUserDevFlagOverrides, so skip if already enabled
+  if (!appCtx.appConfig.enableDataQueries) {
+    appCtx.appConfig.enableDataQueries =
+      !appCtx.appConfig.rscRelease || !!findAllDataSourceOpExpr(site).length;
+  }
+
   (window as any).dbg.site = site;
   (window as any).dbg.instUtil = instUtil;
   (window as any).dbg.tpls = tpls;
@@ -143,7 +152,7 @@ export async function checkDepPkgHosts(
             imports components from{" "}
             <a
               target="_blank"
-              href={UU.project.fill({
+              href={fillRoute(APP_ROUTES.project, {
                 projectId: pkgVersion.pkg.pkg?.projectId,
               })}
             >

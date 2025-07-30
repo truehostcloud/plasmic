@@ -102,6 +102,7 @@ import { tryEvalExpr } from "@/wab/shared/eval";
 import { pathToString } from "@/wab/shared/eval/expression-parser";
 import { maybeComputedFn } from "@/wab/shared/mobx-util";
 import { maybeConvertToIife } from "@/wab/shared/parser-utils";
+import { pageHrefPathToCode } from "@/wab/shared/utils/url-utils";
 import L, { escapeRegExp, groupBy, isString, mapValues, set } from "lodash";
 
 export interface ExprCtx {
@@ -199,6 +200,10 @@ export function clone(_expr: Expr): Expr {
           params: Object.fromEntries(
             Object.entries(expr.params).map(([k, v]) => [k, clone(v)])
           ),
+          query: Object.fromEntries(
+            Object.entries(expr.query).map(([k, v]) => [k, clone(v)])
+          ),
+          fragment: expr.fragment && clone(expr.fragment),
         })
     )
     .when(
@@ -436,18 +441,7 @@ const _asCode = maybeComputedFn(
         code(JSON.stringify(expr.asset.dataUri || ""))
       )
       .when(PageHref, (expr) => {
-        assert(expr.page.pageMeta, "PageHref is expected to contain a page");
-        let path = expr.page.pageMeta.path;
-        for (const [key, value] of Object.entries(expr.params)) {
-          const valueExpr =
-            "${" +
-            getCodeExpressionWithFallback(asCode(value, exprCtx), exprCtx) +
-            "}";
-          path = path
-            .replace(`[[${key}]]`, valueExpr)
-            .replace(`[${key}]`, valueExpr);
-        }
-        return code("(`" + path + "`)");
+        return code(pageHrefPathToCode({ expr, exprCtx }));
       })
       .when(ObjectPath, (expr) =>
         code(`(${pathToString(expr.path)})`, expr.fallback)
@@ -1115,7 +1109,7 @@ export function hasUnsafeCurrentUserBinding(
 ) {
   const exprSnippets = getSnippetsWithoutSafeCurrentUserUsage(expr, exprCtx);
   return exprSnippets.some(([_key, snippets]) =>
-    snippets.some((snippet) => snippet.includes("currentUser"))
+    snippets.some((snippet) => /\bcurrentUser\b/.test(snippet))
   );
 }
 

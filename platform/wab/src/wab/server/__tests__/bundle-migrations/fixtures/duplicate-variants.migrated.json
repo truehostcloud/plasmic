@@ -251,6 +251,7 @@
     "_xghcm65A6-M": { "name": "text", "__type": "Text" },
     "wjVlHOGmJy95": {
       "type": { "__ref": "_xghcm65A6-M" },
+      "advanced": false,
       "variable": { "__ref": "l48uZs_rmwCb" },
       "uuid": "T7Ab-TOTDLSw",
       "enumValues": [],
@@ -277,6 +278,7 @@
     "hBNmjptwOVq1": { "name": "text", "__type": "Text" },
     "VjogCVWRP9No": {
       "type": { "__ref": "hBNmjptwOVq1" },
+      "advanced": false,
       "variable": { "__ref": "QT-pi2ehnl6j" },
       "uuid": "jSbYg0yVh8_M",
       "enumValues": [],
@@ -303,6 +305,7 @@
     "X-N4ibIbS3ne": { "name": "img", "__type": "Img" },
     "xQAgFvpI2IJt": {
       "type": { "__ref": "X-N4ibIbS3ne" },
+      "advanced": false,
       "variable": { "__ref": "hjNMhF6qI-IT" },
       "uuid": "aN4nr8ZZyhZ8",
       "enumValues": [],
@@ -329,6 +332,7 @@
     "QKgjkiW-cAzg": { "name": "text", "__type": "Text" },
     "j-eOeZk1Dv6w": {
       "type": { "__ref": "QKgjkiW-cAzg" },
+      "advanced": false,
       "variable": { "__ref": "mckei9S-6Ije" },
       "uuid": "TtNYUFxWLW1D",
       "enumValues": [],
@@ -452,6 +456,7 @@
     "m0iC2HDKLltt": { "name": "any", "__type": "AnyType" },
     "Xa7tWHJsMSiK": {
       "type": { "__ref": "m0iC2HDKLltt" },
+      "advanced": false,
       "variable": { "__ref": "yQzYxfOjcPav" },
       "uuid": "BeJInueiwsZ4",
       "enumValues": [],
@@ -474,6 +479,7 @@
     "njK1qRijfvib": { "name": "text", "__type": "Text" },
     "D8b18vVawVZo": {
       "type": { "__ref": "njK1qRijfvib" },
+      "advanced": false,
       "variable": { "__ref": "WWFc5OD0stL1" },
       "uuid": "W9AlszdMxWMD",
       "enumValues": [],
@@ -541,6 +547,7 @@
     "R8gIueHkE__S": { "name": "num", "__type": "Num" },
     "7tSCCT2EuXfY": {
       "type": { "__ref": "R8gIueHkE__S" },
+      "advanced": false,
       "variable": { "__ref": "iWeatL5m1875" },
       "uuid": "jo230cg96sug",
       "enumValues": [],
@@ -567,6 +574,7 @@
     "l_5KopfkSWCH": { "name": "num", "__type": "Num" },
     "KTLMJQixWjXY": {
       "type": { "__ref": "l_5KopfkSWCH" },
+      "advanced": false,
       "variable": { "__ref": "tWVhj-09d8PF" },
       "uuid": "Dgq_9MeMF3qK",
       "enumValues": [],
@@ -1972,5 +1980,5 @@
     }
   },
   "deps": [],
-  "version": "246-add-component-updated-at"
+  "version": "248-add-prop-param-advanced"
 }

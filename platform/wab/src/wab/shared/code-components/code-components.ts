@@ -3743,11 +3743,15 @@ export function isCustomControlType(
   );
 }
 
-export function isAdvancedProp(propType: StudioPropType<any> | undefined) {
+export function isAdvancedProp(
+  propType: StudioPropType<any> | undefined,
+  param: Param | undefined
+) {
   return (
-    isPlainObjectPropType(propType) &&
-    propType.type !== "slot" &&
-    propType.advanced
+    (isKnownPropParam(param) && param.advanced) ||
+    (isPlainObjectPropType(propType) &&
+      propType.type !== "slot" &&
+      propType.advanced)
   );
 }
 
@@ -4093,7 +4097,7 @@ export function propTypeToWabType(
               return success(
                 typeFactory.choice(
                   Array.isArray(type.options)
-                    ? isArrayOfStrings(type.options)
+                    ? isArrayOfLiterals(type.options)
                       ? type.options
                       : type.options.map((op) => ({
                           label: op.label,

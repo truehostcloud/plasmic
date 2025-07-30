@@ -565,6 +565,7 @@
     },
     "Sa1eOk_qaeNs": {
       "type": { "__ref": "LXATOWxNSms0" },
+      "advanced": false,
       "variable": { "__ref": "NctcmZiTGLCN" },
       "uuid": "nekthGTNIB3d",
       "enumValues": [],
@@ -585,6 +586,7 @@
     },
     "NU6Vazpv0h-L": {
       "type": { "__ref": "QuH_bzLhiDli" },
+      "advanced": false,
       "variable": { "__ref": "IUO1V3Vafrt4" },
       "uuid": "KZo7vAC_AcKI",
       "enumValues": [],
@@ -605,6 +607,7 @@
     },
     "K7mRHMkn7tO_": {
       "type": { "__ref": "aD3mrCY8Pf0F" },
+      "advanced": false,
       "variable": { "__ref": "_2GwnI9obhKH" },
       "uuid": "iVqvGezmH-jX",
       "enumValues": [],
@@ -625,6 +628,7 @@
     },
     "otLMzoZ2z3_F": {
       "type": { "__ref": "_TRapvcc4kek" },
+      "advanced": false,
       "variable": { "__ref": "2ldo5yW5qUCl" },
       "uuid": "IWusCTcncJE5",
       "enumValues": [],
@@ -695,6 +699,7 @@
     },
     "GlEmF5V4BvG0": {
       "type": { "__ref": "kLwfiribPrNR" },
+      "advanced": false,
       "variable": { "__ref": "zjhlaDFb8mXR" },
       "uuid": "HTb2qGW7rUxy",
       "enumValues": [],
@@ -715,6 +720,7 @@
     },
     "BwqqnyEQaGZ7": {
       "type": { "__ref": "DsBQZxyKGxkF" },
+      "advanced": false,
       "variable": { "__ref": "lV3tAjrEk9XX" },
       "uuid": "8D0cE4oUFpmE",
       "enumValues": [],
@@ -756,6 +762,7 @@
     },
     "qUQpBjkNT25g": {
       "type": { "__ref": "SulhjUUKjkRn" },
+      "advanced": false,
       "variable": { "__ref": "GfYrBaElydXd" },
       "uuid": "X3oCbsL240_2",
       "enumValues": [],
@@ -776,6 +783,7 @@
     },
     "_kv6G9zgjJWb": {
       "type": { "__ref": "0wBLysZgnth3" },
+      "advanced": false,
       "variable": { "__ref": "uVHgZVz7REAw" },
       "uuid": "XFRtFp4pFic1",
       "enumValues": [],
@@ -1122,6 +1130,7 @@
     },
     "lZ9QjhoSMb2I": {
       "type": { "__ref": "VatpNzcIVWYA" },
+      "advanced": false,
       "variable": { "__ref": "u6s72le96DAb" },
       "uuid": "4wGGARo7ca8b",
       "enumValues": [],
@@ -1142,6 +1151,7 @@
     },
     "iXJoRJ4uTQ3b": {
       "type": { "__ref": "W1F9Qfnti8RT" },
+      "advanced": false,
       "variable": { "__ref": "oPb0gVqLIgbB" },
       "uuid": "JG-rUtAgzlWf",
       "enumValues": [],
@@ -1162,6 +1172,7 @@
     },
     "OthJgqnvSONr": {
       "type": { "__ref": "qZgc3Mt8aI8H" },
+      "advanced": false,
       "variable": { "__ref": "3x04dczwRcMa" },
       "uuid": "6Zwljjbjs2Pa",
       "enumValues": [],
@@ -1182,6 +1193,7 @@
     },
     "xDTP_v_hSFdb": {
       "type": { "__ref": "h5qo4z8sLZ-z" },
+      "advanced": false,
       "variable": { "__ref": "pGA8WrvBiKCZ" },
       "uuid": "HJTkLNBGTF81",
       "enumValues": [],
@@ -1202,6 +1214,7 @@
     },
     "PtZh8JQI7qxk": {
       "type": { "__ref": "Nglk7Y1Uijf4" },
+      "advanced": false,
       "variable": { "__ref": "6janwaMz8Rxv" },
       "uuid": "gy9bGHT4KkID",
       "enumValues": [],
@@ -1902,5 +1915,5 @@
     }
   },
   "deps": [],
-  "version": "246-add-component-updated-at"
+  "version": "248-add-prop-param-advanced"
 }

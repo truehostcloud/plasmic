@@ -10,11 +10,7 @@ import { zoomJump } from "@/wab/client/Zoom";
 import { invalidationKey } from "@/wab/client/api";
 import { getProjectReleases } from "@/wab/client/api-hooks";
 import { storageViewAsKey } from "@/wab/client/app-auth/constants";
-import {
-  UU,
-  mkProjectLocation,
-  parseProjectLocation,
-} from "@/wab/client/cli-routes";
+import { parseProjectLocation, parseRoute } from "@/wab/client/cli-routes";
 import { LocalClipboard } from "@/wab/client/clipboard/local";
 import { syncCodeComponentsAndHandleErrors } from "@/wab/client/code-components/code-components";
 import { CodeFetchersRegistry } from "@/wab/client/code-fetchers";
@@ -126,9 +122,11 @@ import {
   ApiUser,
   ArenaType,
   BranchId,
+  CopilotImage,
   CopilotInteractionId,
   InitServerInfo,
   MainBranchId,
+  QueryCopilotUiResponse,
   ServerSessionsInfo,
   TemplateSpec,
   UpdatePlayerViewRequest,
@@ -332,6 +330,7 @@ import {
 } from "@/wab/shared/model/model-change-util";
 import { reorderPageArenaCols } from "@/wab/shared/page-arenas";
 import { getAccessLevelToResource } from "@/wab/shared/perms";
+import { APP_ROUTES, mkProjectLocation } from "@/wab/shared/route/app-routes";
 import {
   DeletedAssetsSummary,
   getEmptyDeletedAssetsSummary,
@@ -706,7 +705,11 @@ export class StudioCtx extends WithDbCtx {
     this.fontManager = new FontManager(this.site);
     this.fontManager.installAllUsedFonts([$(document.head)]);
 
-    this.isDocs = !!UU.projectDocs.parse(location.pathname, false);
+    this.isDocs = !!parseRoute(
+      APP_ROUTES.projectDocs,
+      location.pathname,
+      false
+    );
 
     spawn(
       this.getProjectReleases().then((releases) =>
@@ -1853,6 +1856,7 @@ export class StudioCtx extends WithDbCtx {
       noFocusedModeChange?: boolean;
       replace?: boolean;
       stopWatching?: boolean;
+      threadId?: string;
     }
   ) {
     if (isDedicatedArena(arena) && !this.canEditComponent(arena.component)) {
@@ -1880,6 +1884,7 @@ export class StudioCtx extends WithDbCtx {
       arena: arena ?? null,
       replace: opts?.replace,
       stopWatching: opts?.stopWatching,
+      threadId: opts?.threadId,
     });
   }
 
@@ -1895,12 +1900,14 @@ export class StudioCtx extends WithDbCtx {
     branch,
     pkgVersionInfoMeta,
     arena,
+    threadId,
     replace,
     stopWatching,
   }: {
     branch: ApiBranch | undefined;
     pkgVersionInfoMeta: PkgVersionInfoMeta | undefined;
     arena: AnyArena | null;
+    threadId?: string;
     replace?: boolean;
     stopWatching?: boolean;
   }) {
@@ -1923,6 +1930,7 @@ export class StudioCtx extends WithDbCtx {
         branchVersion,
         arenaType,
         arenaUuidOrName,
+        threadId,
         slug,
         replace,
         stopWatching,
@@ -1934,6 +1942,7 @@ export class StudioCtx extends WithDbCtx {
         branchVersion,
         arenaType: undefined,
         arenaUuidOrName: undefined,
+        threadId: undefined,
         slug: undefined,
         replace,
         stopWatching,
@@ -1951,6 +1960,7 @@ export class StudioCtx extends WithDbCtx {
     branchVersion,
     arenaType,
     arenaUuidOrName,
+    threadId,
     slug,
     replace = false,
     stopWatching = true,
@@ -1959,6 +1969,7 @@ export class StudioCtx extends WithDbCtx {
     branchVersion: string;
     arenaType: ArenaType | undefined;
     arenaUuidOrName: string | undefined;
+    threadId: string | undefined;
     slug: string | undefined;
     replace?: boolean;
     stopWatching?: boolean;
@@ -1974,6 +1985,7 @@ export class StudioCtx extends WithDbCtx {
       branchVersion,
       arenaType,
       arenaUuidOrNameOrPath: arenaUuidOrName,
+      threadId,
     });
 
     if (replace) {
@@ -2004,12 +2016,20 @@ export class StudioCtx extends WithDbCtx {
         arenaType,
         arenaUuidOrNameOrPath,
         isPreview,
+        threadId,
       } = match;
       await this.handleBranchChange(branchName, branchVersion);
       if (!isPreview) {
         // We don't want to render the arenas in preview mode, for performance
         // and to avoid setting the zoom level when the arena is not rendered.
-        await this.handleArenaChange(arenaType, arenaUuidOrNameOrPath);
+        const isHandled = await this.handleCommentThreadChange(threadId);
+        if (!isHandled) {
+          await this.handleArenaChange(
+            arenaType,
+            arenaUuidOrNameOrPath,
+            threadId
+          );
+        }
       }
     } else {
       // We are in other path such as `projectDocs`. We can skip updating state since we're not being shown right now.
@@ -2073,6 +2093,7 @@ export class StudioCtx extends WithDbCtx {
   private async handleArenaChange(
     arenaType: ArenaType | undefined,
     arenaName: string | undefined,
+    threadId: string | undefined,
     opts?: StudioChangeOpts
   ) {
     return this.change(({ success }) => {
@@ -2085,7 +2106,7 @@ export class StudioCtx extends WithDbCtx {
         // Instead, we only call switchToArena() if the first arena exists.
         const firstArena = this.firstArena();
         if (firstArena) {
-          this.switchToArena(firstArena, { replace: true });
+          this.switchToArena(firstArena, { replace: true, threadId });
         } else {
           if (currentArena !== null) {
             this.changeArena(null);
@@ -2111,6 +2132,54 @@ export class StudioCtx extends WithDbCtx {
       }
       return success();
     }, opts);
+  }
+
+  private async handleCommentThreadChange(threadId?: string) {
+    if (!threadId) {
+      this.commentsCtx.handleCloseThreadDialog();
+      return false;
+    }
+
+    await this.commentsCtx.waitForInitialCommentsLoad();
+
+    const commentThread = this.commentsCtx
+      .computedData()
+      .allThreads.find((thread) => thread.id === threadId);
+
+    if (!commentThread) {
+      this.commentsCtx.closeCommentThreadDialog();
+      return false;
+    }
+
+    const subjectInfo = commentThread?.subjectInfo;
+
+    const skipZoomOnFocus = this.commentsCtx.getAndResetSkipZoomOnFocus();
+
+    if (!subjectInfo) {
+      this.commentsCtx.handleOpenCommentThreadDialog(commentThread.id);
+      return false;
+    }
+
+    await this.setStudioFocusOnTpl(
+      subjectInfo.ownerComponent,
+      subjectInfo.subject,
+      subjectInfo.variants,
+      threadId
+    );
+    const focusedViewSet = this.focusedViewCtx();
+    if (focusedViewSet) {
+      this.commentsCtx.handleOpenCommentThreadDialog(
+        commentThread.id,
+        focusedViewSet
+      );
+      if (!skipZoomOnFocus) {
+        this.tryZoomToFitSelection();
+      }
+    } else {
+      this.commentsCtx.closeCommentThreadDialog();
+      return false;
+    }
+    return true;
   }
 
   private changeArena(
@@ -2241,7 +2310,9 @@ export class StudioCtx extends WithDbCtx {
       }
     }
     if (this.arenaViewStates.size > DEVFLAGS.liveArenas) {
-      const entries = Array.from(this.arenaViewStates.entries());
+      const entries = Array.from<[AnyArena, ArenaViewInfo]>(
+        this.arenaViewStates.entries()
+      );
       const arenasToFree = orderBy(
         entries.filter(([arena, _info]) => arena !== this.currentArena),
         ([_arena, info]) => info.lastAccess,
@@ -2417,7 +2488,8 @@ export class StudioCtx extends WithDbCtx {
   async setStudioFocusOnTpl(
     component: Component,
     tpl: TplNode,
-    variants?: VariantCombo
+    variants?: VariantCombo,
+    threadId?: string
   ) {
     // If the current focused ViewCtx is already on the target component and no variant switching is needed
     const currentViewCtx = this.focusedViewCtx();
@@ -2451,9 +2523,9 @@ export class StudioCtx extends WithDbCtx {
         const { arena, frame } = match;
 
         // If it's an artboard, switch to its arena
-        if (isFrameComponent(component)) {
+        if (isFrameComponent(component) && this.currentArena !== arena) {
           await this.change(({ success }) => {
-            this.switchToArena(arena);
+            this.switchToArena(arena, { threadId });
             return success();
           });
         }
@@ -2465,14 +2537,19 @@ export class StudioCtx extends WithDbCtx {
         return;
       }
     }
-
-    const arena = unwrap(
-      await this.change<void, AnyArena | null>(({ success }) => {
-        const switchedArena =
-          this.switchToComponentArena(component) ?? this.currentArena;
-        return success(switchedArena);
-      })
-    );
+    const componentArena = this.getDedicatedArena(component);
+    const arena =
+      componentArena !== this.currentArena
+        ? unwrap(
+            await this.change<void, AnyArena | null>(({ success }) => {
+              const switchedArena =
+                this.switchToComponentArena(component, {
+                  threadId,
+                }) ?? this.currentArena;
+              return success(switchedArena);
+            })
+          )
+        : this.currentArena;
 
     if (arena) {
       assert(
@@ -2511,10 +2588,11 @@ export class StudioCtx extends WithDbCtx {
       if (
         arenaDetails &&
         arenaDetails?.arena !== arena &&
+        arenaDetails?.arena !== this.currentArena &&
         isMixedArena(arenaDetails?.arena)
       ) {
         await this.change(({ success }) => {
-          this.switchToArena(arenaDetails?.arena);
+          this.switchToArena(arenaDetails?.arena, { threadId });
           return success();
         });
       }
@@ -2971,14 +3049,14 @@ export class StudioCtx extends WithDbCtx {
       this.siteInfo.perms
     );
     return (
-      this.appCtx.appConfig.comments ||
-      (accessLevelRank(accessLevel) >= accessLevelRank("commenter") &&
-        ((this.siteInfo.teamId &&
+      (this.appCtx.appConfig.comments ||
+        (this.siteInfo.teamId &&
           this.appCtx.appConfig.commentsTeamIds.includes(
             this.siteInfo.teamId
           )) ||
-          (team?.parentTeamId &&
-            this.appCtx.appConfig.commentsTeamIds.includes(team.parentTeamId))))
+        (team?.parentTeamId &&
+          this.appCtx.appConfig.commentsTeamIds.includes(team.parentTeamId))) &&
+      accessLevelRank(accessLevel) >= accessLevelRank("commenter")
     );
   }
 
@@ -6615,16 +6693,36 @@ export class StudioCtx extends WithDbCtx {
     { name: "getProjectData" }
   );
 
-  private _copilotHistory = observable.map<string, CopilotInteraction[]>();
+  private _copilotHistory = observable.map<CopilotType, CopilotInteraction[]>();
 
-  addToCopilotHistory(type: string, copilotInteraction: CopilotInteraction) {
+  addToCopilotHistory(
+    type: "ui",
+    copilotInteraction: CopilotInteraction<QueryCopilotUiResponse["data"]>
+  ): void;
+  addToCopilotHistory(
+    type: "code" | "sql",
+    copilotInteraction: CopilotInteraction<string>
+  ): void;
+  addToCopilotHistory(
+    type: CopilotType,
+    copilotInteraction: CopilotInteraction<unknown>
+  ): void;
+  addToCopilotHistory(
+    type: CopilotType,
+    copilotInteraction: CopilotInteraction<unknown>
+  ): void {
     this._copilotHistory.set(type, [
       ...(this._copilotHistory.get(type) ?? []),
       copilotInteraction,
     ]);
   }
 
-  getCopilotHistory(type: string) {
+  getCopilotHistory(
+    type: "ui"
+  ): CopilotInteraction<QueryCopilotUiResponse["data"]>[];
+  getCopilotHistory(type: "code" | "sql"): CopilotInteraction<string>[];
+  getCopilotHistory(type: CopilotType): CopilotInteraction<unknown>[];
+  getCopilotHistory(type: CopilotType): CopilotInteraction<unknown>[] {
     return [...(this._copilotHistory.get(type) ?? [])];
   }
 
@@ -6697,7 +6795,13 @@ export class StudioCtx extends WithDbCtx {
   }
 
   switchToComponentArena(
-    target: ValNode | SlotSelection | Component | undefined
+    target: ValNode | SlotSelection | Component | undefined,
+    opts?: {
+      noFocusedModeChange?: boolean;
+      replace?: boolean;
+      stopWatching?: boolean;
+      threadId?: string;
+    }
   ) {
     const component = switchType(target)
       .when(undefined, () => undefined)
@@ -6723,7 +6827,7 @@ export class StudioCtx extends WithDbCtx {
       return undefined;
     }
 
-    this.switchToArena(arena);
+    this.switchToArena(arena, opts);
     return arena;
   }
 
@@ -7078,10 +7182,17 @@ export class StudioCtx extends WithDbCtx {
   };
 }
 
-interface CopilotInteraction {
+export type CopilotType = "ui" | "code" | "sql";
+
+export type CopilotPrompt = {
+  prompt: string;
+  images: CopilotImage[];
+};
+
+export interface CopilotInteraction<T = unknown> {
   prompt: string;
   id: CopilotInteractionId;
-  response: string;
+  response: T;
   displayMessage?: string;
 }
 

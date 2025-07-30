@@ -1,6 +1,10 @@
+import { ArrayPrimitiveEditor } from "@/wab/client/components/sidebar-tabs/ComponentProps/ArrayPrimitiveEditor";
+import { EnumPropEditor } from "@/wab/client/components/sidebar-tabs/ComponentProps/EnumPropEditor";
 import { PropValueEditor } from "@/wab/client/components/sidebar-tabs/PropValueEditor";
 import ParamSection from "@/wab/client/components/sidebar-tabs/StateManagement/ParamSection";
+import { LabeledItemRow } from "@/wab/client/components/sidebar/sidebar-helpers";
 import { SidebarModal } from "@/wab/client/components/sidebar/SidebarModal";
+import StyleSwitch from "@/wab/client/components/style-controls/StyleSwitch";
 import {
   IconLinkButton,
   IFrameAwareDropdownMenu,
@@ -8,6 +12,7 @@ import {
 import { Icon } from "@/wab/client/components/widgets/Icon";
 import { IconButton } from "@/wab/client/components/widgets/IconButton";
 import LabeledListItem from "@/wab/client/components/widgets/LabeledListItem";
+import { LabelWithDetailedTooltip } from "@/wab/client/components/widgets/LabelWithDetailedTooltip";
 import { Modal } from "@/wab/client/components/widgets/Modal";
 import Select from "@/wab/client/components/widgets/Select";
 import Textbox from "@/wab/client/components/widgets/Textbox";
@@ -24,14 +29,17 @@ import {
   assert,
   ensure,
   mkShortId,
+  mkUuid,
   spawn,
   unexpected,
+  xGroupBy,
 } from "@/wab/shared/common";
 import { canRenameParam } from "@/wab/shared/core/components";
 import { clone, codeLit, tryExtractJson } from "@/wab/shared/core/exprs";
-import { mkParam } from "@/wab/shared/core/lang";
+import { JsonValue, mkParam } from "@/wab/shared/core/lang";
 import { cloneType } from "@/wab/shared/core/tpls";
 import { COMPONENT_PROP_CAP } from "@/wab/shared/Labels";
+import { lintChoicePropValues } from "@/wab/shared/linting/lint-choice-prop-values";
 import {
   Component,
   Expr,
@@ -42,15 +50,22 @@ import {
   isKnownFunctionType,
   isKnownImageAssetRef,
   isKnownPageHref,
+  isKnownPropParam,
   isKnownRenderableType,
   isKnownRenderFuncType,
   isKnownStyleTokenRef,
   Param,
 } from "@/wab/shared/model/classes";
-import { typeDisplayName, typeFactory } from "@/wab/shared/model/model-util";
+import {
+  isChoiceType,
+  typeDisplayName,
+  typeFactory,
+} from "@/wab/shared/model/model-util";
 import { smartHumanize } from "@/wab/shared/strs";
-import { Menu } from "antd";
+import { ChoiceObject, ChoiceOptions, ChoiceValue } from "@plasmicapp/host";
+import { Menu, notification } from "antd";
 import { isNaN } from "lodash";
+import pluralize from "pluralize";
 import React from "react";
 
 /**
@@ -74,6 +89,7 @@ const COMPONENT_PARAM_TYPES_CONFIG = [
   { value: "num", label: "Number", jsonType: "number" },
   { value: "bool", label: "Toggle", jsonType: "boolean" },
   { value: "any", label: "Object", jsonType: "any" }, // any / Object = JsonValue, NOT JsonObject
+  { value: "choice", label: "Choice", jsonType: "any" }, // string | number | boolean
   {
     value: "queryData",
     label: "Query data",
@@ -123,7 +139,7 @@ function isExprValid(propTypeData: PropTypeData | undefined, val: Expr) {
     return true;
   }
 
-  if (propTypeData.exprTypeGuard?.(val)) {
+  if (propTypeData.value === "array" || propTypeData.exprTypeGuard?.(val)) {
     return true;
   } else if (propTypeData.jsonType) {
     if (propTypeData.jsonType === "any") {
@@ -148,6 +164,14 @@ function isExprValid(propTypeData: PropTypeData | undefined, val: Expr) {
   }
 }
 
+const getValue = (item: ChoiceValue | ChoiceObject): ChoiceValue =>
+  typeof item === "object" ? item.value : item;
+
+const getValueString = (
+  item: ChoiceValue | ChoiceObject | undefined
+): string | undefined =>
+  item !== undefined ? String(getValue(item)) : undefined;
+
 export function ComponentPropModal(props: {
   studioCtx: StudioCtx;
   component: Component;
@@ -167,6 +191,10 @@ export function ComponentPropModal(props: {
     centeredModal,
     suggestedName,
   } = props;
+
+  const componentParamTypes = studioCtx.appCtx.appConfig.enableDataQueries
+    ? COMPONENT_PARAM_TYPES_CONFIG
+    : COMPONENT_PARAM_TYPES_CONFIG.filter((type) => type.value !== "queryData");
 
   const type = props.type ?? existingParam?.type;
   const [paramName, setParamName] = React.useState(
@@ -202,6 +230,46 @@ export function ComponentPropModal(props: {
     existingParam && isLocalizationEnabled ? existingParam.isLocalizable : false
   );
 
+  const [choices, setChoices] = React.useState<ChoiceOptions>(
+    existingParam && isChoiceType(existingParam.type)
+      ? (existingParam.type.options as ChoiceOptions)
+      : []
+  );
+
+  const [advanced, setAdvanced] = React.useState(
+    isKnownPropParam(existingParam) ? existingParam.advanced : false
+  );
+
+  const exprStrVal = (expr: Expr | undefined): string | undefined => {
+    return exprDisplayVal(expr, paramTypeData)?.toString();
+  };
+
+  const onChangeChoices = (values: ChoiceOptions) => {
+    // Update the default and preview values if the corresponding allowed value changes
+    const oldItem = choices.find(
+      (item) => !values.some((v) => getValue(v) === getValue(item))
+    );
+    const newItem = values.find(
+      (item) => !choices.some((c) => getValue(c) === getValue(item))
+    );
+    const oldVal = getValueString(oldItem);
+    const newVal = getValueString(newItem);
+
+    if (oldVal !== undefined) {
+      const defaultVal = exprStrVal(defaultExpr);
+      const previewVal = exprStrVal(previewExpr);
+
+      if (defaultVal === oldVal) {
+        setDefaultExpr(jsonExprToExpr(newVal));
+      }
+      if (previewVal === oldVal) {
+        setPreviewExpr(jsonExprToExpr(newVal));
+      }
+    }
+
+    setChoices(values);
+  };
+
   const isValid = React.useMemo(
     () =>
       paramName &&
@@ -216,24 +284,83 @@ export function ComponentPropModal(props: {
       return;
     }
 
+    const uniqueValues = Array.from(new Set(choices.map(getValue)));
+    if (uniqueValues.length !== choices.length) {
+      notification.error({
+        message: "Choices should not contain duplicates.",
+      });
+      return;
+    }
+
+    const checkOptionsUsage = (newParamName: string) => {
+      const issues = lintChoicePropValues(studioCtx.site, studioCtx).filter(
+        (issue) => issue.propName === newParamName
+      );
+      if (issues.length === 0) {
+        return;
+      }
+      const componentNames = [
+        ...xGroupBy(issues, (issue) => issue.component).keys(),
+      ].map((c) => c.name);
+
+      const issuesPlural =
+        issues.length > 1 ? `are ${issues.length} issues` : "is 1 issue";
+      const componentsPlural = pluralize("components", componentNames.length);
+
+      const key = mkUuid();
+      notification.warning({
+        key,
+        message: `Review ${component.name} prop usage`,
+        description: (
+          <>
+            <p>{`There ${issuesPlural} with existing ${newParamName} props on ${componentsPlural}: ${componentNames}.`}</p>
+            <p>
+              To review all issues, go to the
+              <a
+                onClick={async () => {
+                  await studioCtx.change(({ success }) => {
+                    studioCtx.switchLeftTab("lint", { highlight: true });
+                    notification.close(key);
+                    return success();
+                  });
+                }}
+              >
+                {" [Issues tab]."}
+              </a>
+            </p>
+          </>
+        ),
+        duration: 10,
+      });
+    };
+    const newParamType = type
+      ? cloneType(type)
+      : paramType === "eventHandler"
+      ? typeFactory.func(
+          ...defaultArgs
+            .filter((arg) => arg.name !== "")
+            .map((arg) => typeFactory.arg(arg.name, typeFactory[arg.type]()))
+        )
+      : paramType === "choice"
+      ? typeFactory[paramType](choices)
+      : typeFactory[paramType]();
+
+    const name = studioCtx
+      .tplMgr()
+      .getUniqueParamName(component, paramName, existingParam);
+
     await studioCtx.change(({ success }) => {
-      const newParamType = type
-        ? cloneType(type)
-        : paramType !== "eventHandler"
-        ? typeFactory[paramType]()
-        : typeFactory.func(
-            ...defaultArgs
-              .filter((arg) => arg.name !== "")
-              .map((arg) => typeFactory.arg(arg.name, typeFactory[arg.type]()))
-          );
-      const name = studioCtx
-        .tplMgr()
-        .getUniqueParamName(component, paramName, existingParam);
       const isLocalizableVal =
         paramType === "text" && isLocalizationEnabled ? isLocalizable : false;
+
       if (existingParam) {
         studioCtx.tplMgr().renameParam(component, existingParam, name);
-        existingParam.type = newParamType;
+        if (newParamType.name === "choice") {
+          newParamType.options = choices;
+        }
+        if (isKnownPropParam(existingParam)) {
+          existingParam.advanced = advanced;
+        }
         existingParam.defaultExpr = defaultExpr && clone(defaultExpr);
         existingParam.previewExpr = previewExpr && clone(previewExpr);
         existingParam.isLocalizable = isLocalizableVal;
@@ -253,12 +380,16 @@ export function ComponentPropModal(props: {
           defaultExpr,
           previewExpr,
           isLocalizable: isLocalizableVal,
+          advanced,
         });
         component.params.push(param);
         onFinish(param);
         return success();
       }
     });
+    if (existingParam && newParamType.name === "choice") {
+      checkOptionsUsage(name);
+    }
   };
 
   const canRename = !existingParam || canRenameParam(component, existingParam);
@@ -273,9 +404,11 @@ export function ComponentPropModal(props: {
   };
 
   let propEditorType =
-    paramType !== "eventHandler"
-      ? wabTypeToPropType(type ?? typeFactory[paramType]())
-      : undefined;
+    paramType === "eventHandler"
+      ? undefined
+      : paramType === "choice"
+      ? wabTypeToPropType(type ?? typeFactory[paramType](choices))
+      : wabTypeToPropType(type ?? typeFactory[paramType]());
   if (getPropTypeType(propEditorType) === "dataSourceOpData") {
     propEditorType = wabTypeToPropType(typeFactory["any"]());
   }
@@ -318,13 +451,13 @@ export function ComponentPropModal(props: {
               }
               data-test-id="arg-type"
             >
-              {COMPONENT_PARAM_TYPES_CONFIG.filter(
-                (opt) => !!opt.jsonType && !("exprTypeGuard" in opt)
-              ).map(({ value, label }) => (
-                <Select.Option value={value} textValue={label} key={value}>
-                  {label}
-                </Select.Option>
-              ))}
+              {componentParamTypes
+                .filter((opt) => !!opt.jsonType && !("exprTypeGuard" in opt))
+                .map(({ value, label }) => (
+                  <Select.Option value={value} textValue={label} key={value}>
+                    {label}
+                  </Select.Option>
+                ))}
             </Select>
           </LabeledListItem>
         ))}
@@ -350,6 +483,7 @@ export function ComponentPropModal(props: {
             : undefined
         }
         hideEventArgs={!!type && paramType === "eventHandler"}
+        showAdvancedSection={true}
         overrides={{
           paramName: {
             props: {
@@ -373,7 +507,7 @@ export function ComponentPropModal(props: {
                   setIsLocalizable(false);
                 }
               },
-              children: COMPONENT_PARAM_TYPES_CONFIG.map(({ value, label }) => (
+              children: componentParamTypes.map(({ value, label }) => (
                 <Select.Option value={value} textValue={label} key={value}>
                   {label}
                 </Select.Option>
@@ -393,6 +527,7 @@ export function ComponentPropModal(props: {
                   )}
                   propTypeData={paramTypeData}
                   value={defaultExpr}
+                  choices={choices}
                   onChange={setDefaultExpr}
                 />
               ),
@@ -409,9 +544,27 @@ export function ComponentPropModal(props: {
                   )}
                   propTypeData={paramTypeData}
                   value={previewExpr}
+                  choices={choices}
                   onChange={setPreviewExpr}
                 />
               ),
+          },
+          advancedSection: {
+            render: () => {
+              return (
+                <>
+                  <AdvancedToggle advanced={advanced} onChange={setAdvanced} />
+                  {paramType === "choice" && (
+                    <ArrayPrimitiveEditor
+                      label={"Allowed Values"}
+                      values={choices.map(getValue)}
+                      onChange={onChangeChoices}
+                      data-test-id={"component-prop-choices"}
+                    />
+                  )}
+                </>
+              );
+            },
           },
           localizableSwitch: {
             isChecked: isLocalizable,
@@ -421,9 +574,6 @@ export function ComponentPropModal(props: {
             props: {
               disabled: !isValid,
               htmlType: "submit",
-              onClick: () => {
-                spawn(onSave());
-              },
               "data-test-id": "prop-submit",
             },
           },
@@ -461,46 +611,95 @@ export function ComponentPropModal(props: {
   }
 }
 
+const jsonExprToExpr = (
+  val: Expr | JsonValue | undefined
+): Expr | undefined => {
+  return val == null || val === ""
+    ? undefined
+    : isKnownExpr(val)
+    ? val
+    : codeLit(val);
+};
+
+const exprDisplayVal = (
+  expr: Expr | undefined,
+  propTypeData: PropTypeData | undefined
+): Expr | JsonValue | undefined => {
+  return expr === undefined
+    ? undefined
+    : propTypeData?.exprTypeGuard?.(expr)
+    ? expr
+    : propTypeData?.jsonType
+    ? tryExtractJson(expr)
+    : undefined;
+};
+
+const AdvancedToggle: React.FC<{
+  advanced: boolean;
+  onChange: (isChecked: boolean) => void;
+}> = ({ advanced, onChange }) => {
+  return (
+    <LabeledItemRow
+      label={
+        <LabelWithDetailedTooltip
+          tooltip={<div>If set, the prop is hidden in the UI by default.</div>}
+        >
+          Advanced
+        </LabelWithDetailedTooltip>
+      }
+    >
+      <div className="flex justify-start flex-fill">
+        <StyleSwitch isChecked={advanced ?? false} onChange={onChange}>
+          {null}
+        </StyleSwitch>
+      </div>
+    </LabeledItemRow>
+  );
+};
+
 /** Wraps a PropValueEditor and menu for unsetting the value. */
 const PropValueEditorWithMenu: React.FC<{
-  attr: "default-value" | "preview-value";
+  attr: "default-value" | "preview-value" | "allowed-values";
   label: string;
   propType: StudioPropType<any>;
   propTypeData: PropTypeData | undefined;
   value: Expr | undefined;
+  choices: ChoiceOptions;
   onChange: (expr: Expr | undefined) => void;
-}> = ({ attr, label, value, onChange, propType, propTypeData }) => {
+}> = ({ attr, label, value, onChange, propType, propTypeData, choices }) => {
+  const displayVal = exprDisplayVal(value, propTypeData);
+
   return (
     <div className="generic-prop-editor" data-test-id={attr}>
-      <PropValueEditor
-        attr={attr}
-        label={label}
-        value={
-          value === undefined
-            ? undefined
-            : propTypeData?.exprTypeGuard?.(value)
-            ? value
-            : propTypeData?.jsonType
-            ? tryExtractJson(value)
-            : undefined
-        }
-        onChange={(val) => {
-          const expr =
-            val == null || val === ""
-              ? undefined
-              : isKnownExpr(val)
-              ? val
-              : codeLit(val);
-          if (expr === undefined || isExprValid(propTypeData, expr)) {
-            onChange(expr);
-          } else {
-            unexpected(
-              `PropValueEditor returned value that doesn't satisfy ${propTypeData?.value}`
-            );
-          }
-        }}
-        propType={propType}
-      />
+      {choices.length ? (
+        <EnumPropEditor
+          value={displayVal?.toString()}
+          valueSetState={displayVal === undefined ? "isUnset" : "isSet"}
+          onChange={(val) => {
+            onChange(jsonExprToExpr(val));
+          }}
+          options={choices}
+          className={"form-control"}
+        />
+      ) : (
+        <PropValueEditor
+          attr={attr}
+          label={label}
+          value={displayVal}
+          onChange={(val) => {
+            const expr = jsonExprToExpr(val);
+
+            if (expr === undefined || isExprValid(propTypeData, expr)) {
+              onChange(expr);
+            } else {
+              unexpected(
+                `PropValueEditor returned value that doesn't satisfy ${propTypeData?.value}`
+              );
+            }
+          }}
+          propType={propType}
+        />
+      )}
       <IFrameAwareDropdownMenu
         menu={
           <Menu>
