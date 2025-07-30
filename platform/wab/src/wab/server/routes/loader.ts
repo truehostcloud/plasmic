@@ -411,7 +411,10 @@ export async function getLoaderChunk(req: Request, res: Response) {
 
   console.log(`Loading S3 bundle from ${LOADER_ASSETS_BUCKET} ${bundleKey}`);
 
-  const s3 = new S3({ endpoint: process.env.S3_ENDPOINT, forcePathStyle: process.env.S3_FORCE_PATH_STYLE === "true" });
+  const s3 = new S3({
+    endpoint: process.env.S3_ENDPOINT,
+    s3ForcePathStyle: process.env.S3_FORCE_PATH_STYLE === "true",
+  });
 
   const obj = await s3
     .getObject({
